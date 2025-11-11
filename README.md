@@ -4,7 +4,11 @@
 
 ## Contexte
 
-Ce TP apour objectif d'installer et configurer Proxmox VE dans une machine virtuelle VirtualBox, afin de mettre en place un hyperviseur pour gérer des VM.
+Ce TP a pour objectif d'installer et configurer Proxmox VE dans une machine virtuelle VirtualBox, afin de mettre en place un hyperviseur pour gérer des VM.
+
+# Introduction
+
+Proxmox Virtual Environment (Proxmox VE) est une plateforme open source de virtualisation qui permet de créer et gérer des machines virtuelles et des conteneurs sur un seul serveur. Elle offre une interface web puissante pour administrer facilement les systèmes virtualisés, optimiser les ressources matérielles, et gérer le stockage et la mise en réseau. Proxmox est souvent utilisé en entreprise pour consolider des serveurs, simplifier la gestion informatique et garantir une haute disponibilité des services.
 
 ---
 
