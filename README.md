@@ -1,14 +1,17 @@
-# Installation et Configuration d'un serveur Proxmox VE
+## **Installation et configuration de Proxmox VE et pfSense dans un environnement virtualisé**
 
 ---
 
 ## Contexte
 
-Ce TP a pour objectif d'installer et configurer Proxmox VE dans une machine virtuelle VirtualBox, afin de mettre en place un hyperviseur pour gérer des VM.
+Ce TP a pour objectif d’installer et configurer Proxmox VE dans une machine virtuelle VirtualBox, puis de déployer une VM pfSense afin de mettre en place un hyperviseur capable de gérer des machines virtuelles, de simuler un environnement réseau sécurisé, et d’expérimenter différentes fonctionnalités de firewall, routage et services réseau.
 
 # Introduction
 
-Proxmox Virtual Environment (Proxmox VE) est une plateforme open source de virtualisation qui permet de créer et gérer des machines virtuelles et des conteneurs sur un seul serveur. Elle offre une interface web puissante pour administrer facilement les systèmes virtualisés, optimiser les ressources matérielles, et gérer le stockage et la mise en réseau. Proxmox est souvent utilisé en entreprise pour consolider des serveurs, simplifier la gestion informatique et garantir une haute disponibilité des services.
+- Proxmox Virtual Environment (Proxmox VE) est une plateforme open source de virtualisation qui permet de créer et gérer des machines virtuelles et des conteneurs sur un seul serveur. Elle offre une interface web puissante pour administrer facilement les systèmes virtualisés, optimiser les ressources matérielles, et gérer le stockage et la mise en réseau. Proxmox est souvent utilisé en entreprise pour consolider des serveurs, simplifier la gestion informatique et garantir une haute disponibilité des services.
+
+- pfsense est une distribution open source basée sur FreeBSD permettant de déployer un pare-feu (firewall), de contrôler le routage, de gérer le NAT, et d’offrir de nombreux services réseau avancés (DHCP, VPN, etc.).
+  Intégré comme machine virtuelle dans Proxmox, pfSense permet de simuler des architectures réseau sécurisées et d’apprendre la gestion des flux réseau et des règles de sécurité en environnement virtualisé.
 
 ---
 
@@ -18,12 +21,17 @@ Proxmox Virtual Environment (Proxmox VE) est une plateforme open source de virtu
 - Configurer les paramètres réseau et stockage
 - Se connecter à l'interface web de gestion
 - Créer et gérer des machines virtuelles
+- Déployer une machine virtuelle pfsense via proxmox
+- Configurer pfSense pour simuler un environnement réseau sécurisé (interfaces, DHCP, NAT, firewall)
+- Vérifier la connectivité et les services réseau à partir d’une VM cliente
 
 ## Matériel et Logiciels
 
 - PC hôte avec VirtualBox
 - ISO Proxmox VE (version proxmox-ve_9.0-1)
+- ISO pfSense (ex : pfSense-ce-2.7.2-RELEASE-amd64)
 - OS hôte Windows 11 Pro
+- VM cliente (Debian) pour tester le réseau
 
 ## Etapes réalisées
 
@@ -62,7 +70,6 @@ Proxmox Virtual Environment (Proxmox VE) est une plateforme open source de virtu
 9. Mise à jour des caches des paquets
 
    ![mise à jour](./images\MaJ_cache_paquetproxmox.png)
-
 
    ![Mise à jours des paquets Proxmox](./images/MAJ_Proxmox.png)
 
@@ -133,8 +140,8 @@ La VM pfSense a été configurée avec son interface LAN raccordée à ce bridge
 
 ## Accés à l'interface Web de PFsense depuis une VM LAN
 
-
 - #### Connexion par défaut avec "admin" et "pfsense"
+
 
 ![Connexion interface web pfsense](./images\connexion_interface_web_pfsense.png)
 
@@ -146,16 +153,13 @@ La VM pfSense a été configurée avec son interface LAN raccordée à ce bridge
 
 ![ip depuis DHCP vm client](./images\ip_vm_client_dhcp.png)
 
-
 - #### Dashbord Pfsense
+
 
 
 ![tableau de bord de PFsense](./images\dhasbord_pfsense.png)
 
-
 ---
-
-
 
 **Le TP est validé : l’environnement réseau fonctionne correctement et l’accès au dashboard de pfSense confirme la bonne configuration des interfaces WAN et LAN ainsi que la connectivité des clients.
 La prochaine étape consistera à approfondir la gestion des certificats d’autorités et à mettre en place des règles de firewall sur pfSense.**
