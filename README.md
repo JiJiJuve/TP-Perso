@@ -57,6 +57,9 @@ Ce TP apour objectif d'installer et configurer Proxmox VE dans une machine virtu
    ![No-Subscription permet d'avoir les MàJ](./images/pas_subscription_MaJ_OK2.png)
 9. Mise à jour des caches des paquets
 
+   ![mise à jour](./images\MaJ_cache_paquetproxmox.png)
+
+
    ![Mise à jours des paquets Proxmox](./images/MAJ_Proxmox.png)
 
 Cela garantit que le système est à jour avec les dernières corrections et améliorations.
@@ -64,3 +67,91 @@ Cela garantit que le système est à jour avec les dernières corrections et am�
 ---
 
 Cette démarche est classique pour ceux qui utilisent Proxmox sans licence professionnelle et veulent garder leur installation à jour en toute légalité.
+
+## Gestion des utilisateurs : création d’un compte non-root dans Proxmox VE
+
+Dans une logique de bonnes pratiques de sécurité, toutes les opérations courantes relatives à la gestion des machines virtuelles, des stockages ou des ISO sont effectuées depuis un compte utilisateur **Proxmox VE** et non depuis le compte root.
+
+![Création User](./images/creation_user_proxmoxVE.png)
+
+![suite création user](./images/creation_user_proxmoxVE2.png)
+
+![Role new user](./images/creation_user_role_proxmoxVE2.png)
+
+Cette démarche s’inscrit dans un souci de séparation des privilèges et d’amélioration de la sécurité de l’infrastructure Proxmox.
+
+---
+
+## Ajout et Vérification de l'ISO Pfsense
+
+1 - Vérification de l'Intégrité de l'ISO Pfsense
+
+![Hash ISO Pfsense](./images\hash_iso_pfsense_site_officiel.png)
+
+![Vérification Hash Iso Pfsense](./images\hash_iso_pfsense.png)
+
+Pour garantir l’intégrité et l’authenticité de l’image ISO utilisée, j’ai récupéré son SHA256 sur le site officiel Netgate, puis vérifier et comparer dans PowerShell.
+
+2 - Ajout de l'ISO Pfsense dans Proxmox
+
+![Dowload ISO dans Proxmox](./images/install_ISO_Proxmox.png)
+
+---
+
+## Création de la VM Pfsense
+
+![Création VM PFsense](./images/creation_vm_pfsense.png)
+
+![Suite création VM Pfsense](./images//vm_pfsense_créee.png)
+
+#### Création et ajout de l'interface réseau LAN sous Proxmox
+
+Mise en place d’un bridge virtuel (vmbr1) dans Proxmox, associé à l’interface réseau (enp0s8), pour le réseau interne (LAN).
+La VM pfSense a été configurée avec son interface LAN raccordée à ce bridge, permettant la connectivité avec les clients du réseau interne (ex : VM Debian en ‘Internal Network’).
+
+![Création Interface Réseau LAN](./images\rajout_interface_reseau_lan2.png)
+
+![Création Interface Reseau LAN](./images\rajout_interface_reseau_lan.png)
+
+---
+
+## Création VM Pfsense depuis ISO
+
+![Création vm pfsense depuis l'ISO](./images\lancement_creation_depuis_iso_vm_pfsense.png)
+
+## Configuration interface réseau WAN + LAN
+
+![configuration interafces reseau WAN etLAN](./images\config_interfaces_reseau.png)
+
+![Validation Configuration Interfaces Réseaux](./images\config_interfaces_reseau2.png)
+
+---
+
+## Accés à l'interface Web de PFsense depuis une VM LAN
+
+
+- #### Connexion par défaut avec "admin" et "pfsense"
+
+![Connexion interface web pfsense](./images\connexion_interface_web_pfsense.png)
+
+- #### Configuration de base sur PFsense
+
+  ![configuration de base pfsense](./images\gui_pfsense.png)
+- #### Fonctionnement DHCP avec attribution IP (192.168.2.100) à ma VM client dans LAN
+
+
+![ip depuis DHCP vm client](./images\ip_vm_client_dhcp.png)
+
+
+- #### Dashbord Pfsense
+
+
+![tableau de bord de PFsense](./images\dhasbord_pfsense.png)
+
+
+---
+
+
+
+**Le TP est validé : l’environnement réseau fonctionne correctement et l’accès au dashboard de pfSense confirme la bonne configuration des interfaces WAN et LAN ainsi que la connectivité des clients.
+La prochaine étape consistera à approfondir la gestion des certificats d’autorités et à mettre en place des règles de firewall sur pfSense.**
