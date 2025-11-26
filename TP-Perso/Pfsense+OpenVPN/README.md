@@ -28,7 +28,7 @@
 
 Ce TP explique comment déployer étape par étape un serveur VPN OpenVPN avec pfSense, puis comment accéder au réseau LAN de l’entreprise de façon sécurisée depuis une machine externe (client to site , exemple : télétravail).
 
-![Schema Infra](images\Schema_Infra.png)
+![Schema Infra](images/Schema_Infra.png)
 
 ### Qu'est-ce que pfSense?
 
@@ -112,11 +112,11 @@ Cette règle permet aux VM de fonctionner sans blocage au début, mais il vaut m
 
 ![Régle HTTP](images/creation_regle_firewallHTTP.png)
 
-![Régle HTTPS](images\creation_regle_firewallHTTPS.png)
+![Régle HTTPS](images/creation_regle_firewallHTTPS.png)
 
-![Régle ICMP](images\creation_regle_firewallPING.png)
+![Régle ICMP](images/creation_regle_firewallPING.png)
 
-![Régle OpenVPN](images\creation_regle_firewallOpenVPN.png)
+![Régle OpenVPN](images/creation_regle_firewallOpenVPN.png)
 
 **Créer des nouvelles règles (DNS, HTTP, HTTPS, ICMP) permet de contrôler quels services les machines du LAN peuvent utiliser :**
 
@@ -128,23 +128,23 @@ On ajoute ces règles pour autoriser uniquement le trafic nécessaire et renforc
 
 - **Bien penser à valider tout changement**
 
-![Applications changement](images\Valider_modif_apply_changes.png)
+![Applications changement](images/Valider_modif_apply_changes.png)
 
-![Changements Validés](images\Valider_modif_apply_changes2.png)
+![Changements Validés](images/Valider_modif_apply_changes2.png)
 
 - **Test régles firewall**
 
   - Régles ICMP & DNS
 
-![Tests Ping & DNS](images\Test_regle_firewall.png)
+![Tests Ping & DNS](images/Test_regle_firewall.png)
 
 - Régle HTTPS
 
-![Test HTTPS](images\Test_regle_firewall_acces_web.png)
+![Test HTTPS](images/Test_regle_firewall_acces_web.png)
 
 - Test des règles de blocage (deny)
 
-![Test Refus Telnet & FTP](images\Test_regle_firewall_Deny.png)
+![Test Refus Telnet & FTP](images/Test_regle_firewall_Deny.png)
 
 ---
 
@@ -152,37 +152,37 @@ On ajoute ces règles pour autoriser uniquement le trafic nécessaire et renforc
 
 - **Création Autorité de Certification (CA)**
 
-![Création Autorité de Certificats](images\creation_Autorite_Certification.png)
+![Création Autorité de Certificats](images/creation_Autorite_Certification.png)
 
-![Création Autorité de Certificats suite](images\creation_Autorite_Certification2.png)
+![Création Autorité de Certificats suite](images/creation_Autorite_Certification2.png)
 
 La création de la CA (Autorité de Certification) permet de signer et d’authentifier les certificats des serveurs et clients, assurant des connexions sécurisées et de confiance dans l’infrastructure VPN.
 
 - **Création de Certificat**
 
-![Certificat](images\Creation_certificat_autorite.png)
+![Certificat](images/Creation_certificat_autorite.png)
 
-![suite certificat](images\Creation_certificat_autorite2.png)
+![suite certificat](images/Creation_certificat_autorite2.png)
 
 La création d’un certificat permet d’identifier et d’authentifier de façon sécurisée un serveur ou un client, garantissant que seules les machines autorisées accèdent au VPN.
 
 - **Création de l'utilisateur**
 
-![Création de l'utilisateur](images\creation_user_vpn.png)
+![Création de l'utilisateur](images/creation_user_vpn.png)
 
-![suite creation de l'utilsateur](images\creation_user_vpn2.png)
+![suite creation de l'utilsateur](images/creation_user_vpn2.png)
 
 La création de l’utilisateur permet d’identifier chaque personne ou machine qui se connecte au VPN et d’attribuer des droits ou certificats personnalisés.
 
 - **Création du Server OpenVPN**
 
-![Server OpenVPN](images\Creation_server_OpenVPN.png)
+![Server OpenVPN](images/Creation_server_OpenVPN.png)
 
-![suite server openvpn](images\Creation_serverl_OpenVPN2.png)
+![suite server openvpn](images/Creation_serverl_OpenVPN2.png)
 
-![fin server openvpn](images\Creation_serverl_OpenVPN3.png)
+![fin server openvpn](images/Creation_serverl_OpenVPN3.png)
 
-![server openvpn OK](images\server_OpenVPN.png)
+![server openvpn OK](images/server_OpenVPN.png)
 
 La création du serveur OpenVPN permet d’établir le tunnel sécurisé qui relie les clients externes au réseau interne en passant par pfSense.
 
@@ -190,15 +190,15 @@ La création du serveur OpenVPN permet d’établir le tunnel sécurisé qui rel
 
 - **Création régle firewall Server OpenVPN WAN**
 
-![regle firewall openvpn](images\creation_regle_firwall_server_openVPN.png)
+![regle firewall openvpn](images/creation_regle_firwall_server_openVPN.png)
 
 La création des règles de firewall sur le WAN pour le serveur OpenVPN permet d’autoriser les connexions VPN provenant d’Internet tout en bloquant les accès non désirés.
 
 - **Création régle firewall Server OpenVPN LAN**
 
-![regle firewall openvpn LAN](images\creation_regle_firwall_OpenVPN-LAN.png)
+![regle firewall openvpn LAN](images/creation_regle_firwall_OpenVPN-LAN.png)
 
-![suite regle openvpn LAN](images\creation_regle_firwall_OpenVPN-LAN2.png)
+![suite regle openvpn LAN](images/creation_regle_firwall_OpenVPN-LAN2.png)
 
 La création des règles de firewall sur le LAN pour le serveur OpenVPN permet de contrôler et sécuriser les accès des clients VPN vers les ressources internes du réseau local.
 
@@ -208,31 +208,31 @@ La création des règles de firewall sur le LAN pour le serveur OpenVPN permet d
 
 - **Installation du package “openvpn-client-export”**
 
-![package openvpn client](images\package_openvpn_client.png)
+![package openvpn client](images/package_openvpn_client.png)
 
-![suite package openvpn client](images\package_openvpn_client2.png)
+![suite package openvpn client](images/package_openvpn_client2.png)
 
-![fin package openvpn client](images\package_openvpn_client3.png)
+![fin package openvpn client](images/package_openvpn_client3.png)
 
 L’installation du package "OpenVPN Client Export" permet de générer facilement les fichiers de configuration nécessaires pour connecter les clients au VPN.
 
 - **Download & Export du fichier .ovpn + clés**
 
-![dowload de l'archive client](images\dowload_archive_client.png)
+![dowload de l'archive client](images/dowload_archive_client.png)
 
-![export de l'archive client](images\copie_dossier_clientOpenVPN.png)
+![export de l'archive client](images/copie_dossier_clientOpenVPN.png)
 
 Le téléchargement et l’export du fichier .ovpn et des clés permet d’équiper le client avec tout ce qu’il faut pour se connecter de façon sécurisée au VPN.
 
 * **Installation et configuration du client OpenVPN sur la VM externe**
 
-![Installation client OpenVPN sur ma VM client Externe](images\install_openvpn_client_externe.png)
+![Installation client OpenVPN sur ma VM client Externe](images/install_openvpn_client_externe.png)
 
 L’installation et la configuration du client OpenVPN sur la VM externe permet d’établir la connexion sécurisée au VPN et d’accéder au réseau interne à distance.
 
 * **Organisation des fichiers d’archive OpenVPN dans le projet**
 
-![Déplacement dossier archive dans nouveau dossier](images\deplacer_dossierarchive_new_dossier.png)
+![Déplacement dossier archive dans nouveau dossier](images/deplacer_dossierarchive_new_dossier.png)
 
 Regrouper tous les fichiers OpenVPN dans un dossier spécifique permet d’assurer qu’aucun fichier important (clé, certificat, config) n’est oublié lors de la connexion VPN, garantissant ainsi une connexion fiable et sécurisée.
 
@@ -242,25 +242,25 @@ Regrouper tous les fichiers OpenVPN dans un dossier spécifique permet d’assur
 
 - **Etablissement du tunnel depuis la VM externe**
 
-![Connexion VPN depuis VM externe](images\connexion_vpn_depuis_ext.png)
+![Connexion VPN depuis VM externe](images/connexion_vpn_depuis_ext.png)
 
-![suite connexion VPN ](images\connexion_vpn_depuis_ext2.png)
+![suite connexion VPN ](images/connexion_vpn_depuis_ext2.png)
 
 L’établissement du tunnel depuis la VM externe permet de relier de façon sécurisée la machine distante au réseau interne, comme si elle était physiquement présente sur le LAN.
 
 - **Test réseau LAN depuis vm Client Externe connectée avec le VPN**
 
-![ip adresse de vm client interne](images\ip_vm_interne_ressource_entreprise.png)
+![ip adresse de vm client interne](images/ip_vm_interne_ressource_entreprise.png)
 
-![ping interface pfsense LAN + VM client interne LA? depuis VM client Externe](images\ping_LAN_pfsenseOK.png)
+![ping interface pfsense LAN + VM client interne LA? depuis VM client Externe](images/ping_LAN_pfsenseOK.png)
 
 - **Connexion à la VM interne LAN depuis la VM Externe avec OpenVPN**
 
-![Ip vm interne LAN](images\ip_vm_interne_ressource_entreprise.png)
+![Ip vm interne LAN](images/ip_vm_interne_ressource_entreprise.png)
 
-![Connexion SSH depuis VM externe a VM interne](images\connexion_vpn_depuis_ext3.png)
+![Connexion SSH depuis VM externe a VM interne](images/connexion_vpn_depuis_ext3.png)
 
-![verifie connexion ssh sur pfsense](images\connexion_vpn_ressources_internes_entreprise_depuis_ext2.png)
+![verifie connexion ssh sur pfsense](images/connexion_vpn_ressources_internes_entreprise_depuis_ext2.png)
 
 ---
 
