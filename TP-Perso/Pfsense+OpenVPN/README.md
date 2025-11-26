@@ -264,5 +264,7 @@ L’établissement du tunnel depuis la VM externe permet de relier de façon sé
 
 ---
 
+## Conclusion
+
 Ce TP a permis de mettre en place une infrastructure VPN sécurisée avec pfSense, de la création des certificats à la connexion d’un client externe.
 Grâce à l’utilisation des règles firewall et à l’organisation rigoureuse des fichiers, la solution garantit sécurité, contrôle des accès et facilité de gestion pour relier des machines distantes au réseau interne.
