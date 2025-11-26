@@ -1,4 +1,16 @@
-## **Installation et configuration de Proxmox VE et pfSense dans un environnement virtualisé**
+# **Installation et configuration de Proxmox VE et pfSense dans un environnement virtualisé**
+
+---
+
+## Sommaire
+- [Contexte](#contexte)
+- [Objectifs](#objectifs)
+- [Matériel-et-logiciels](#matériel-et-logiciels)
+- [Étapes-réalisées](#etapes-réalisées)
+- [Gestion-des-utilisateurs](#gestion-des-utilisateurs--création-dun-compte-non-root-dans-proxmox-ve)
+- [Ajout et Vérification de l'ISO Pfsense](#ajout-et-verification-de-liso-pfsense)
+- [Création-vm-pfsense](#création-de-la-vm-pfsense)
+- [Conclusion](#conclusion)
 
 ---
 
@@ -174,6 +186,8 @@ La VM pfSense a été configurée avec son interface LAN raccordée à ce bridge
 
 
 ---
+
+## Conclusion
 
 **Le TP est validé : l’environnement réseau fonctionne correctement et l’accès au dashboard de pfSense confirme la bonne configuration des interfaces WAN et LAN ainsi que la connectivité des clients.
 La prochaine étape consistera à approfondir la gestion des certificats d’autorités et à mettre en place des règles de firewall sur pfSense.**
