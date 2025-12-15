@@ -108,7 +108,35 @@ L’objectif est de mettre en place l’infrastructure de niveau 2/3 au **siège
 
 <BVR><BVR>
 
-``` vtp mode server ```
+```
+vtp mode server
+vtp domain
+vtp password
+vtp version 2
+show vtp status
+```
+
+### VLAN (Virtual Local Area Network) permettent de segmenter les réseaux physiques en sous réseaux-logiques.
+
+<img width="557" height="251" alt="conf_Vlan_L3" src="https://github.com/user-attachments/assets/bdb0e239-97dd-4cdb-a6ea-0d32d54edebb" />
+
+<BVR><BVR>
+
+<img width="561" height="277" alt="conf_Vlan_L2" src="https://github.com/user-attachments/assets/3ce136ab-14b5-42ff-89e3-6ab9f7fdd273" />
+
+<BVR><BVR>
+
+```
+vlan 10
+name
+show vlan brief
+```
+
+### Configuration des interfaces en mode ACCESS ou TRUNK : Les ports TRUNK laissent passer plusieurs VLANs grâce aux trames taggées (802.1Q), contrairement aux ports ACCESS qui n'acceptent qu'un seul VLAN.
+
+
+
+
 
 
 
