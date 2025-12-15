@@ -135,7 +135,7 @@ show vlan brief
 ### Configuration des interfaces en mode ACCESS ou TRUNK : Les ports TRUNK laissent passer plusieurs VLANs grâce aux trames taggées (802.1Q), contrairement aux ports ACCESS qui n'acceptent qu'un seul VLAN.
 
 
-
+la suite arrive bientot
 
 
 
