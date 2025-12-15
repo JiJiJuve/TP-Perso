@@ -80,29 +80,35 @@ L’objectif est de mettre en place l’infrastructure de niveau 2/3 au **siège
 
 ## 2. VTP et base VLAN au siège
 
-### 2.1 Configuration VTP (sur le switch L3 principal S1 & S2)
-
-
-  Configuration des VLAN, VTP, trunks, EtherChannel et HSRP au siège.
+### 2.1 Configuration des VLAN, VTP, trunks, EtherChannel et HSRP dans le LAN du siège social.
   
-    - VTP => 
+#### VTP (Vlan Trunking Protocol) : permet de synchroniser la configuration des VLAN entre les switch.
     
-      - Mode Server :
+- Mode Server sur les deux Switch Distributions/Core L3:
       
-      <img width="638" height="253" alt="conf_VTP_Server" src="https://github.com/user-attachments/assets/4c88c4d2-eb9d-44b9-831d-68f16990ef28" />
+<img width="638" height="253" alt="conf_VTP_Server" src="https://github.com/user-attachments/assets/4c88c4d2-eb9d-44b9-831d-68f16990ef28" />
 
-      <img width="635" height="243" alt="conf_VTP_Server2" src="https://github.com/user-attachments/assets/09ec08b7-b1f9-4ee6-b2cd-28997edf8d12" />
+<BVR><BVR>
 
-      - Mode Client :
+<img width="635" height="243" alt="conf_VTP_Server2" src="https://github.com/user-attachments/assets/09ec08b7-b1f9-4ee6-b2cd-28997edf8d12" />
 
-      <img width="579" height="236" alt="conf_VTP_Client" src="https://github.com/user-attachments/assets/9deeb420-bff5-40c0-8d49-a3a0507ce893" />
+<BVR><BVR>
 
-      <img width="545" height="238" alt="conf_VTP_Client2" src="https://github.com/user-attachments/assets/8da68c93-7f0d-4449-8821-320362ed013a" />
+- Mode Client sur les trois Switch d'accès L2 :
 
-      <img width="580" height="250" alt="conf_VTP_Client3" src="https://github.com/user-attachments/assets/72266f70-370c-4cde-a035-f9a8745e80be" />
+<img width="579" height="236" alt="conf_VTP_Client" src="https://github.com/user-attachments/assets/9deeb420-bff5-40c0-8d49-a3a0507ce893" />
 
+<BVR><BVR>
 
+<img width="545" height="238" alt="conf_VTP_Client2" src="https://github.com/user-attachments/assets/8da68c93-7f0d-4449-8821-320362ed013a" />
 
+<BVR><BVR>
+
+<img width="580" height="250" alt="conf_VTP_Client3" src="https://github.com/user-attachments/assets/72266f70-370c-4cde-a035-f9a8745e80be" />
+
+<BVR><BVR>
+
+``` vtp mode server ```
 
 
 
