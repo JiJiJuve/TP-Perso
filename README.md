@@ -6,7 +6,20 @@
 - [Objectifs pédagogiques](#objectifs-pédagogiques)
 - [Topologie et adressage (résumé)](#topologie-et-adressage-résumé)
 - [Contenu du dépôt](#contenu-du-dépôt)
-- [Documentation détaillée](#documentation-détaillée)
+- [Infrastructure LAN du siège](#2-infrastructure-lan-du-siège-social)
+  - [VTP](#vtp-vlan-trunking-protocol)
+  - [VLAN](#vlan-virtual-local-area-network)
+  - [Ports access et trunks](#configuration-des-interfaces-en-mode-access-ou-trunk)
+  - [EtherChannel](#etherchannel-entre-switches-l2-et-l3-agrégation-de-liens)
+  - [STP](#spanning-tree-protocol-stp)
+  - [Routage inter-VLAN](#routage-inter-vlan)
+  - [HSRP / FHRP](#fhrp-first-hop-redundancy-protocolpasserelle-par-défaut-redondante)
+  - [DHCP et ip helper-address](#serveur-dhcp-central-et-ip-helper-address)
+  - [Téléphonie IP / TFTP / CME](#téléphonie-ip-et-rôle-du-serveur-tftp)
+  - [OSPF au siège](#routage-ospf-open-shortest-path-first)
+  - [NAT/PAT](#natnetwork-address-translation-et-patport-address-translation-pour-laccès-internet)
+- [WAN, succursale et VPN](#à-compléter-plus-tard)
+
 
 ---
 
@@ -64,7 +77,7 @@ Ce TP a pour but de :
 
 La documentation est découpée en plusieurs parties :
 
-# 01 – Commutation au siège : VLAN, VTP, trunks, EtherChannel, HSRP
+# 01 – Infrastructure LAN du siège : VLAN, VTP, trunks, EtherChannel, STP, routage inter-VLAN, HSRP, DHCP, téléphonie IP, OSPF et NAT
 
 ## 1. Objectif de cette partie
 
@@ -78,11 +91,12 @@ L’objectif est de mettre en place l’infrastructure de niveau 2/3 au **siège
 
 ---
 
-## 2. VTP et base VLAN au siège
+## 2. Infrastructure LAN du siège social
 
-### 2.1 Configuration des VLAN, VTP, trunks, EtherChannel et HSRP dans le LAN du siège social.
+### 2.1 Configuration des VLAN, VTP, trunks, EtherChannel, routage inter-VLAN, HSRP, DHCP, téléphonie IP et OSPF dans le LAN du siège social.
   
-#### VTP (Vlan Trunking Protocol) : permet de synchroniser la configuration des VLAN entre les switch.
+#### VTP (Vlan Trunking Protocol)
+VTP permet de synchroniser la configuration des VLAN entre les switch.
     
 - Mode Server sur les deux Switch Distributions/Core L3:
       
@@ -116,7 +130,8 @@ vtp version 2
 show vtp status
 ```
 
-#### VLAN (Virtual Local Area Network) permettent de segmenter les réseaux physiques en sous réseaux-logiques.
+#### VLAN (Virtual Local Area Network)
+Les VLAN permettent de segmenter les réseaux physiques en sous réseaux-logiques.
 
 <img width="557" height="251" alt="conf_Vlan_L3" src="https://github.com/user-attachments/assets/bdb0e239-97dd-4cdb-a6ea-0d32d54edebb" />
 
@@ -132,7 +147,8 @@ name
 show vlan brief
 ```
 
-#### Configuration des interfaces en mode ACCESS ou TRUNK : Les ports TRUNK laissent passer plusieurs VLANs grâce aux trames taggées (802.1Q), contrairement aux ports ACCESS qui n'acceptent qu'un seul VLAN.
+#### Configuration des interfaces en mode ACCESS ou TRUNK
+Les ports TRUNK laissent passer plusieurs VLANs grâce aux trames taggées (802.1Q), contrairement aux ports ACCESS qui n'acceptent qu'un seul VLAN.
 
 - Exemple de port ACCESS avec VLAN data + voix :
 
@@ -170,7 +186,8 @@ show interfaces switchport
 
 <BVR><BVR>
 
-#### EtherChannel entre switches L2 et L3 (agrégation de liens) : permet d’agréger plusieurs liens physiques en un seul lien logique (Port-Channel), pour augmenter la bande passante et la redondance.
+#### EtherChannel entre switches L2 et L3 (agrégation de liens)
+Etherchannel permet d’agréger plusieurs liens physiques en un seul lien logique (Port-Channel), pour augmenter la bande passante et la redondance.
 
 <BVR><BVR>
 
@@ -204,7 +221,8 @@ interface range Fa0/1 - 2
 <BVR><BVR>
 
 
-#### Spanning Tree Protocol (STP): est utilisé pour éviter les boucles de niveau 2 lorsque plusieurs liens redondants existent entre les switches.
+#### Spanning Tree Protocol (STP)
+STP est utilisé pour éviter les boucles de niveau 2 lorsque plusieurs liens redondants existent entre les switches.
 
 Dans cette topologie, le protocole Spanning Tree (STP) est activé par défaut sur les switches Cisco et fonctionne ici conjointement avec l’EtherChannel pour garantir qu’il n’existe qu’un seul chemin logique actif, tout en conservant de la redondance en cas de panne de lien.​
 
@@ -212,7 +230,8 @@ STP échange des BPDUs (Bridge Protocol Data Units) entre les switches afin d’
 
 <BVR><BVR>
 
-#### Routage inter-VLAN : permet à des périphériques appartenant à des VLAN différents de communiquer entre eux en passant par un routeur ou un switch de couche 3.
+#### Routage inter-VLAN
+Il permet à des périphériques appartenant à des VLAN différents de communiquer entre eux en passant par un routeur ou un switch de couche 3.
 
 - Un switch de couche 3 permet de connecter plusieurs réseaux IP entre eux et de diriger les paquets en fonction de leur adresse IP, tout en continuant à commuter les trames au niveau 2 à l’intérieur des VLAN.
 - Il joue donc à la fois le rôle de switch L2 pour la commutation locale et de routeur pour le routage inter-VLAN et entre sous-réseaux.
@@ -276,7 +295,8 @@ interface Vlan20
 
 <BVR><BVR>
 
-#### FHRP (First Hop Redundancy Protocol/passerelle par défaut redondante) : désigne une famille de protocoles qui assurent la redondance de la passerelle par défaut pour les hôtes d’un réseau local. L’idée est de faire fonctionner plusieurs routeurs ou switches L3 comme s’ils étaient une seule passerelle IP, afin qu’en cas de panne de l’un d’eux, un autre prenne automatiquement le relais sans changement de configuration côté clients.
+#### FHRP (First Hop Redundancy Protocol/passerelle par défaut redondante)
+FHRP désigne une famille de protocoles qui assurent la redondance de la passerelle par défaut pour les hôtes d’un réseau local. L’idée est de faire fonctionner plusieurs routeurs ou switches L3 comme s’ils étaient une seule passerelle IP, afin qu’en cas de panne de l’un d’eux, un autre prenne automatiquement le relais sans changement de configuration côté clients.
 
 Parmi ces protocoles, HSRP (Hot Standby Router Protocol, propriétaire Cisco) permet de créer une passerelle IP virtuelle partagée entre plusieurs équipements, avec un routeur/switch L3 actif et un standby prêt à prendre la main en cas de défaillance.
 
@@ -327,7 +347,8 @@ interface Vlan10
 
 <BVR><BVR>
 
-#### Serveur DHCP central et ip helper-address : un serveur DHCP attribue automatiquement aux clients leur adresse IP, leur masque, leur passerelle et éventuellement leurs DNS. Dans un réseau multi‑VLAN, il est courant d’utiliser un serveur DHCP central pour tous les VLANs.
+#### Serveur DHCP central et ip helper-address
+Un serveur DHCP attribue automatiquement aux clients leur adresse IP, leur masque, leur passerelle et éventuellement leurs DNS. Dans un réseau multi‑VLAN, il est courant d’utiliser un serveur DHCP central pour tous les VLANs.
 ​​
 - Les requêtes DHCP des clients sont envoyées en broadcast et ne sont pas routées entre les VLANs. La commande **ip helper-address**, configurée sur les SVI des switches de couche 3, permet de relayer ces requêtes vers le serveur DHCP situé dans un autre réseau : le switch L3 transforme le broadcast reçu dans un VLAN en unicast vers l’adresse IP du serveur DHCP.​
 
@@ -367,7 +388,8 @@ interface Vlan10
 
 <BVR><BVR>
 
-#### Téléphonie IP et rôle du serveur TFTP : La téléphonie IP de l’entreprise s’appuie sur un serveur TFTP hébergé sur le routeur R1, vers lequel les téléphones IP sont dirigés grâce aux informations fournies par le serveur DHCP (option dédiée dans le pool du VLAN voix 40). Après avoir obtenu leur adresse IP, leur passerelle et l’adresse du serveur TFTP, les téléphones téléchargent automatiquement, depuis ce serveur, leurs fichiers de configuration et leur firmware, ce qui leur permet de s’enregistrer correctement sur la plateforme de téléphonie et de fonctionner.
+#### Téléphonie IP et rôle du serveur TFTP
+La téléphonie IP de l’entreprise s’appuie sur un serveur TFTP hébergé sur le routeur R1, vers lequel les téléphones IP sont dirigés grâce aux informations fournies par le serveur DHCP (option dédiée dans le pool du VLAN voix 40). Après avoir obtenu leur adresse IP, leur passerelle et l’adresse du serveur TFTP, les téléphones téléchargent automatiquement, depuis ce serveur, leurs fichiers de configuration et leur firmware, ce qui leur permet de s’enregistrer correctement sur la plateforme de téléphonie et de fonctionner.
 
 <BVR><BVR>
 
@@ -428,6 +450,81 @@ R1(config-ephone-dn)#number 102
 ```
 
 <BVR><BVR>
+
+#### Routage OSPF (Open Shortest Path First)
+OSPF est un protocole de routage dynamique de type « état de liens » qui permet aux routeurs et switches L3 d’échanger automatiquement les informations de routes au sein d’un même domaine. Chaque routeur construit une carte complète de la topologie en échangeant l’état de ses liens avec ses voisins, puis calcule le meilleur chemin vers chaque réseau à l’aide de l’algorithme de Dijkstra (coût), ce qui évite de maintenir manuellement des routes statiques et offre une convergence rapide, adaptée aux réseaux de taille moyenne à grande.
+
+Dans cette topologie, les liaisons OSPF entre les switches L3 et les routeurs R1/R2 sont de type point-à-point, ce qui simplifie le fonctionnement du protocole (pas de DR/BDR) et accélère la convergence entre deux équipements
+
+Le routage interne au siège entre les switches de couche 3 et les routeurs R1 et R2 repose sur OSPF, qui diffuse automatiquement les différents réseaux du LAN (VLAN utilisateurs, VLAN voix, etc.) entre les équipements. Ainsi, chaque équipement connaît les sous-réseaux présents au siège sans recourir à des routes statiques, ce qui facilite l’évolution et la maintenance de la topologie.
+
+<BVR><BVR>
+
+<img width="539" height="346" alt="conf_R1_Ospf" src="https://github.com/user-attachments/assets/910712c2-2cc5-4467-a339-5a702ddc23f3" />
+
+
+<BVR><BVR>
+
+<img width="536" height="341" alt="conf_R1_Ospf2" src="https://github.com/user-attachments/assets/a76cf65e-c237-4b2c-bc6f-5a1c08946063" />
+
+
+La commande show ip ospf database affiche la base de données de LSAs OSPF, qui représente la vision complète de la topologie partagée entre les routeurs : on y retrouve les routeurs OSPF présents au siège ainsi que les différents réseaux annoncés (VLAN utilisateurs, VLAN voix, liens de transit). Cela confirme que tous les équipements partagent la même carte du réseau et peuvent calculer les meilleurs chemins.​
+Ces captures montrent que les équipements du siège partagent le même processus OSPF (process ID 10) mais possèdent chacun un Router ID différent, ce qui permet de les identifier de façon unique dans la base OSPF tout en appartenant au même domaine de routage.
+
+<img width="590" height="151" alt="conf_R1_Ospf3" src="https://github.com/user-attachments/assets/44d5bcce-0e1a-4a75-8b44-79ea149a51a1" />
+
+La commande show ip ospf neighbor permet de vérifier les relations de voisinage OSPF entre les switches L3 et les routeurs R1/R2 (état FULL), ce qui confirme que les adjacences sont établies et que les LSAs peuvent être échangées. L’état FULL indique que la synchronisation de la base de données OSPF est complète avec ces voisins.
+
+<img width="575" height="449" alt="conf_R1_Ospf4" src="https://github.com/user-attachments/assets/d851d8d3-917b-44f2-ab30-ac166042b2aa" />
+
+Dans la table de routage, les routes apprises par OSPF sont marquées par la lettre O, ce qui permet de distinguer facilement les réseaux appris dynamiquement de ceux qui sont directement connectés (C) ou configurés en statique (S)
+
+```
+S1(config)#router ospf 10
+S1(config-router)#router-id 1.1.1.1
+S1(config-router)#do show ip route connected
+S1(config-router)#network 10.0.0.0 0.0.0.3 area 0
+S1(config-router)#network 192.168.10.0 0.0.0.255 area 0
+S1(config-router)#network 192.168.20.0 0.0.0.255 area 0
+S1(config-router)#network 192.168.30.0 0.0.0.255 area 0
+S1(config-router)#network 192.168.40.0 0.0.0.255 area 0
+S1#show ip ospf database
+S1#show ip ospf neighbor
+```
+
+#### NAT(Network Address Translation) et PAT(Port Address Translation) pour l’accès Internet 
+La traduction d’adresses (NAT) permet aux hôtes des réseaux privés d’accéder à Internet en utilisant une ou plusieurs adresses IP publiques portées par le routeur. Le PAT (Port Address Translation), aussi appelé NAT overload, permet à de nombreux clients internes de partager une seule adresse publique en différenciant les connexions par les numéros de port source.
+
+
+```
+! 1) Marquer les interfaces inside / outside
+R1(config)#interface FastEthernet0/0
+R1(config-if)#ip address 172.16.10.1 255.255.255.0
+R1(config-if)#ip nat inside
+R1(config-if)#exit
+
+R1(config)#interface Serial0/3/0
+R1(config-if)#ip address 200.0.0.1 255.255.255.252
+R1(config-if)#ip nat outside
+R1(config-if)#exit
+```
+
+```
+! 2) ACL des réseaux internes à traduire
+R1(config)#access-list 1 permit 172.16.10.0 0.0.0.255
+```
+
+```
+! 3) NAT overload (PAT) vers l’interface WAN
+R1(config)#ip nat inside source list 1 interface Serial0/3/0 overload
+```
+
+```
+R1#show ip nat translations
+```
+
+La commande show ip nat translations permet de vérifier les traductions NAT/PAT en cours (correspondance entre les adresses privées du LAN et l’adresse publique 200.0.0.1 avec des ports différents).
+
 
 
 
