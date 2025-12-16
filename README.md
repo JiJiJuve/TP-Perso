@@ -529,21 +529,10 @@ La commande show ip nat translations permet de vérifier les traductions NAT/PAT
 
 
 
+# la suite arrive bientôt
 
 
 
-
-- `docs/02-routage-ospf-et-acces-internet.md`  
-  OSPF interne, liens WAN vers l’ISP, routes par défaut et routage de retour.
-
-- `docs/03-dhcp-dns-et-nat-par-site.md`  
-  DHCP, DNS, PAT/NAT sur le siège, la succursale et le site Home.
-
-- `docs/04-voip-cme-au-siege.md`  
-  Mise en place de Cisco CME, VLAN voix, DHCP/TFTP pour les téléphones IP.
-
-- `docs/05-vpn-ipsec-r1-rhome.md`  
-  Configuration complète du VPN IPsec site-à-site entre le siège (R1) et RHOME, avec exemption NAT et commandes de vérification. 
 
 Chaque fichier contient :
 
