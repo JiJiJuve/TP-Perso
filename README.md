@@ -521,16 +521,212 @@ R1(config)#ip nat inside source list 1 interface Serial0/3/0 overload
 
 ```
 R1#show ip nat translations
+R1#show ip nat statistics
 ```
 
-La commande show ip nat translations permet de vérifier les traductions NAT/PAT en cours (correspondance entre les adresses privées du LAN et l’adresse publique 200.0.0.1 avec des ports différents).
+La commande show ip nat translations permet de vérifier les traductions NAT/PAT en cours, en affichant la correspondance entre les adresses privées du LAN et l’adresse publique 200.0.0.1, ainsi que les informations de session associées.
+La commande show ip nat statistics permet de voir le nombre total de traductions en cours, les interfaces inside/outside utilisées et le nombre de ports déjà alloués par le PAT.
+
+<BVR><BVR>
+
+<img width="566" height="262" alt="nat_pat" src="https://github.com/user-attachments/assets/fff84a9b-cbe2-435e-ab54-f48e4aac4cf6" />
+
+<BVR><BVR>
+
+On voit ici que les adresses privées 192.168.10.52 et 192.168.20.52 (inside local) sont traduites en l’adresse publique 200.0.0.1 (inside global).
+Cette commande confirme que deux traductions dynamiques sont actives et rappelle quelles interfaces sont marquées en inside et outside, ainsi que le nombre de paquets ayant utilisé le NAT (hits).
 
 
+#### Routage statique et routes par défaut sur le WAN
+
+Le WAN (Wide Area Network) relie le siège et les différents sites distants via des liaisons série point à point, et centralise l’accès à Internet sur le routeur INTERNET.​
+Le routeur INTERNET joue le rôle de cœur du WAN et routeur de transit vers Internet. Il possède plusieurs interfaces série point à point vers les routeurs des différents sites. Des routes statiques sont configurées pour joindre les LAN de chaque site via l’adresse IP du routeur correspondant sur le WAN.​
+
+Une route par défaut indique au routeur où envoyer tout le trafic dont la destination n’est pas connue dans la table de routage.​
+Dans les sites, une route par défaut de type **ip route 0.0.0.0 0.0.0.0 <next-hop>** permet d’envoyer ce trafic vers le WAN et Internet.
+
+- Exemple de route statique par défaut 
+
+<img width="579" height="360" alt="wan_route_statique_par_defaut" src="https://github.com/user-attachments/assets/1b45634c-cf4e-44c1-b436-55932cb8834a" />
+
+<img width="577" height="221" alt="wan_route_statique_par_defaut2" src="https://github.com/user-attachments/assets/009bb03b-5441-4931-8b3b-454c043563df" />
 
 
+  - Sur le routeur du siège, la ligne S* 0.0.0.0/0 via 200.0.0.2 correspond à une route statique par défaut : tout trafic à destination de réseaux inconnus est envoyé vers le next-hop 200.0.0.2, utilisé comme passerelle de dernier recours par le routeur.​
 
-# la suite arrive bientôt
+  - Sur le routeur de la succursale, la ligne S* 0.0.0.0/0 via 200.0.0.9 montre également une route statique par défaut pointant vers le routeur INTERNET, utilisé comme passerelle de dernier recours pour tout trafic vers des réseaux inconnus.
 
+#### Succursale : serveur web, DNS 
+
+La succursale utilise le réseau 172.16.10.0/24 pour son LAN interne.  
+Un serveur web est hébergé dans ce LAN et doit être accessible à la fois par les utilisateurs internes et depuis Internet, via une redirection de port configurée sur le routeur de la succursale.
+
+<BVR><BVR>
+
+<img width="683" height="308" alt="server_web_server_dns" src="https://github.com/user-attachments/assets/28e9f84c-07b9-4dcd-b6ea-cef221c4b380" />
+
+<BVR><BVR>
+
+<img width="671" height="306" alt="acces_depuis_ext_server_web_https" src="https://github.com/user-attachments/assets/1d938d08-fe7b-439f-bfa9-f27b01b43879" />
+
+<BVR><BVR>
+
+<img width="679" height="318" alt="acces_depuis_ext_server_web_http" src="https://github.com/user-attachments/assets/5df27548-09a6-4346-8f36-73463266c3ed" />
+
+<BVR><BVR>
+
+<img width="683" height="308" alt="acces_depuis_Inter_server_web_IP" src="https://github.com/user-attachments/assets/57e6f474-7366-450a-8d51-c25bd2a94148" />
+
+<BVR><BVR>
+
+<img width="555" height="269" alt="redirection_port_server_web" src="https://github.com/user-attachments/assets/22cf0280-5c62-4c55-93d8-fd3f6864efe7" />
+
+<BVR><BVR>
+
+  - La commande **show running-config | include ip nat inside source static** montre les règles de NAT statique utilisées pour publier le serveur web interne (172.16.10.10) sur l’adresse publique de la succursale (200.0.0.10) en HTTP et HTTPS.
+  - La commande **show ip nat translations** confirme que plusieurs clients situés dans le WAN accèdent au serveur web via l’adresse publique 200.0.0.10 sur les ports 80 et 443, et que le routeur traduit bien ces connexions vers l’adresse privée 172.16.10.10.
+  - Depuis un poste interne de la succursale, l’accès au serveur web par son adresse IP privée (172.16.10.10) fonctionne également, ce qui confirme la bonne connectivité locale entre le LAN 172.16.10.0/24 et le serveur web.
+
+
+#### VPN IPsec site-à-site : étapes de création du tunnel
+
+Un VPN IPsec site‑à‑site permet de relier de façon sécurisée deux réseaux distants (par exemple le siège et le site Home) à travers Internet en chiffrant tout le trafic entre les deux routeurs.
+Il crée un « tunnel » logique entre les deux équipements, de sorte que les PC des deux réseaux communiquent comme s’ils étaient sur le même réseau privé, mais sans que les données soient visibles sur Internet.
+
+Le tunnel IPsec protège tout le trafic entre :
+
+Le LAN du siège : 192.168.0.0/16
+
+Le LAN du site Home : 172.16.60.0/24
+
+
+La mise en place du tunnel IPsec se fait en deux grandes phases : la Phase 1 (IKE / ISAKMP), puis la Phase 2 (IPsec / ESP), avant de transporter les données entre les deux LAN.
+
+
+**1. Phase 1 – IKE / ISAKMP (tunnel de contrôle)**
+
+Objectif : établir un tunnel sécurisé de contrôle entre les deux routeurs (R1 et RHOME), appelé SA IKE ou SA ISAKMP. 
+
+- Les routeurs négocient les paramètres de sécurité : chiffrement (AES), authentification (clé pré-partagée), groupe Diffie-Hellman, durée de vie, etc.  
+- Ils s’authentifient avec la clé pré-partagée (`VPNKEY`) et créent un canal chiffré pour échanger les informations IPsec.  
+- Lorsque cette phase est réussie, la commande suivante montre un état actif :
+
+```
+show crypto isakmp sa
+```
+
+<img width="486" height="111" alt="vpn_ipsec" src="https://github.com/user-attachments/assets/61c977e7-4c5d-420d-8452-0a77e6adda2d" />
+
+
+On doit y voir une entrée entre 200.0.0.1 (R1) et 200.0.0.14 (RHOME) avec un état du type `QM_IDLE` et `status ACTIVE`. 
+
+
+**2. Phase 2 – IPsec / ESP (tunnel de données)**
+
+Objectif : créer le tunnel qui va réellement chiffrer les paquets entre les réseaux privés.
+
+- À l’intérieur du tunnel IKE de phase 1, les routeurs négocient les paramètres IPsec :  
+  - Protocole ESP (Encapsulating Security Payload) pour le chiffrement et l’intégrité.  
+  - Algorithmes utilisés (par exemple ESP-AES pour le chiffrement et ESP-SHA-HMAC pour l’authentification).  
+  - Les réseaux à protéger, définis par l’ACL `VPN-ACL` (192.168.0.0/16 ↔ 172.16.60.0/24).  
+- Cette phase crée deux Security Associations (SA) ESP : une pour le trafic sortant et une pour le trafic entrant entre les deux routeurs.  
+
+La commande suivante permet de les visualiser :
+
+```
+show crypto ipsec sa
+```
+
+<img width="512" height="635" alt="Phase_2_SA_ESP_ipsec" src="https://github.com/user-attachments/assets/670904ad-17bf-438a-b241-899842c12426" />
+
+
+On y retrouve les identités locales et distantes (192.168.0.0/16 et 172.16.60.0/24), les sections `inbound esp sas` et `outbound esp sas` avec `Status: ACTIVE`, ainsi que des compteurs de paquets chiffrés et déchiffrés (`#pkts encaps` / `#pkts decaps`).
+
+**3. Transport des données dans le tunnel**
+
+Une fois les deux phases établies : 
+
+- Quand un hôte du siège (192.168.x.x) envoie du trafic vers un hôte du site Home (172.16.60.x), ce trafic matche l’ACL `VPN-ACL` et est considéré comme « intéressant » pour IPsec.  
+- Le routeur source encapsule alors les paquets dans ESP (les compteurs `encaps` augmentent dans `show crypto ipsec sa`), et le routeur distant les déchiffre et les remet sur son LAN (les compteurs `decaps` augmentent).  
+
+La présence d’un SA IKE actif dans `show crypto isakmp sa` et de SA ESP actives avec des compteurs non nuls dans `show crypto ipsec sa` confirme que le tunnel IPsec est correctement établi et transporte bien les données entre les deux sites. 
+
+**Exemple de configuration minimale du VPN IPsec**
+
+Ci-dessous un extrait simplifié de la configuration IPsec site-à-site entre R1 (siège) et RHOME (site Home). Il reprend les éléments principaux : Phase 1 (ISAKMP), Phase 2 (IPsec), ACL de trafic intéressant et exemption de NAT.
+
+- R1 – Siège :
+
+```
+! 1) IKE Phase 1
+crypto isakmp policy 10
+ encr aes
+ authentication pre-share
+ group 2
+crypto isakmp key VPNKEY address 200.0.0.14
+
+! 2) IPsec Phase 2
+crypto ipsec transform-set VPN-SET esp-aes esp-sha-hmac
+
+! 3) Trafic intéressant
+ip access-list extended VPN-ACL
+ permit ip 192.168.0.0 0.0.255.255 172.16.60.0 0.0.0.255
+exit
+
+! 4) Crypto map
+crypto map VPN-MAP 10 ipsec-isakmp
+ set peer 200.0.0.14
+ set transform-set VPN-SET
+ match address VPN-ACL
+
+! 5) Appliquer sur l’interface WAN
+interface Serial0/3/0
+ crypto map VPN-MAP
+
+! 6) Exemption NAT (exemple)
+ip access-list extended NONAT
+ deny   ip 192.168.0.0 0.0.255.255 172.16.60.0 0.0.0.255
+ permit ip 192.168.0.0 0.0.255.255 any
+
+! 7) Vérifier ACL NONAT soit bien utilisée
+show run | include ip nat inside source
+```
+
+- RHOME :
+
+```
+! 1) IKE Phase 1
+crypto isakmp policy 10
+ encr aes
+ authentication pre-share
+ group 2
+crypto isakmp key VPNKEY address 200.0.0.1
+
+! 2) IPsec Phase 2
+crypto ipsec transform-set VPN-SET esp-aes esp-sha-hmac
+
+! 3) Trafic intéressant
+ip access-list extended VPN-ACL
+  permit ip 172.16.60.0 0.0.0.255 192.168.0.0 0.0.255.255
+
+! 4) Crypto map
+crypto map VPN-MAP 10 ipsec-isakmp
+ set peer 200.0.0.1
+ set transform-set VPN-SET
+ match address VPN-ACL
+
+! 5) Appliquer sur l’interface WAN
+interface Serial0/3/0
+ crypto map VPN-MAP
+
+! 6) Exemption NAT (exemple)
+ip access-list extended NONAT
+ deny   ip 172.16.60.0 0.0.0.255 192.168.0.0 0.0.255.255
+ permit ip 172.16.60.0 0.0.0.255 any
+
+! 7) Vérifier ACL NONAT soit bien utilisée
+show run | include ip nat inside source
+```
 
 
 
