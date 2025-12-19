@@ -1,9 +1,12 @@
-# TP Réseau – Siège, Succursale et Site Home
+# Infrastructure réseau d’entreprise haute disponibilité et sécurisée avec Cisco Packet Tracer 
 
-text
+<img width="1880" height="722" alt="Topo_Res" src="https://github.com/user-attachments/assets/917ca783-8e43-4ebf-bd8b-e50f021fab82" />
+
+
 ## Sommaire
 
 - [Présentation générale](#présentation-générale)
+- [Haute disponibilité et sécurité](#haute-disponibilité-et-sécurité)
 - [Objectifs pédagogiques](#objectifs-pédagogiques)
 - [Topologie et adressage (résumé)](#topologie-et-adressage-résumé)
 - [Contenu du dépôt](#contenu-du-dépôt)
@@ -31,11 +34,16 @@ text
   - [Transport des données dans le tunnel](#3-transport-des-données-dans-le-tunnel)
   - [Exemple de configuration du VPN IPsec](#exemple-de-configuration-minimale-du-vpn-ipsec)
   - [Attention NAT / NONAT et VPN](#attention-nat--nonat-et-vpn-ipsec)
+ 
+- [Succursale : ajout d’un accès Wi‑Fi](#succursale--ajout-dun-accès-wi-fi)
 
+- [VLAN 50 de gestion et accès SSH](#vlan-50-de-gestion-et-accès-ssh)
 
 ---
 
 ## Présentation générale
+
+Ce projet propose une infrastructure réseau d’entreprise haute disponibilité et sécurisée réalisée sous Cisco Packet Tracer. Il met en œuvre de nombreux protocoles et fonctionnalités Cisco couramment utilisés en entreprise : VLAN, VTP, trunking, EtherChannel, STP, routage inter-VLAN, HSRP, DHCP relay, OSPF, NAT/PAT, listes de contrôle d’accès (ACL), VPN IPsec site-à-site, services de téléphonie IP et Wi‑Fi. 
 
 Ce dépôt contient un projet complet réalisé sous Cisco Packet Tracer :
 
@@ -45,6 +53,11 @@ Ce dépôt contient un projet complet réalisé sous Cisco Packet Tracer :
 - Un **routeur ISP** qui interconnecte les sites.
 - De la **téléphonie IP** avec Cisco CME (CallManager Express).
 - Un **VPN IPsec site-à-site** entre le siège (192.168.0.0/16) et le site Home (172.16.60.0/24). 
+
+## Haute disponibilité et sécurité
+
+L’infrastructure est conçue pour assurer la continuité de service et la résilience : redondance de liens avec EtherChannel, élimination des boucles avec STP, redondance de passerelle par HSRP et routage dynamique OSPF. La sécurité est également prise en compte avec la segmentation par VLAN, le contrôle des accès via ACL, la translation d’adresses (NAT/PAT), un VPN IPsec site-à-site pour les communications chiffrées, un accès d’administration sécurisé en SSH, ainsi que des mécanismes de sécurisation de niveau 2 comme Port Security, PortFast et BPDU Guard sur les ports d’accès.
+
 
 ## Objectifs pédagogiques
 
@@ -740,8 +753,84 @@ ip access-list extended NONAT
 show run | include ip nat inside source
 ```
 
+#### Succursale : ajout d’un accès Wi‑Fi
 
+Pour compléter le LAN filaire de la succursale (172.16.10.0/24), un point d’accès Wi‑Fi autonome a été ajouté, relié au même réseau que les postes câblés. Un PC portable en Wi‑Fi se connecte à ce point d’accès pour accéder aux mêmes ressources que les machines filaires : serveur web interne, Internet via NAT, et réseaux distants via le routage/VPN.
 
+Le point d’accès est connecté sur le switch de la succursale dans le VLAN 172.16.10.0/24 et possède une adresse IP dans ce LAN (par exemple 172.16.10.54), avec comme passerelle le routeur RSuccursale (172.16.10.1).
+
+Un SSID de type `WIFISUCCURSALE` est configuré avec une clé WPA2‑PSK, ce qui permet à un PC portable de s’authentifier en Wi‑Fi et de recevoir automatiquement une adresse IP via le serveur DHCP déjà présent sur la succursale.
+
+Une fois connecté, le PC Wi‑Fi peut :
+- joindre le serveur web interne (172.16.10.10) comme un poste câblé ;
+- sortir sur Internet via le PAT configuré sur RSuccursale ;
+- contacter les ressources du siège via le WAN et, le cas échéant, le VPN IPsec existant.
+
+<img width="660" height="321" alt="conf_AP_Wifi" src="https://github.com/user-attachments/assets/a407aafa-bbc7-4088-ab90-76e9a271a270" />
+
+<BVR><BVR>
+
+<img width="574" height="336" alt="connexion_pc_wifi" src="https://github.com/user-attachments/assets/0eec7e9b-c666-4898-83aa-06a14bde6d02" />
+
+<BVR><BVR>
+
+<img width="570" height="422" alt="connexion_pc_wifi2" src="https://github.com/user-attachments/assets/4ea4b117-2e6b-41b3-a15e-6c0056fcd377" />
+
+<BVR><BVR>
+
+#### VLAN 50 de gestion et accès SSH
+
+Un VLAN dédié (VLAN 50) a été créé pour le trafic de gestion des équipements réseau. Les interfaces de management des switches et routeurs sont placées dans ce VLAN, qui dispose de sa propre interface logique (SVI) et d’un pool DHCP, ce qui permet aux postes d’administration d’obtenir automatiquement une configuration IP et de se connecter en SSH aux équipements sans passer par les VLAN utilisateurs.​
+
+- Sur le switch L2-2, par exemple, l’interface de management est configurée dans le VLAN 50 :
+
+```
+interface Vlan50
+ ip address 192.168.50.11 255.255.255.0
+ no shutdown
+```
+
+<img width="667" height="344" alt="conf_pool_dhcp_vlan50_gestion" src="https://github.com/user-attachments/assets/57aa39ee-4d33-4586-964f-a894fd4a014f" />
+
+<BVR><BVR>
+
+- Depuis le PC d’administration du VLAN 50, deux modes de connexion SSH sont possibles :
+
+  - En mode graphique (client SSH intégré de Packet Tracer) en saisissant directement l’adresse IP de management de l’équipement (par exemple 192.168.50.11) et le compte jiji.
+
+<BVR><BVR>
+
+<img width="670" height="248" alt="connexion_ssh_gui" src="https://github.com/user-attachments/assets/3932003d-f45a-48ae-ba26-7102e4bd4509" />
+
+<BVR><BVR>
+
+<img width="652" height="480" alt="connexion_ssh_gui2" src="https://github.com/user-attachments/assets/5a19e1a8-a141-4066-b0b1-854c40675660" />
+
+<BVR><BVR>
+
+  - En mode CLI depuis le prompt du PC, avec la commande :
+
+```
+PC-Admin> ssh -l jiji 192.168.50.11
+```
+
+- Une fois connecté, la commande suivante permet de vérifier la session distante active :
+
+```
+L2-2#show users
+    Line       User       Host(s)              Idle       Location
+*   2 vty 0    jiji       idle                 00:00:00
+```
+
+<BVR><BVR>
+
+<img width="565" height="562" alt="connexion_ssh_cli" src="https://github.com/user-attachments/assets/ce65eb2e-ad66-407c-bf60-43691cb2b896" />
+
+<BVR><BVR>
+
+- Les captures d’écran montrent à la fois la connexion SSH côté PC (GUI et CLI) et les sorties show users / show running-config interface Vlan50 côté switch, ce qui illustre le fonctionnement complet de l’accès distant sécurisé au réseau de gestion.
+
+​
 Chaque fichier contient :
 
 - Les extraits de configuration IOS.
