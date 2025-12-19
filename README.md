@@ -1,24 +1,36 @@
 # TP Réseau – Siège, Succursale et Site Home
 
+text
 ## Sommaire
 
 - [Présentation générale](#présentation-générale)
 - [Objectifs pédagogiques](#objectifs-pédagogiques)
 - [Topologie et adressage (résumé)](#topologie-et-adressage-résumé)
 - [Contenu du dépôt](#contenu-du-dépôt)
-- [Infrastructure LAN du siège](#2-infrastructure-lan-du-siège-social)
-  - [VTP](#vtp-vlan-trunking-protocol)
-  - [VLAN](#vlan-virtual-local-area-network)
-  - [Ports access et trunks](#configuration-des-interfaces-en-mode-access-ou-trunk)
-  - [EtherChannel](#etherchannel-entre-switches-l2-et-l3-agrégation-de-liens)
-  - [STP](#spanning-tree-protocol-stp)
-  - [Routage inter-VLAN](#routage-inter-vlan)
-  - [HSRP / FHRP](#fhrp-first-hop-redundancy-protocolpasserelle-par-défaut-redondante)
-  - [DHCP et ip helper-address](#serveur-dhcp-central-et-ip-helper-address)
-  - [Téléphonie IP / TFTP / CME](#téléphonie-ip-et-rôle-du-serveur-tftp)
-  - [OSPF au siège](#routage-ospf-open-shortest-path-first)
-  - [NAT/PAT](#natnetwork-address-translation-et-patport-address-translation-pour-laccès-internet)
-- [WAN, succursale et VPN](#à-compléter-plus-tard)
+
+- [01 – Infrastructure LAN du siège](#01--infrastructure-lan-du-siège--vlan-vtp-trunks-etherchannel-stp-routage-inter-vlan-hsrp-dhcp-téléphonie-ip-ospf-et-nat)
+  - [Objectif de cette partie](#1-objectif-de-cette-partie)
+  - [Infrastructure LAN du siège social](#2-infrastructure-lan-du-siège-social)
+    - [VTP (Vlan Trunking Protocol)](#vtp-vlan-trunking-protocol)
+    - [VLAN (Virtual Local Area Network)](#vlan-virtual-local-area-network)
+    - [Configuration des interfaces ACCESS / TRUNK](#configuration-des-interfaces-en-mode-access-ou-trunk)
+    - [EtherChannel](#etherchannel-entre-switches-l2-et-l3-agrégation-de-liens)
+    - [Spanning Tree Protocol (STP)](#spanning-tree-protocol-stp)
+    - [Routage inter-VLAN](#routage-inter-vlan)
+    - [FHRP / HSRP](#fhrp-first-hop-redundancy-protocolpasserelle-par-défaut-redondante)
+    - [Serveur DHCP central et ip helper-address](#serveur-dhcp-central-et-ip-helper-address)
+    - [Téléphonie IP / TFTP / CME](#téléphonie-ip-et-rôle-du-serveur-tftp)
+    - [Routage OSPF au siège](#routage-ospf-open-shortest-path-first)
+    - [NAT/PAT pour l’accès Internet](#natnetwork-address-translation-et-patport-address-translation-pour-laccès-internet)
+    - [Routage statique et routes par défaut sur le WAN](#routage-statique-et-routes-par-défaut-sur-le-wan)
+    - [Succursale : serveur web et DNS](#succursale--serveur-web-dns)
+
+- [VPN IPsec site-à-site](#vpn-ipsec-site-à-site--étapes-de-création-du-tunnel)
+  - [Phase 1 – IKE / ISAKMP](#1-phase-1--ike--isakmp-tunnel-de-contrôle)
+  - [Phase 2 – IPsec / ESP](#2-phase-2--ipsec--esp-tunnel-de-données)
+  - [Transport des données dans le tunnel](#3-transport-des-données-dans-le-tunnel)
+  - [Exemple de configuration du VPN IPsec](#exemple-de-configuration-minimale-du-vpn-ipsec)
+  - [Attention NAT / NONAT et VPN](#attention-nat--nonat-et-vpn-ipsec)
 
 
 ---
