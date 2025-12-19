@@ -1,7 +1,10 @@
 # Infrastructure réseau d’entreprise haute disponibilité et sécurisée avec Cisco Packet Tracer 
 
+<BVR><BVR>
+
 <img width="1880" height="722" alt="Topo_Res" src="https://github.com/user-attachments/assets/917ca783-8e43-4ebf-bd8b-e50f021fab82" />
 
+<BVR><BVR>
 
 ## Sommaire
 
@@ -38,6 +41,8 @@
 - [Succursale : ajout d’un accès Wi‑Fi](#succursale--ajout-dun-accès-wi-fi)
 
 - [VLAN 50 de gestion et accès SSH](#vlan-50-de-gestion-et-accès-ssh)
+
+- [Annexes : observation des flux en mode Simulation](#annexes--observation-des-flux-en-mode-simulation)
 
 ---
 
@@ -830,9 +835,33 @@ L2-2#show users
 
 - Les captures d’écran montrent à la fois la connexion SSH côté PC (GUI et CLI) et les sorties show users / show running-config interface Vlan50 côté switch, ce qui illustre le fonctionnement complet de l’accès distant sécurisé au réseau de gestion.
 
-​
-Chaque fichier contient :
+#### Annexes : observation des flux en mode Simulation
 
-- Les extraits de configuration IOS.
-- Une explication ligne par ligne des commandes importantes.
-- Les commandes de vérification à lancer (ping, `show ip route`, `show standby`, `show crypto ...`, etc.)
+- Une courte vidéo illustre, en mode Simulation de Packet Tracer, le parcours de paquets ICMP dans le réseau à travers le VPN IPsec site-à-site :
+  - Un ping depuis le site Home vers un PC du siège.
+  - Un ping depuis la succursale vers un autre PC du siège.
+
+  Cette démonstration permet de visualiser le chemin complet des paquets dans le tunnel IPsec et de vérifier à la fois le routage, la traduction d’adresses et le bon fonctionnement du VPN.
+
+  📹 Démonstration vidéo ICMP/VPN :
+
+  https://github.com/user-attachments/assets/391f016a-528b-41f6-9dc2-7a29adb8a66e
+
+- Une seconde vidéo montre l’accès HTTP au serveur web de la succursale depuis le site Home :
+  - Le client HTTP du site Home envoie une requête vers l’adresse publique du serveur web.
+  - Le routeur de la succursale applique la traduction d’adresses (NAT) pour joindre le serveur web interne, qui renvoie ensuite la page au client.
+
+  Cette vidéo permet d’observer le fonctionnement conjoint du routage, du NAT et du service HTTP à travers l’architecture inter-sites.
+
+  📹 Démonstration vidéo HTTP/NAT :
+
+   https://github.com/user-attachments/assets/0905c0b1-eba2-42c4-859d-392d7d185775
+
+- Une troisième vidéo illustre la partie téléphonie IP : un appel entre deux téléphones IP enregistrés sur Cisco CME (CallManager Express). Elle montre l’établissement de l’appel, la sonnerie sur le téléphone distant puis la communication entre les deux postes.
+
+  📹 Démonstration vidéo VoIP :
+
+  https://github.com/user-attachments/assets/77cfa87b-865c-43d2-a699-e60477bd0940
+
+
+
