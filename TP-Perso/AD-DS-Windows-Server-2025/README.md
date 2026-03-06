@@ -3,6 +3,7 @@
 Ce guide décrit l’installation d’un contrôleur de domaine Active Directory (AD DS) et du rôle DNS sur Windows Server 2025, ainsi que la mise en place de partages de fichiers sécurisés basés sur des groupes.  
 Il est pensé pour un **lab pédagogique** reproduisant une petite infrastructure d’entreprise.
 
+> 📄 Fiche synthèse : [AD DS – Installation et configuration](Fiche-AD-DS-Installation-et-Conf-Windows-Server-2025.md)
 ---
 
 ## Sommaire
