@@ -5,6 +5,26 @@ Il est pensé pour un **lab pédagogique** reproduisant une petite infrastructur
 
 ---
 
+## Sommaire
+
+- [1. Prérequis du lab](#1-prérequis-du-lab)
+- [2. Rappels sur Active Directory](#2-rappels-sur-active-directory)
+- [3. Pré‑requis techniques sur le serveur](#3-pré‑requis-techniques-sur-le-serveur)
+- [4. Préparation du serveur](#4-préparation-du-serveur)
+- [5. Installation des rôles AD DS et DNS](#5-installation-des-rôles-ad-ds-et-dns)
+- [6. Promotion en contrôleur de domaine](#6-promotion-en-contrôleur-de-domaine)
+- [7. Outils d’administration AD](#7-outils-dadministration-ad)
+- [8. Création d’une structure d’OU](#8-création-dune-structure-dou)
+- [9. Création d’utilisateurs](#9-création-dutilisateurs)
+- [10. Préparer les partages de fichiers](#10-préparer-les-partages-de-fichiers-it--rh--direction)
+- [11. Créer les groupes AD par service](#11-créer-les-groupes-ad-par-service)
+- [12. Configurer les droits NTFS](#12-configurer-les-droits-ntfs-sur-les-dossiers)
+- [13. Créer les partages réseau](#13-créer-les-partages-réseau)
+- [14. Tester les droits depuis un poste client](#14-tester-les-droits-depuis-un-poste-client)
+- [15. Pour aller plus loin](#15-pour-aller-plus-loin)
+
+---
+
 ## 1. Prérequis du lab
 
 - 1 VM **Windows Server 2025** (ex. 2 vCPU, 4 Go de RAM, 60 Go de disque).
@@ -51,13 +71,15 @@ Active Directory (AD) est le service d’annuaire de Microsoft utilisé pour cen
 
 ## 4. Préparation du serveur
 
+![Tableau de bord Windows Server](images/tableau_bord.png)
+
 ### 4.1 Renommer le serveur
 
 1. Ouvrir **Gestionnaire de serveur** → onglet **Serveur local**.  
 2. Cliquer sur le nom de l’ordinateur → **Modifier**.  
 3. Saisir un nom explicite (ex. `DC01`) → redémarrer le serveur.
 
-*(Capture d’écran ici : fenê​tre de changement de nom du serveur)*
+![Définir le nom du serveur](images/definir_nom_server.png)
 
 ### 4.2 Configurer l’IP statique
 
@@ -69,7 +91,7 @@ Active Directory (AD) est le service d’annuaire de Microsoft utilisé pour cen
    - Passerelle  
    - DNS (lui‑même ou futur DC/DNS).
 
-*(Capture d’écran ici : configuration IPv4 avec IP fixe et DNS)*
+![Définir une IP fixe](images/definir_IP_fixe_server.png)
 
 ---
 
@@ -85,7 +107,13 @@ Active Directory (AD) est le service d’annuaire de Microsoft utilisé pour cen
 5. Passer les écrans de confirmation → cliquer sur **Installer**.  
 6. Redémarrer le serveur après installation.
 
-*(Captures d’écran ici : sélection des rôles AD DS et DNS, résumé avant installation)*
+![Sélection des rôles AD DS et DNS](images/installation_services_AD_DNS.png)
+
+![Résumé installation des rôles](images/installation_services_AD_DNS2.png)
+
+![Installation des rôles en cours](images/install_role_OK.png)
+
+![Installation terminée](images/install_OK.png)
 
 ---
 
@@ -101,7 +129,15 @@ Active Directory (AD) est le service d’annuaire de Microsoft utilisé pour cen
 5. Lancer la vérification des prérequis → **Installer**.  
 6. Le serveur redémarre automatiquement → il devient **DC + DNS** pour la nouvelle forêt.
 
-*(Captures d’écran ici : choix du nom de domaine, options de niveau fonctionnel, résumé des prérequis)*
+![Créer une nouvelle forêt](images/creation_new_foret.png)
+
+![Configuration du domaine](images/creation_foret_config_domaine.png)
+
+![Options supplémentaires de la forêt](images/creation_new_foret2.png)
+
+![Vérification des prérequis](images/creation_new_foret3.png)
+
+![Résumé avant promotion](images/creation_new_foret4.png)
 
 ---
 
@@ -123,9 +159,34 @@ Après promotion, dans **Gestionnaire de serveur** → **Outils**, on trouve not
 
 ---
 
-## 8. Préparer les partages de fichiers (IT / RH / Direction)
+## 8. Création d’une structure d’OU
 
-### 8.1 Arborescence des dossiers sur le serveur
+J’ai créé une structure d’unités d’organisation (OU) pour organiser les objets Active Directory par service (IT, RH, Direction).  
+Cette structure servira ensuite à appliquer des GPO ciblées et à mieux gérer les droits.
+
+![Création d'une OU](images/creation_OU(unite_organisation).png)
+
+![OU créée dans la console](images/creation_OU(unite_organisation)2.png)
+
+---
+
+## 9. Création d’utilisateurs
+
+Pour peupler l’annuaire, je crée des comptes utilisateurs qui seront ensuite ajoutés dans les groupes par service.
+
+![Création d'un nouvel utilisateur](images/creation_new_user.png)
+
+![Assistant nouvel utilisateur](images/creation_new_user2.png)
+
+![Définition du mot de passe](images/creation_new_user3.png)
+
+![Utilisateur créé](images/creation_new_user4.png)
+
+---
+
+## 10. Préparer les partages de fichiers (IT / RH / Direction)
+
+### 10.1 Arborescence des dossiers sur le serveur
 
 Sur le serveur de fichiers (ou ton DC pour le lab) :
 
@@ -136,9 +197,11 @@ Sur le serveur de fichiers (ou ton DC pour le lab) :
   - `C:\Partages\RH`  
   - `C:\Partages\DIRECTION`
 
+![Création des dossiers de partage](images/Creation_dossier_partages.png)
+
 ---
 
-## 9. Créer les groupes AD par service
+## 11. Créer les groupes AD par service
 
 Dans **Utilisateurs et ordinateurs Active Directory** :
 
@@ -158,11 +221,21 @@ Dans **Utilisateurs et ordinateurs Active Directory** :
 
 Ces groupes serviront à donner les droits sur les dossiers (NTFS) et éventuellement à filtrer des GPO.
 
+![Création d'un groupe](images/Creation_Groupe.png)
+
+![Détails du groupe](images/Creation_Groupe2.png)
+
+![Ajout de membres dans le groupe](images/ajout_membre_groupe.png)
+
+![Ajout d'autres membres](images/ajout_membre_groupe2.png)
+
+![Vue finale des membres](images/ajout_membre_groupe3.png)
+
 ---
 
-## 10. Configurer les droits NTFS sur les dossiers
+## 12. Configurer les droits NTFS sur les dossiers
 
-### 10.1 Désactiver l’héritage
+### 12.1 Désactiver l’héritage
 
 Pour chaque dossier de service, par exemple `C:\Partages\IT` :
 
@@ -181,13 +254,19 @@ Ensuite, dans la liste :
   - `Utilisateurs` / `Users`  
   - Comptes utilisateurs individuels (ex. `jiji`), pour ne garder que des groupes dans les ACL.
 
-### 10.2 Ajouter les groupes AD
+![Nettoyage des ACL (users inutiles)](images/enlever_user_inutiles.png)
+
+### 12.2 Ajouter les groupes AD
 
 Toujours sur `C:\Partages\IT` :
 
 1. Onglet **Sécurité** → **Modifier** → **Ajouter**.  
 2. Ajouter le groupe `GG-IT`.  
 3. Lui donner le droit **Modification** (lecture/écriture/suppression).
+
+![Ajout du groupe dans les droits NTFS](images/ajout_groupe_droit_ntfs_dossier_partages.png)
+
+![Droits NTFS appliqués](images/ajout_groupe_droit_ntfs_dossier_partages2.png)
 
 Répéter pour les autres dossiers :
 
@@ -201,7 +280,7 @@ Répéter pour les autres dossiers :
 
 ---
 
-## 11. Créer les partages réseau
+## 13. Créer les partages réseau
 
 Sur le serveur, par exemple pour `C:\Partages\IT` :
 
@@ -225,11 +304,11 @@ Répéter :
 
 ---
 
-## 12. Tester les droits depuis un poste client
+## 14. Tester les droits depuis un poste client
 
 Depuis un PC joint au domaine :
 
-### 12.1 Test d’accès pour un user autorisé
+### 14.1 Test d’accès pour un user autorisé
 
 1. Se connecter avec un user membre de `GG-IT` (ex. `user.it1`).  
 2. Ouvrir l’explorateur → dans la barre d’adresse :  
@@ -239,7 +318,7 @@ Depuis un PC joint au domaine :
    - On peut créer un fichier (Nouveau → Document texte).  
    - On peut modifier et supprimer ce fichier.
 
-### 12.2 Test de blocage pour un user non autorisé
+### 14.2 Test de blocage pour un user non autorisé
 
 1. Se connecter avec un user qui **n’est pas** dans `GG-IT` (par ex. user RH).  
 2. Essayer `\\NOM_DU_SERVEUR\IT`.  
@@ -250,8 +329,7 @@ Ce double test valide que la gestion par **groupes AD + NTFS** fonctionne comme 
 
 ---
 
-## 13. Pistes d’amélioration
+## 15. Pour aller plus loin
 
-- Ajouter une structure d’OU (par site / par service / par type d’objet).  
 - Mettre en place des GPO (sécurité, configuration des postes, scripts de connexion).  
 - Ajouter un deuxième DC pour la redondance du service AD DS.
