@@ -1,53 +1,89 @@
-# TP – Installation de GLPI 11 sur Debian
+# Installation de GLPI 11 sur Debian
 
-## 0. Vérification de l’intégrité des ISO (hash)
+Ce guide décrit l’installation de GLPI 11 sur une VM Debian (serveur web Apache, PHP‑FPM et base MariaDB), ainsi que la mise en place de la configuration minimale pour accéder à l’interface web et commencer à gérer le parc informatique.
+
+Il est pensé pour un lab pédagogique reproduisant une petite infrastructure d’entreprise (gestion de parc, tickets, demandes utilisateurs).
+
+📄 Fiche synthèse : [GLPI – Installation et configuration](./GLPI_installation_detaillee.md)
+
+
+# TP – Déploiement de GLPI 11 sur Debian
+
+## 1. Contexte
+
+Dans le cadre de ma formation en administration systèmes et réseaux, ce TP a pour objectif de déployer une solution de gestion de parc et de helpdesk basée sur GLPI 11 sur une distribution Debian récente.  
+GLPI servira d’**application centrale de gestion du parc et des tickets** (inventaire des postes, suivi des pannes et des demandes utilisateurs).
+
+> La fiche technique d’installation détaillée (commandes pas à pas + captures d’écran) est disponible dans le fichier :  
+> **`GLPI_installation_detaillee.md`**.
+
+---
+
+## 2. Objectifs pédagogiques
+
+- Installer et configurer un **serveur web complet** (Apache, PHP‑FPM, MariaDB – souvent appelé “stack LAMP”) adapté à GLPI 11.  
+- Déployer GLPI de manière **sécurisée** (DocumentRoot sur `glpi/public`, droits fichiers, suppression du dossier `install`).  
+- Mettre en place un **VirtualHost Apache** dédié à GLPI avec PHP‑FPM.  
+- Configurer la base de données MariaDB pour GLPI (base, utilisateur, droits).  
+- Finaliser l’installation via l’interface web et vérifier l’accès à l’application.
+
+---
+
+## 3. Prérequis
+
+### 3.1. Matériel / VM
+
+- 1 VM Debian 13 (ou Debian 12), 2 vCPU, 2–4 Go de RAM, 20 Go de disque.  
+- Accès réseau (IP fixe ou réservation DHCP) et accès Internet pour télécharger les paquets.  
+- Poste client sur le même réseau (navigateur web + client SSH).
+
+### 3.2. Logiciel / Compétences
+
+- Savoir utiliser le terminal Linux (sudo, apt, systemctl).  
+- Notions de base sur les services **Apache**, **PHP**, **MariaDB/MySQL**.  
+- Connaissances de base en **réseau** (adressage IP, ping, SSH).
+
+---
+
+## 4. Sommaire
+
+1. Vérification de l’intégrité des ISO (hash)  
+2. Préparation : utilisateur sudo et SSH  
+3. Installation des paquets nécessaires (LAMP + PHP‑FPM)  
+4. Préparation de la base de données MariaDB  
+5. Téléchargement et installation de GLPI  
+6. Configuration d’Apache et de PHP‑FPM (VirtualHost GLPI)  
+7. Installation de GLPI via l’interface web  
+8. Sécurisation rapide de l’instance  
+
+Les commandes détaillées et captures d’écran sont regroupées dans :  
+**`GLPI_installation_detaillee.md`**.
+
+---
+
+## 5. Étapes de réalisation (vue synthétique)
+
+### 5.1. Vérification de l’intégrité des ISO (hash)
 
 Objectif : vérifier l’authenticité des ISO utilisées (Debian, Windows Server) avant installation.
 
-Vérification de l’ISO Debian :
-
 ![Vérification du hash ISO Debian](images/verif_hash_iso_debian_13-1-0.png)  
 ![Hash attendu ISO Debian](images/hash_iso_debian_13-1-0.png)  
-
-Vérification de l’ISO Windows Server :
 
 ![Vérification du hash ISO Windows Server](images/verif_hash_iso_WindServer25.png)  
 ![Hash attendu ISO Windows Server](images/hash_iso_26100.32230.260111-0550.lt_release_svc_refresh_SERVER_EVAL_x64FRE_fr-fr.iso.png)  
 
 ---
 
-## 1. Préparation : utilisateur sudo et SSH
+### 5.2. Préparation : utilisateur sudo et SSH
 
 Objectif : ne pas travailler en root et pouvoir administrer la VM à distance.
 
-Installer sudo (si nécessaire) :
+Principales actions :
 
-```bash
-su -
-apt install sudo -y
-```
-
-Ajouter ton utilisateur au groupe sudo :
-
-```bash
-usermod -aG sudo tonuser
-```
-
-Installer et activer le serveur SSH :
-
-```bash
-apt update
-apt install openssh-server -y
-systemctl enable ssh
-systemctl start ssh
-```
-
-Vérifier depuis ton user :
-
-```bash
-su - tonuser
-sudo whoami   # doit retourner : root
-```
+- Installation de `sudo` et ajout de l’utilisateur au groupe `sudo`.  
+- Installation et activation du serveur SSH (`openssh-server`).  
+- Vérification de l’accès SSH et des droits sudo.
 
 ![Donner les droits sudo et installer OpenSSH](images/donne_droit_user_installation_oppenssh.png)  
 ![Connexion SSH depuis le PC hôte](images/connexion_ssh_depuis_pc_hote.png)  
@@ -55,178 +91,70 @@ sudo whoami   # doit retourner : root
 
 ---
 
-## 2. Installation des paquets nécessaires (LAMP + PHP-FPM)
+### 5.3. Installation des paquets nécessaires (LAMP + PHP-FPM)
 
 Objectif : installer le serveur web Apache, la base MariaDB, PHP, PHP‑FPM et les extensions utiles à GLPI.
 
-Mettre à jour le système :
-
-```bash
-sudo apt update && sudo apt upgrade -y
-```
+- Mise à jour du système (`apt update && apt upgrade`).  
+- Installation d’Apache, MariaDB et PHP de base.  
+- Installation de PHP‑FPM et des modules PHP requis par GLPI.
 
 ![Mise à jour du serveur Debian](images/maj_server_debian.png)  
-
-Installer Apache, MariaDB et PHP de base :
-
-```bash
-sudo apt install apache2 mariadb-server php -y
-```
-
 ![Installation du LAMP](images/installation_LAMP.png)  
-
-Installer PHP‑FPM :
-
-```bash
-sudo apt install php-fpm -y
-```
-
-Installer les extensions PHP pour GLPI :
-
-```bash
-sudo apt install php-{mysql,mbstring,curl,gd,xml,intl,ldap,apcu,xmlrpc,zip,bz2,bcmath} -y
-```
-
 ![Installation des dépendances PHP](images/installation_dependances_php.png)  
 ![Installation de la gestion des processus PHP (PHP-FPM)](images/installation_gestio_processus_php.png)  
 
 ---
 
-## 3. Préparation de la base de données
+### 5.4. Préparation de la base de données
 
 Objectif : créer une base dédiée à GLPI + un utilisateur SQL avec les droits dessus.
 
-Se connecter à MariaDB :
-
-```bash
-sudo mariadb
-```
-
-Créer la base de données :
-
-```sql
-create database glpi_npt;
-```
-
-Créer un utilisateur SQL et lui donner tous les privilèges sur cette base :
-
-```sql
-grant all privileges on glpi_npt.* to neptunet_glpi@localhost identified by "votr3-MDP";
-```
-
-Quitter MariaDB :
-
-```sql
-exit;
-```
+- Création de la base `glpi_npt`.  
+- Création de l’utilisateur SQL `neptunet_glpi` avec un mot de passe dédié.  
+- Attribution de tous les privilèges sur la base GLPI.
 
 ![Création de la base et de l’utilisateur MariaDB](images/creation_base_donnée_mariadb_utilisateur_motpass.png)  
 
 ---
 
-## 4. Téléchargement et installation de GLPI
+### 5.5. Téléchargement et installation de GLPI
 
 Objectif : télécharger l’archive GLPI, la décompresser dans `/var/www/html` et mettre les bons droits.
 
-### 4.1. Téléchargement de l’archive
-
-```bash
-cd /tmp
-wget https://fossies.org/linux/misc/glpi-11.0.5.tgz
-```
+- Téléchargement de l’archive GLPI (ex. 11.0.5) dans `/tmp`.  
+- Décompression vers `/var/www/html`.  
+- Changement de propriétaire sur `/var/www/html/glpi` vers `www-data`.
 
 ![Téléchargement de la dernière version de GLPI](images/dowload_last_version_glpi.png)  
-
-### 4.2. Extraction dans la racine web
-
-```bash
-sudo tar -xvzf glpi-11.0.5.tgz -C /var/www/html
-```
-
 ![Décompression de l’archive GLPI](images/decompression_archive_glpi.png)  
-
-### 4.3. Droits sur les fichiers
-
-```bash
-sudo chown -R www-data:www-data /var/www/html/glpi
-```
-
 ![www-data propriétaire des fichiers GLPI](images/utilisateur_services_web_proprietaire_new_files.png)  
 
 ---
 
-## 5. Configuration d’Apache et de PHP‑FPM
+### 5.6. Configuration d’Apache et de PHP‑FPM (VirtualHost GLPI)
 
 Objectif : créer un VirtualHost propre pour GLPI, lier Apache à PHP‑FPM, et activer les bons modules.
 
-### 5.1. Vérifier la version PHP
-
-```bash
-php -v
-```
+- Vérification de la version PHP (`php -v`) pour identifier le socket PHP‑FPM.  
+- Création du fichier `/etc/apache2/sites-available/glpi.conf` avec `DocumentRoot /var/www/html/glpi/public`.  
+- Activation des modules nécessaires (`proxy_fcgi`, `rewrite`), de la conf PHP‑FPM et du vhost GLPI.
 
 ![Vérification de la version de PHP](images/verif_version_php.png)  
-
-### 5.2. Créer le fichier VirtualHost pour GLPI
-
-```bash
-sudo nano /etc/apache2/sites-available/glpi.conf
-```
-
-Contenu :
-
-```apache
-<VirtualHost *:80>
-    ServerName glpi_tp
-    ServerAlias 192.168.1.47
-    DocumentRoot /var/www/html/glpi/public
-
-    <Directory /var/www/html/glpi/public>
-        Options -Indexes +FollowSymLinks
-        Require all granted
-        RewriteEngine On
-        RewriteBase /
-        RewriteCond %{REQUEST_FILENAME} !-f
-        RewriteCond %{REQUEST_FILENAME} !-d
-        RewriteRule ^ index.php [QSA,L]
-    </Directory>
-
-    <FilesMatch \.php$>
-        SetHandler "proxy:unix:/run/php/php8.4-fpm.sock|fcgi://localhost"
-    </FilesMatch>
-
-    ErrorLog ${APACHE_LOG_DIR}/glpi_error.log
-    CustomLog ${APACHE_LOG_DIR}/glpi_access.log combined
-</VirtualHost>
-```
-
 ![Création du VirtualHost GLPI](images/creation_fichier_virtualhost_glpi.png)  
 ![VirtualHost GLPI dans Apache](images/virtualhost_glpi.png)  
-
-### 5.3. Activer les modules et la conf
-
-```bash
-sudo a2enmod proxy_fcgi setenvif
-sudo a2enmod rewrite
-sudo a2enconf php8.4-fpm   # adapter la version de PHP si besoin
-sudo a2dissite 000-default.conf
-sudo a2ensite glpi.conf
-sudo apachectl configtest
-sudo systemctl restart apache2
-```
-
 ![Activation des modules PHP pour Apache](images/activation_modules_php_apache.png)  
 
 ---
 
-## 6. Installation de GLPI via l’interface web
+### 5.7. Installation de GLPI via l’interface web
 
 Objectif : finaliser l’installation avec le navigateur (tests prérequis, connexion DB, création des tables).
 
-Accéder à GLPI depuis un navigateur sur le même réseau :
-
-- `http://192.168.1.47/`  
-- ou `http://glpi_tp/` si le nom a été ajouté dans le fichier hosts.
+- Accès à `http://192.168.1.47/` ou `http://glpi_tp/`.  
+- Vérification des prérequis PHP/permissions.  
+- Saisie des informations de base de données (serveur `localhost`, base `glpi_npt`, utilisateur `neptunet_glpi`).  
+- Création des tables et première connexion avec le compte `glpi/glpi`.
 
 ![Accès à l’installation GLPI (1)](images/acces_installation_glpi_GUI.png)  
 ![Accès à l’installation GLPI (2)](images/acces_installation_glpi_GUI2.png)  
@@ -236,11 +164,16 @@ Accéder à GLPI depuis un navigateur sur le même réseau :
 ![Accès à l’installation GLPI (6)](images/acces_installation_glpi_GUI6.png)  
 ![Accès à l’installation GLPI (7)](images/acces_installation_glpi_GUI7.png)  
 
-Une fois l’installation terminée, se connecter avec :
-
-- Utilisateur : `glpi`  
-- Mot de passe : `glpi`
-
 ![Connexion par défaut glpi/glpi](images/connexion_defaut_glpi_glpi.png)  
 ![Tableau de bord de GLPI](images/tableau_bord_glpi.png)  
 
+---
+
+## 6. Sécurisation rapide de l’instance
+
+Après l’installation :
+
+- Changer les mots de passe des comptes par défaut (`glpi`, `tech`, `normal`, `post-only`).  
+- Supprimer le répertoire d’installation :  
+  ```bash
+  sudo rm -rf /var/www/html/glpi/install
