@@ -3,7 +3,7 @@
 Ce guide décrit l’installation de GLPI 11 sur une VM Debian (serveur web Apache, PHP‑FPM et base MariaDB), ainsi que la mise en place de la configuration minimale pour accéder à l’interface web et commencer à gérer le parc informatique.  
 Il est pensé pour un **lab pédagogique** reproduisant une petite infrastructure d’entreprise (gestion de parc, tickets, demandes utilisateurs).
 
-> 📄 Fiche synthèse : [GLPI – Installation et configuration](Installation-&-configuration-GLPI.md)
+> 📄 Fiche synthèse : [GLPI – Installation et configuration](TP-Perso/GLPI/Installation & configuration GLPI.md)
 ---
 
 ## Sommaire
