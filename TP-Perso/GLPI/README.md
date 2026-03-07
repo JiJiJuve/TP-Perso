@@ -155,12 +155,9 @@ Après l’installation :
 - Supprimer le répertoire d’installation :  
   ```bash
   sudo rm -rf /var/www/html/glpi/install
-  ```  
-- Mettre en place des sauvegardes régulières de la base GLPI et du répertoire applicatif.
-```
+  ```
+![suppression fichier installation glpi](images/verif_supp_fichier_install_glpi.png)
 
-Ça reprend exactement la logique de ta fiche AD‑DS :  
-- Titre / intro / lien fiche synthèse  
-- Sommaire cliquable  
-- Sections numérotées avec texte + captures.  
+  
+- Mettre en place des sauvegardes régulières de la base GLPI et du répertoire applicatif.
 
