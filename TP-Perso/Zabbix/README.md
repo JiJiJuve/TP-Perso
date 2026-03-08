@@ -60,9 +60,6 @@ dpkg -i zabbix-release_latest_7.4+debian13_all.deb
 apt update
 ```
 
-(Si tu veux rester strictement sur 7.0, prends simplement le paquet `zabbix-release` Debian 13 correspondant sur la page de téléchargement Zabbix.) [zabbix](https://www.zabbix.com/download?zabbix=7.0&os_distribution=debian&os_version=12)
-
-  
 
 
 ### 3.2. Installer serveur, frontend, agent
@@ -83,7 +80,7 @@ Les paquets `zabbix-frontend-php` et `zabbix-apache-conf` ajoutent la partie int
 ### 4.1. Connexion à MariaDB
 
 ```bash
-mysql
+mysql -uroot -p
 ```
 
 
@@ -155,7 +152,7 @@ systemctl status zabbix-server
 
 On suppose qu’Apache + PHP‑FPM sont déjà opérationnels (par exemple pour GLPI).
 
-Zabbix a besoin d’un **vhost** Apache qui pointe vers `/usr/share/zabbix/ui` et applique les bons paramètres PHP. [zabbix](https://www.zabbix.com/documentation/current/en/manual/installation/frontend)
+Zabbix a besoin d’un **vhost** Apache qui pointe vers `/usr/share/zabbix/ui` et applique les bons paramètres PHP. 
 
 ### 6.1. Variante homelab (port 81)
 
