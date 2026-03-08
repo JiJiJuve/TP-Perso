@@ -27,7 +27,7 @@ Au final, on obtient :
 - une **interface web Zabbix** servie par Apache + PHP‑FPM  
 - une **base MariaDB** dédiée à Zabbix  
 
-[Installation et configuration de Zabbix 7 sur Debian](https://github.com/JiJiJuve/TP-Perso/blob/master/TP-Perso/Zabbix/Installation-configuration%20zabbix.md)
+📄 Fiche synthèse : [Installation et configuration de Zabbix 7 sur Debian](https://github.com/JiJiJuve/TP-Perso/blob/master/TP-Perso/Zabbix/Installation-configuration%20zabbix.md)
 
 ***
 
