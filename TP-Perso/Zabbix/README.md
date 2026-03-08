@@ -1,4 +1,4 @@
-Zabbix 7 sur une VM Debian (Apache + PHP‑FPM)
+# Zabbix 7 sur une VM Debian (Apache + PHP‑FPM)
 
 ## Sommaire
 
