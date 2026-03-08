@@ -1,4 +1,4 @@
-# Zabbix 7 sur une VM Debian (Apache + PHP‑FPM)
+# Zabbix 7 sur une VM Debian 13 (Apache + PHP‑FPM)
 
 ## Sommaire
 
@@ -9,16 +9,17 @@
 5. [Configuration du serveur Zabbix](#5-configuration-du-serveur-zabbix)  
 6. [Configuration Apache + PHP‑FPM pour Zabbix](#6-configuration-apache--php-fpm-pour-zabbix)  
 7. [Configuration PHP (paramètres requis)](#7-configuration-php-paramètres-requis)  
-8. [Assistant web Zabbix](#8-assistant-web-zabbix)  
+8. [Interface web Zabbix](#8-interface-web-zabbix)  
 9. [Ajustements des triggers (optionnel)](#9-optionnel-ajustements-des-triggers)  
 10. [Résultat](#10-résultat)  
 
----
+***
 
 ## 1. Objectif du TP
 
-Ajouter **Zabbix 7** sur une VM Debian où **Apache + PHP‑FPM** et **MariaDB** sont déjà installés  
-(par exemple une VM qui héberge déjà GLPI).
+Zabbix est un outil de **supervision** qui permet de surveiller des serveurs, machines virtuelles, services et équipements réseau (CPU, RAM, disque, ping, services, etc.) depuis une interface web centralisée. 
+
+Objectif de ce TP : ajouter **Zabbix 7** sur une VM Debian 13 où **Apache + PHP‑FPM** et **MariaDB** sont déjà installés (par exemple une VM qui héberge déjà GLPI).
 
 Au final, on obtient :
 
@@ -26,11 +27,13 @@ Au final, on obtient :
 - une **interface web Zabbix** servie par Apache + PHP‑FPM  
 - une **base MariaDB** dédiée à Zabbix  
 
----
+[Installation et configuration de Zabbix 7 sur Debian](https://github.com/JiJiJuve/TP-Perso/blob/master/TP-Perso/Zabbix/Installation-configuration%20zabbix.md)
+
+***
 
 ## 2. Prérequis
 
-- VM Debian 12/13 à jour  
+- VM Debian 13 à jour  
 - Apache + PHP‑FPM déjà fonctionnels (ex : pour GLPI)  
 - MariaDB/MySQL installé et démarré  
 
@@ -42,22 +45,25 @@ systemctl status php8.4-fpm
 systemctl status mariadb
 ```
 
----
+***
 
 ## 3. Installation des paquets Zabbix
 
 ### 3.1. Ajouter le dépôt Zabbix
 
-Exemple Debian 12 (adapter la commande selon la version depuis le site Zabbix) [web:124][web:160] :
+Exemple Debian 13 (commande à adapter si besoin depuis le site Zabbix) : [server-world](https://www.server-world.info/en/note?os=Debian_13&p=zabbix74&f=1)
 
 ```bash
-wget https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_7.0-2+debian12_all.deb
-dpkg -i zabbix-release_7.0-2+debian12_all.deb
+cd /tmp
+wget https://repo.zabbix.com/zabbix/7.4/release/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.4+debian13_all.deb
+dpkg -i zabbix-release_latest_7.4+debian13_all.deb
 apt update
 ```
 
-![Téléchargement paquet Zabbix](images/connexion_ssh_dowload_fichier_zabbix.png)
-![Installation dépôt Zabbix](images/installation_fichiers_zabbix_MaJ_paquets.png)
+(Si tu veux rester strictement sur 7.0, prends simplement le paquet `zabbix-release` Debian 13 correspondant sur la page de téléchargement Zabbix.) [zabbix](https://www.zabbix.com/download?zabbix=7.0&os_distribution=debian&os_version=12)
+
+  
+
 
 ### 3.2. Installer serveur, frontend, agent
 
@@ -65,12 +71,12 @@ apt update
 apt install zabbix-server-mysql zabbix-frontend-php zabbix-sql-scripts zabbix-apache-conf zabbix-agent
 ```
 
-![Installation serveur Zabbix + frontend + agent](images/installation_serveur_Zabbix_frontend_agent.png)
-![Installation serveur Zabbix + frontend + agent (suite)](images/installation_serveur_Zabbix_frontend_agent2.png)
+  
 
-Les paquets `zabbix-frontend-php` et `zabbix-apache-conf` ajoutent la partie frontend et une conf Apache de base.[web:124][web:99]
 
----
+Les paquets `zabbix-frontend-php` et `zabbix-apache-conf` ajoutent la partie interface web et une config Apache de base. [wiki.debian](https://wiki.debian.org/Zabbix)
+
+***
 
 ## 4. Base de données MariaDB pour Zabbix
 
@@ -80,7 +86,7 @@ Les paquets `zabbix-frontend-php` et `zabbix-apache-conf` ajoutent la partie fro
 mysql
 ```
 
-![Connexion MariaDB](images/connexion_MariaDB.png)
+
 
 ### 4.2. Création de la base et de l’utilisateur
 
@@ -92,12 +98,12 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-![Création DB Zabbix](images/Creation_Database.png)
-![Encodage UTF8](images/creation_DB_zabbix_encodageUTF8.png)
-![Création user Zabbix](images/Creation_user_zabbix.png)
-![Password user Zabbix](images/creation_user_password.png)
-![Droits DB user Zabbix](images/Donne_Tous_Droits_DB_user_Zabbix.png)
-![Permissions user Zabbix](images/Creation_user_zabbix_permission.png)
+  
+  
+  
+  
+  
+
 
 ### 4.3. Import du schéma Zabbix
 
@@ -105,9 +111,9 @@ EXIT;
 zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql -uzabbix -p zabbix
 ```
 
-![Import DB Zabbix](images/remplit_Zabbix.png)
 
----
+
+***
 
 ## 5. Configuration du serveur Zabbix
 
@@ -127,10 +133,10 @@ DBUser=zabbix
 DBPassword=MotDePasseZabbix!
 ```
 
-![Conf DB Zabbix server](images/conf_database_server_zabbix.png)
-![Conf DB Zabbix server (suite)](images/conf_database_server_zabbix2.png)
-![Conf DB Zabbix server (suite)](images/conf_database_server_zabbix3.png)
-![Conf de base Zabbix](images/conf_base_zabbix.png)
+  
+  
+  
+
 
 ### 5.2. Démarrage du serveur Zabbix
 
@@ -140,16 +146,16 @@ systemctl start zabbix-server
 systemctl status zabbix-server
 ```
 
-![Démarrage Zabbix](images/start_zabbix.png)
-![Activation au boot](images/start_auto_demarrage_zabbix.png)
+  
 
----
+
+***
 
 ## 6. Configuration Apache + PHP‑FPM pour Zabbix
 
 On suppose qu’Apache + PHP‑FPM sont déjà opérationnels (par exemple pour GLPI).
 
-Zabbix a besoin d’un **vhost** Apache qui pointe vers `/usr/share/zabbix/ui` et applique les bons paramètres PHP.[web:90][web:124]
+Zabbix a besoin d’un **vhost** Apache qui pointe vers `/usr/share/zabbix/ui` et applique les bons paramètres PHP. [zabbix](https://www.zabbix.com/documentation/current/en/manual/installation/frontend)
 
 ### 6.1. Variante homelab (port 81)
 
@@ -229,7 +235,7 @@ http://IP_DE_LA_VM:81
 
 ### 6.2. Variante prod (vhost sur 80 + DNS)
 
-Avec un DNS interne (AD DS / pfSense) qui pointe `zabbix.tp.lab` vers l’IP de la VM [web:135] :
+Avec un DNS interne (AD DS / pfSense) qui pointe `zabbix.tp.lab` vers l’IP de la VM : [server-world](https://www.server-world.info/en/note?os=Debian_13&p=zabbix74&f=1)
 
 ```text
 zabbix.tp.lab  A  192.168.1.47
@@ -245,11 +251,11 @@ Vhost Apache :
 </VirtualHost>
 ```
 
----
+***
 
 ## 7. Configuration PHP (paramètres requis)
 
-Zabbix vérifie plusieurs paramètres PHP lors de l’installation du frontend [web:90][web:89] :
+Zabbix vérifie plusieurs paramètres PHP lors de l’installation de l’interface web : [zabbix](https://www.zabbix.com/documentation/current/en/manual/installation/requirements)
 
 - `memory_limit` ≥ 128M (256M recommandé)  
 - `post_max_size` ≥ 16M  
@@ -262,7 +268,7 @@ Zabbix vérifie plusieurs paramètres PHP lors de l’installation du frontend [
 Tu peux :
 
 - les définir globalement dans `/etc/php/8.4/fpm/php.ini`,  
-- ou les laisser “raisonnables” globalement et les surcharger dans le vhost Zabbix avec `php_value` (comme ci‑dessus).
+- ou les laisser “raisonnables” globalement et les surcharger dans le vhost Zabbix avec `php_value` (comme ci‑dessus). [server-world](https://www.server-world.info/en/note?os=Debian_13&p=zabbix74&f=1)
 
 Après modification du `php.ini` FPM :
 
@@ -270,9 +276,9 @@ Après modification du `php.ini` FPM :
 systemctl restart php8.4-fpm
 ```
 
----
+***
 
-## 8. Assistant web Zabbix
+## 8. Interface web Zabbix
 
 Accède à l’URL de ton vhost, par exemple :
 
@@ -280,13 +286,13 @@ Accède à l’URL de ton vhost, par exemple :
 http://IP_DE_LA_VM:81
 ```
 
-Tu arrives sur l’assistant web :
+Tu arrives sur l’interface web Zabbix dans le navigateur :
 
-![Page d’accès Zabbix](images/connexion_GUI_Zabbix.png)
-![Assistant Zabbix – étape 1](images/connexion_GUI_Zabbix2.png)
-![Assistant Zabbix – étape 2](images/connexion_GUI_Zabbix3.png)
-![Assistant Zabbix – étape 3](images/connexion_GUI_Zabbix4.png)
-![Assistant Zabbix – fin installation](images/connexion_GUI_Zabbix5.png)
+  
+  
+  
+  
+
 
 Renseigne :
 
@@ -295,7 +301,7 @@ Renseigne :
 - **User** : `zabbix`  
 - **Password** : `MotDePasseZabbix!`
 
-Les prérequis PHP doivent être en vert si les `php_value` / `php.ini` sont correctement configurés.[web:90][web:89]
+Les prérequis PHP doivent être en vert si les `php_value` / `php.ini` sont correctement configurés. [zabbix](https://www.zabbix.com/documentation/current/en/manual/installation/frontend)
 
 Connexion finale :
 
@@ -303,24 +309,24 @@ Connexion finale :
 - Utilisateur : `Admin`  
 - Mot de passe : `zabbix`  
 
-![Tableau de bord Zabbix](images/tableau_bord_zabbix.png)
 
----
+
+***
 
 ## 9. (Optionnel) Ajustements des triggers
 
 Pour éviter certaines alertes dès le démarrage, tu peux désactiver temporairement des triggers ou autoriser la création de triggers personnalisés :
 
-![Désactivation de triggers](images/desactive_triggers.png)
-![Autorisation création triggers](images/Autorisation_temporaire_creation_triggers.png)
+  
 
----
+
+***
 
 ## 10. Résultat
 
 À la fin de ce TP, tu as :
 
-- un **serveur Zabbix** opérationnel sur ta VM Debian,  
+- un **serveur Zabbix** opérationnel sur ta VM Debian 13,  
 - une **interface web Zabbix** servie par Apache + PHP‑FPM,  
 - une **base MariaDB dédiée à Zabbix**,  
 - un vhost Apache propre, compatible avec d’autres applis web (GLPI, etc.).  
