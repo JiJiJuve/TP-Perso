@@ -154,7 +154,6 @@ systemctl restart php8.4-fpm
 - Si tu veux isoler Zabbix de GLPI, tu peux mettre ces valeurs uniquement dans la conf Apache de Zabbix (`php_value` dans le vhost ou `/etc/zabbix/apache.conf`).
 
 
-- C’est typiquement ici que tu avais eu des soucis : valeurs trop basses → interface web Zabbix qui se plaint.
 
 ***
 
@@ -272,7 +271,3 @@ Une fois l’installation terminée, tu peux te connecter à l’interface web Z
 - Mot de passe : `zabbix` (par défaut). 
 ***
 
-Avec cette fiche, tu as tout au même endroit pour :  
-- partir d’un serveur vierge,  
-- ou ajouter Zabbix sur un serveur où GLPI existe déjà,  
-et dans les deux cas, finir proprement dans l’interface web Zabbix dans ton navigateur.
