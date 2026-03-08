@@ -1,29 +1,105 @@
-## 2. Installation Zabbix (serveur + frontend)
+# Installation et configuration de Zabbix 7 sur Debian 
 
-### 2.1. Paquets Zabbix
+Cette fiche explique comment installer Zabbix 7 sur Debian avec Apache, PHP‑FPM et MariaDB, en s’appuyant sur la procédure officielle Zabbix pour Debian. 
 
-Suivre la procédure officielle pour Debian/Ubuntu (dépôt + paquets serveur + frontend Apache). [libra-linux](https://www.libra-linux.com/blog/15-supervision-avec-zabbix-7-0-lts-sur-debian-ubuntu)
-Exemple Debian 12 :
+https://www.zabbix.com/download
 
-```bash
-# 1) Ajouter le dépôt Zabbix (commande copiée depuis zabbix.com/download)
-wget https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_7.0-2+debian12_all.deb
-sudo dpkg -i zabbix-release_7.0-2+debian12_all.deb
-sudo apt update
+Je présente deux situations possibles :
 
-# 2) Installer serveur + frontend + agent + scripts SQL
-sudo apt install zabbix-server-mysql zabbix-frontend-php zabbix-sql-scripts zabbix-apache-conf zabbix-agent
-```
+- **Cas 1** : serveur “neuf” (Apache + PHP + MariaDB pas encore installés).  
+- **Cas 2** : serveur où **GLPI** tourne déjà (donc Apache + PHP‑FPM + MariaDB déjà OK).
 
-Les paquets `zabbix-frontend-php` et `zabbix-apache-conf` installent notamment une conf Apache type `/etc/zabbix/apache.conf` avec Alias `/zabbix` et les `php_value` recommandés. [zabbix](https://www.zabbix.com/forum/zabbix-troubleshooting-and-problems/374281-apache-config-file-not-working)
+Tu choisis le cas qui correspond à ton labo et tu suis uniquement les étapes de ce cas.
 
 ***
 
-## 3. Base de données MariaDB pour Zabbix
+## Cas 1 – Zabbix sur serveur “neuf”
+
+### 1. Prérequis
+
+- Debian installée.  
+- Accès root ou sudo.
+
+### 2. Mettre le système à jour
 
 ```bash
-sudo mysql
+apt update && apt upgrade -y
+```
 
+### 3. Installer Apache, MariaDB et PHP‑FPM
+
+```bash
+apt install apache2 mariadb-server php8.4-fpm \
+  php8.4-mysql php8.4-xml php8.4-gd php8.4-cli \
+  php8.4-curl php8.4-ldap php8.4-intl php8.4-zip \
+  php8.4-bz2 php8.4-mbstring unzip
+```
+
+### 4. Activer PHP‑FPM dans Apache
+
+```bash
+a2enmod proxy_fcgi setenvif
+a2enconf php8.4-fpm
+systemctl restart php8.4-fpm
+```
+
+Ensuite, passe **directement** à la section commune “Installation Zabbix (paquets + BDD + interface web)” plus bas.
+
+***
+
+## Cas 2 – Zabbix sur serveur où GLPI existe déjà
+
+Ici, on suppose que :  
+- Apache2 est déjà installé.  
+- PHP‑FPM est déjà configuré (GLPI tourne).  
+- MariaDB est déjà installé.
+
+Dans ce cas, on **ne refait pas** l’install Apache/PHP/MariaDB, on passe directement à l’installation de Zabbix.
+
+Ensuite, tu suis la même section commune “Installation Zabbix (paquets + BDD + interface web)”.
+
+***
+
+## Section commune – Installation Zabbix (paquets + BDD + interface web)
+
+Ces étapes sont **les mêmes** pour les deux cas ci‑dessus. 
+
+### 1. Installer les paquets Zabbix
+
+#### 1.1. Ajouter le dépôt Zabbix
+
+```bash
+cd /tmp
+wget https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_7.0-2+debian13_all.deb
+dpkg -i zabbix-release_7.0-2+debian13_all.deb
+apt update
+```
+
+#### 1.2. Installer serveur + frontend + agent
+
+```bash
+apt install zabbix-server-mysql zabbix-frontend-php zabbix-sql-scripts zabbix-apache-conf zabbix-agent
+```
+
+- `zabbix-server-mysql` : service Zabbix. 
+- `zabbix-frontend-php` : interface web Zabbix. 
+- `zabbix-sql-scripts` : scripts SQL.
+- `zabbix-apache-conf` : conf Apache de base (Alias `/zabbix`). 
+- `zabbix-agent` : agent (optionnel mais utile).
+
+***
+
+### 2. Base de données MariaDB pour Zabbix
+
+Se connecter à MariaDB :
+
+```bash
+mysql
+```
+
+Créer la base et l’utilisateur :
+
+```sql
 CREATE DATABASE zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 CREATE USER 'zabbix'@'localhost' IDENTIFIED BY 'MotDePasseZabbix!';
 GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'localhost';
@@ -31,7 +107,7 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-Importer le schéma fourni par les paquets : [libra-linux](https://www.libra-linux.com/blog/15-supervision-avec-zabbix-7-0-lts-sur-debian-ubuntu)
+Importer le schéma Zabbix :
 
 ```bash
 zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql -uzabbix -p zabbix
@@ -45,62 +121,81 @@ DBUser=zabbix
 DBPassword=MotDePasseZabbix!
 ```
 
-Puis activer le serveur :
+Activer le service :
 
 ```bash
-sudo systemctl enable zabbix-server
-sudo systemctl start zabbix-server
+systemctl enable zabbix-server
+systemctl start zabbix-server
 ```
 
 ***
 
-## 4. PHP‑FPM côté Zabbix
+### 3. Vérifier / ajuster la conf PHP‑FPM pour Zabbix
 
-Tu as déjà PHP‑FPM fonctionnel grâce à GLPI.  
-On s’assure juste que les **valeurs minimales requises par Zabbix** sont OK, soit : [zabbix](https://www.zabbix.com/documentation/current/en/manual/installation/requirements)
+Zabbix a besoin de certains paramètres PHP minimum, sinon l’interface web Zabbix dans le navigateur affiche des erreurs sur l’écran de vérification. [zabbix](https://www.zabbix.com/documentation/current/en/manual/installation/frontend)
 
-- `max_execution_time` ≥ 300  
-- `memory_limit` ≥ 128M (tu peux mettre 256M)  
-- `post_max_size` ≥ 16M  
-- `upload_max_filesize` ≥ 2M  
-- `max_input_time` ≥ 300  
-- `max_input_vars` ≥ 10000  
-- `date.timezone` défini (Europe/Paris)
+Dans `/etc/php/8.4/fpm/php.ini`, vérifier au moins :
 
-Tu peux soit :
+```ini
+memory_limit = 256M
+post_max_size = 16M
+upload_max_filesize = 2M
+max_execution_time = 300
+max_input_time = 300
+date.timezone = Europe/Paris
+```
 
-- les définir **globalement** dans `/etc/php/8.4/fpm/php.ini`,  
-- soit laisser global “raisonnable” (ce que tu as déjà pour GLPI) et mettre des `php_value` spécifiques Zabbix dans le vhost / `apache.conf` (plus propre). [support.zabbix](https://support.zabbix.com/secure/attachment/84738/zabbix-php-fpm.conf)
-
-Dans tous les cas, après modif du `php.ini` FPM :
+Puis :
 
 ```bash
-sudo systemctl restart php8.4-fpm
+systemctl restart php8.4-fpm
 ```
+
+- Si tu veux isoler Zabbix de GLPI, tu peux mettre ces valeurs uniquement dans la conf Apache de Zabbix (`php_value` dans le vhost ou `/etc/zabbix/apache.conf`).
+
+
+- C’est typiquement ici que tu avais eu des soucis : valeurs trop basses → interface web Zabbix qui se plaint.
 
 ***
 
-## 5. Vhost Apache dédié à Zabbix
+### 4. Config Apache pour le frontend Zabbix
 
-Au lieu de l’Alias `/zabbix` global, on met Zabbix dans un **vhost séparé**, comme GLPI. [geekistheway](https://geekistheway.com/2022/12/30/hardening-zabbix-server-installation-using-apache-virtualhosts-and-lets-encrypt-certificates/)
+Deux options, à toi de choisir.
 
-### 5.1. Contenu du vhost
+#### Option 1 – Utiliser l’Alias `/zabbix` (simple)
 
-Créer `/etc/apache2/sites-available/zabbix.conf` :
+La conf fournie par `zabbix-apache-conf` crée souvent un Alias `/zabbix`. 
+
+Dans ce cas, l’interface web Zabbix dans le navigateur sera accessible à l’adresse :
+
+```text
+http://IP/zabbix
+```
+
+#### Option 2 – Vhost dédié sur port 81 (comme ton TP GLPI + Zabbix)
+
+Si tu veux Zabbix séparé sur le port 81 (GLPI sur 80, Zabbix sur 81) :
+
+1. Vérifier que le port 81 est écouté dans `/etc/apache2/ports.conf` :
 
 ```apache
-<VirtualHost *:80>
-    ServerName zabbix.lab.local
+Listen 80
+Listen 81
+```
 
-    DocumentRoot /usr/share/zabbix
+2. Créer `/etc/apache2/sites-available/zabbix.conf` :
 
-    # Répertoires Zabbix
-    <Directory "/usr/share/zabbix">
+```apache
+<VirtualHost *:81>
+    ServerName zabbix_tp
+
+    DocumentRoot /usr/share/zabbix/ui
+
+    <Directory "/usr/share/zabbix/ui">
         Options FollowSymLinks
-        AllowOverride None
+        AllowOverride All
         Require all granted
 
-        # Spécifiques PHP pour Zabbix
         php_value max_execution_time 300
         php_value memory_limit 256M
         php_value post_max_size 16M
@@ -129,41 +224,55 @@ Créer `/etc/apache2/sites-available/zabbix.conf` :
     ErrorLog ${APACHE_LOG_DIR}/zabbix_error.log
     CustomLog ${APACHE_LOG_DIR}/zabbix_access.log combined
 
-    # PHP-FPM (même pool que GLPI)
     <FilesMatch \.php$>
         SetHandler "proxy:unix:/run/php/php8.4-fpm.sock|fcgi://localhost/"
     </FilesMatch>
 </VirtualHost>
 ```
 
-Les blocs `<Directory>` et `php_value` reprennent la logique des exemples Zabbix officiels : Alias ou vhost, avec les bons paramètres PHP pour que l’install frontend ne se plaigne pas. [zabbix](https://www.zabbix.com/forum/zabbix-help/40211-what-does-zabbix-do-when-the-php-max_execution_time-is-exceeded)
-
-### 5.2. Activation du vhost
+3. Activer le vhost :
 
 ```bash
-sudo a2ensite zabbix.conf
-sudo systemctl reload apache2
+a2ensite zabbix.conf
+systemctl reload apache2
 ```
 
-Assure-toi aussi que la conf globale `/etc/zabbix/apache.conf` ne crée pas de conflit (par exemple, si elle définit déjà un Alias `/zabbix`, tu peux soit la laisser, soit la désactiver si tu utilises uniquement le vhost). [zabbix](https://www.zabbix.com/forum/zabbix-troubleshooting-and-problems/374281-apache-config-file-not-working)
+L’interface web Zabbix dans le navigateur sera alors accessible à l’adresse :
+
+```text
+http://IP:81
+```
 
 ***
 
-## 6. Fin d’installation côté web
+### 5. Interface web Zabbix dans le navigateur (fin de l’installation)
 
-Depuis ton poste client (ou la VM), ouvre :
+Dans le navigateur, aller sur :
 
-```text
-http://zabbix.lab.local
-```
+- `http://IP/zabbix` (option Alias),  
+ou  
+- `http://IP:81` (option vhost).
 
-- L’installeur Zabbix vérifie les paramètres PHP (tu dois passer toutes les lignes en vert grâce aux `php_value`). [zabbix](https://www.zabbix.com/documentation/current/en/manual/installation/requirements)
-- Renseigne :
-  - DB : `zabbix`  
-  - user : `zabbix`  
-  - mot de passe : `MotDePasseZabbix!`  
-- Termine le wizard.
+Sur la page de vérification :
 
-Identifiants par défaut : `Admin` / `zabbix`. [youtube](https://www.youtube.com/watch?v=CwgpE2ZBhbw)
+- Zabbix affiche une page qui contrôle les prérequis PHP (tout doit être **vert** ou OK).
+- Si ce n’est pas le cas, revenir à la section 3 pour corriger la conf PHP.
 
+Sur les écrans suivants de l’interface web Zabbix dans le navigateur :
 
+- Indiquer les paramètres de base de données :
+  - Database name : `zabbix`  
+  - User : `zabbix`  
+  - Password : `MotDePasseZabbix!`  
+- Laisser les autres paramètres par défaut si tu ne sais pas.
+
+Une fois l’installation terminée, tu peux te connecter à l’interface web Zabbix dans le navigateur avec :
+
+- Utilisateur : `Admin`  
+- Mot de passe : `zabbix` (par défaut). 
+***
+
+Avec cette fiche, tu as tout au même endroit pour :  
+- partir d’un serveur vierge,  
+- ou ajouter Zabbix sur un serveur où GLPI existe déjà,  
+et dans les deux cas, finir proprement dans l’interface web Zabbix dans ton navigateur.
