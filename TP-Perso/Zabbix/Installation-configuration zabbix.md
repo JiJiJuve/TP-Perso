@@ -94,7 +94,7 @@ apt install zabbix-server-mysql zabbix-frontend-php zabbix-sql-scripts zabbix-ap
 Se connecter à MariaDB :
 
 ```bash
-mysql
+mysql -uroot -p
 ```
 
 Créer la base et l’utilisateur :
