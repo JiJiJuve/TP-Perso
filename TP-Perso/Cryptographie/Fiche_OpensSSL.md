@@ -1,7 +1,7 @@
 # 🗝️ FICHE MÉMO – OpenSSL (Windows / Linux)
 
-Lab initial réalisé en ligne de commande sous Linux, généralisé ensuite à Windows et Ubuntu.  
-Objectif : chiffrer/déchiffrer des fichiers et dossiers, puis comprendre RSA et le chiffrement hybride.
+
+<img width="1439" height="764" alt="TP_Chiffrement_Symetrique_OpenSSL" src="https://github.com/user-attachments/assets/46d1176e-66ad-4201-8d2a-9fcc19b87464" />
 
 ---
 
