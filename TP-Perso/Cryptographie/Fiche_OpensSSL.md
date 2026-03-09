@@ -49,7 +49,7 @@ openssl enc -e -aes-256-cbc -pbkdf2 -iter 100000 -salt -in "NomDuFichier" -out "
 - `-e` : encrypt (chiffrer)  
 - `-aes-256-cbc` : algorithme symétrique robuste  
 - `-pbkdf2 -iter 100000` : dérivation de clé renforcée (mot de passe → clé)  
-- `-salt` : ajoute un sel aléatoire pour éviter les attaques par dictionnaire [web:504][web:500]
+- `-salt` : ajoute un sel aléatoire pour éviter les attaques par dictionnaire
 
 Exemple :
 
@@ -175,7 +175,7 @@ openssl rsa -pubout -in private.pem -out public.pem
 openssl rsa -aes256 -in private.pem -out private_protected.pem
 ```
 
-On te demandera un mot de passe pour protéger la clé privée. [web:504]
+On te demandera un mot de passe pour protéger la clé privée. 
 
 ---
 
