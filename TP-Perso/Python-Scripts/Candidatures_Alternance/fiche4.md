@@ -9,12 +9,12 @@ import time
 
 
 def main():
-    # Connexion SMTP Laposte
-    server = smtplib.SMTP("smtp.laposte.net", 587)
+    # Connexion SMTP Gmail
+    server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
 
-    email = input("Ton email laposte.net : ")
-    password = input("Ton mot de passe : ")
+    email = input("Ton email Gmail : ")
+    password = input("Ton mot de passe d'application Gmail : ")
     server.login(email, password)
     print("Connecté !")
 
@@ -27,25 +27,13 @@ def main():
     for recipient in recipients:
         msg = EmailMessage()
         msg["To"] = recipient
-        msg["Subject"] = "Urgence alternance AIS – Saint-Étienne (42)"
+        msg["Subject"] = "alternance AIS – Saint-Étienne (42)"
         msg["From"] = email
 
         msg.set_content(
             """Bonjour,
 
-Actuellement en formation par alternance en Administrateur d'Infrastructures Sécurisées (AIS), débutée le 13/10/2025, je me permets de vous proposer ma candidature pour un contrat d'alternance au sein de votre entreprise.
-
-Mon entreprise a fermé définitivement le 30 novembre 2025, interrompant mon alternance. Je suis donc en recherche urgente d'un nouveau contrat afin de poursuivre ma formation dans les meilleures conditions. Basé à Saint-Étienne, je suis disponible immédiatement pour une alternance dans la Loire (42) et ses environs.
-
-Au travers de ma formation AIS, je me forme à l'administration et à la sécurisation des infrastructures systèmes et réseaux (environnements virtualisés, supervision, gestion des incidents, bonnes pratiques de cybersécurité). Motivé, sérieux et impliqué, je souhaite mettre ces compétences en pratique au service de vos projets et continuer à progresser sur des cas concrets.
-
-Pour vous permettre d'apprécier davantage mon profil technique, je vous invite à consulter mes projets personnels et professionnels :
-- GitHub : https://lnkd.in/dX8KtzaA
-- LinkedIn : https://www.linkedin.com/in/jimmypaulin/
-
-Je serais ravi d'échanger avec vous afin d'étudier la manière dont je pourrais contribuer à vos activités au sein de votre équipe informatique ou cybersécurité. Vous pouvez me contacter par mail à : jimmy.paulin@laposte.net
-
-Je vous remercie par avance pour l'attention portée à ma candidature et reste à votre disposition pour tout complément d'information ou entretien.
+blablabla...
 
 Cordialement,
 Jimmy PAULIN
@@ -110,6 +98,17 @@ if __name__ == "__main__":
 
 ---
 
+## 🔐 Préparer le compte Gmail
+
+Pour que le SMTP Gmail fonctionne, il faut :
+
+1. Activer la **validation en 2 étapes** sur ton compte Google (2‑Step Verification). [web:410][web:408]  
+2. Générer un **mot de passe d’application** (16 caractères) dans la section *Mots de passe des applications*. [web:406][web:412]  
+3. Quand Google affiche quelque chose comme `nydp hmfj rqkq ocua`, tu l’utilises **sans les espaces** : `nydphmfjrqkqocua`. [cite:397][web:408]  
+4. Dans le script, quand il demande `Ton mot de passe d'application Gmail :`, tu tapes ce mot de passe d’application (pas ton mot de passe normal). [web:387][web:406]
+
+---
+
 ## 🔧 Ligne par ligne
 
 ### Imports
@@ -120,27 +119,27 @@ from email.message import EmailMessage
 import time
 ```
 
-- `smtplib` : dialogue avec le serveur SMTP Laposte.  
+- `smtplib` : dialogue avec le serveur SMTP Gmail. [web:387]  
 - `EmailMessage` : construit un mail moderne (texte + pièces jointes).  
 - `time` : permet `time.sleep(5)` pour faire une pause entre les mails.
 
 ### Connexion SMTP
 
 ```python
-server = smtplib.SMTP("smtp.laposte.net", 587)
+server = smtplib.SMTP("smtp.gmail.com", 587)
 server.starttls()
 ```
 
-- Serveur sortant Laposte : `smtp.laposte.net`, port `587`, chiffrement STARTTLS.
+- Serveur sortant Gmail : `smtp.gmail.com`, port `587`, chiffrement TLS via STARTTLS. [web:387][web:385]
 
 ```python
-email = input("Ton email laposte.net : ")
-password = input("Ton mot de passe : ")
+email = input("Ton email Gmail : ")
+password = input("Ton mot de passe d'application Gmail : ")
 server.login(email, password)
 print("✅ Connecté !")
 ```
 
-- Demande ton adresse et ton mot de passe à l’exécution.  
+- Demande ton adresse Gmail et ton mot de passe d’application. [web:387][web:406]  
 - `login()` authentifie ta session SMTP.
 
 ### Lecture des destinataires
@@ -160,7 +159,7 @@ print(f"{len(recipients)} entreprises trouvées !")
 for recipient in recipients:
     msg = EmailMessage()
     msg["To"] = recipient
-    msg["Subject"] = "Urgence alternance AIS – Saint-Étienne (42)"
+    msg["Subject"] = "alternance AIS – Saint-Étienne (42)"
     msg["From"] = email
 ```
 
@@ -219,7 +218,7 @@ print("TOUS les mails envoyés !")
 Dans PowerShell :
 
 ```bash
-cd "C:\Ton\Dossier\Script"
+cd "C:\\Ton\\Dossier\\Script"
 python candidatures.py
 ```
 
@@ -232,8 +231,8 @@ python candidatures.py
   → Vérifier les noms exacts dans le dossier.
 
 - `smtplib.SMTPAuthenticationError`  
-  → Mauvais mot de passe ou problème côté Laposte.  
-  → Vérifier email / mdp, éventuel blocage du compte.
+  → Mauvais mot de passe d’appli ou problème côté Gmail. [web:387][web:412]  
+  → Vérifier email, mot de passe d’application, et que la 2FA est bien activée.
 
 - `smtplib.SMTPRecipientsRefused`  
   → Adresse destinataire invalide.  
