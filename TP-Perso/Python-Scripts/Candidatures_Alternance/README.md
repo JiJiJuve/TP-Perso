@@ -4,4 +4,4 @@ Ce dossier contient un script pour envoyer automatiquement le même mail de cand
 
 - `candidatures_ais.py` : script d’envoi d’emails avec pièces jointes (voir `fiche4.md` pour le mémo détaillé).
 
-Le fichier `SCRIPT CANDIDATURES AUTOMATISÉES.md` décrit le fonctionnement du script, les fichiers nécessaires et les erreurs courantes.
+Le fichier `SCRIPT_CANDIDATURES_AUTOMATISÉES.md` décrit le fonctionnement du script, les fichiers nécessaires et les erreurs courantes.
