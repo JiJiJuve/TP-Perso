@@ -1,5 +1,8 @@
 # 🔐 FICHE MÉMO – Chiffrement de fichier en AES‑GCM avec Python (PyCryptodome + scrypt)
 
+<img width="1061" height="966" alt="chiffrement symetrique gcm 10" src="https://github.com/user-attachments/assets/b69d43a8-94ff-4889-9a05-5a221905e9b1" />
+
+
 Objectif : chiffrer et déchiffrer un fichier (`monfichier.txt`) avec **AES‑256‑GCM** en Python, à partir d’un **mot de passe** dérivé en clé via **scrypt**, en utilisant deux scripts :  
 - `chiffrer-gcm.py` → création de `monfichier.txt.enc`  
 - `dechiffrer-gcm.py` → recrée le fichier en clair à partir de `monfichier.txt.enc`
@@ -93,6 +96,9 @@ Le fichier `monfichier.txt.enc` contient donc, dans cet ordre :
 ---
 
 ## 3. Script 2 – DÉCHIFFREMENT (`dechiffrer-gcm.py`)
+
+<img width="861" height="966" alt="Déchiffrement symetrique gcm 11" src="https://github.com/user-attachments/assets/0922718b-d41f-40bc-b67d-da93a10ab92a" />
+
 
 ### 3.1 Lecture des éléments depuis `monfichier.txt.enc`
 
