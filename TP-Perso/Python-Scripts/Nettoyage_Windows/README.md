@@ -4,4 +4,4 @@ Ce dossier contient un script pour supprimer automatiquement les fichiers tempor
 
 - `nettoyeur_temp.py` : script de nettoyage des dossiers temporaires (voir `fiche5.md` pour le mémo détaillé).
 
-Le fichier `fiche5.md` détaille les dossiers ciblés, la logique de suppression et les erreurs possibles.
+Le fichier `NETTOYEUR TEMP WINDOWS.md` détaille les dossiers ciblés, la logique de suppression et les erreurs possibles.
