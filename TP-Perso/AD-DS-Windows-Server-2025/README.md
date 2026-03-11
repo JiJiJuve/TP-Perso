@@ -130,9 +130,9 @@ Active Directory (AD) est le service d’annuaire de Microsoft utilisé pour cen
 5. Lancer la vérification des prérequis → **Installer**.  
 6. Le serveur redémarre automatiquement → il devient **DC + DNS** pour la nouvelle forêt.
 
-![Créer une nouvelle forêt](images/creation_new_foret.png)
-
 ![Configuration du domaine](images/creation_foret_config_domaine.png)
+
+![Créer une nouvelle forêt](images/creation_new_foret.png)
 
 ![Options supplémentaires de la forêt](images/creation_new_foret2.png)
 
