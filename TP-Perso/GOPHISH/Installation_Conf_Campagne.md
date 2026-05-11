@@ -218,6 +218,8 @@ sudo python3 -m http.server 8080 --bind 0.0.0.0
 Le paramètre `--bind 0.0.0.0` permet d’écouter sur toutes les interfaces réseau.  
 Cela rend la page accessible depuis le réseau local, et pas seulement depuis la machine Kali elle-même.
 
+Une page de sensibilisation a été hébergée localement via un serveur Python afin de rediriger l’utilisateur après interaction avec la landing page.
+
 ![Création serveur page sensibilisation](Phishing/Creation_server_heberge_page_sensibilisation_html.png)
 
 ![Lancement serveur Python](Phishing/lancement_server.png)
