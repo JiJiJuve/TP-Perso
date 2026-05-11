@@ -236,12 +236,9 @@ http://192.168.1.198:8080/sensibilisation.html
 
 Dans GoPhish, j’ai créé une landing page qui enregistre l’interaction de l’utilisateur avant de le rediriger vers la page de sensibilisation.
 
-J’ai ensuite :
-- importé le CSV des utilisateurs au format attendu par GoPhish ;
-- sélectionné le profil SMTP ;
-- sélectionné le template email ;
-- choisi la landing page ;
-- lancé d’abord un test, puis la campagne complète.
+### Import du CSV des utilisateurs
+
+J’ai importé le fichier CSV des utilisateurs dans le format attendu par GoPhish.
 
 ![Importation CSV dans Kali](Phishing/Importation_Fichier_CSV_User_AD_VM_Kali.png)
 
@@ -249,35 +246,55 @@ J’ai ensuite :
 
 ![Importation CSV réussie](Phishing/Importation_fichier_csv_userAD_dans_Gophish_OK.png)
 
-![Configuration landing page sensibilisation](Phishing/Conf_Landpage_Sensibilisation_HTML.png)
+### Configuration du profil d’envoi
 
-![Configuration landing page Outlook](Phishing/Conf_Landpage_outlook_HTML.png)
+J’ai sélectionné le profil SMTP utilisé pour l’envoi des emails de campagne.
+
+![Profil d’envoi OK](Phishing/Sending_profile_OK.png)
+
+### Création du template email
+
+J’ai configuré le template email utilisé dans la campagne.
 
 ![Template email](Phishing/new_email_template.png)
 
-![Profil d’envoi OK](Phishing/Sending_profile_OK.png)
+### Configuration de la landing page
+
+J’ai sélectionné la landing page associée à la simulation de phishing.
+
+![Configuration landing page Outlook](Phishing/Conf_Landpage_outlook_HTML.png)
+
+![Configuration landing page sensibilisation](Phishing/Conf_Landpage_Sensibilisation_HTML.png)
+
+### Test de la campagne
+
+Avant le lancement complet, j’ai effectué un test afin de vérifier le bon fonctionnement de l’ensemble.
 
 ![Configuration test campagne](Phishing/Conf_Test_Campagne_Phishing.png)
 
 ## 6. Flux utilisateur complet
 
 1. L’utilisateur reçoit l’email.
-2. Il clique sur le lien GoPhish.
-3. Il arrive sur la fausse page de connexion.
-4. GoPhish capture la saisie.
-5. L’utilisateur est redirigé vers la page de sensibilisation.
 
 ![Email reçu](Phishing/Email_Test_Campagne_Recu.png)
 
-![Email de test OK](Phishing/Email_Test_recu_OK.png)
+2. Il clique sur le lien de la campagne.
+
+3. Il arrive sur la fausse page de connexion.
 
 ![Email faux login](Phishing/Email_Test_Campagne_Fake_Login.png)
 
-![Page de login fake](Phishing/resultat_landpage_outlook_Login_Fake.png)
+4. GoPhish capture la saisie de l’utilisateur.
+
+5. L’utilisateur est redirigé vers la page de sensibilisation.
 
 ![Redirection sensibilisation](Phishing/Redirection_Sensibilisation_%20apres_Fake_Login.png)
 
+6. Depuis la page de sensibilisation, il clique sur un lien vers un site de sensibilisation officiel sur l’état de la cybersécurité.
+
 ![Redirection vers site de sensibilisation](Phishing/Redirection_Sensibilisation_Cybermalveillance_gouv_fr.png)
+
+7. La campagne se termine avec l’affichage du résultat final dans GoPhish.
 
 ![Résultat final campagne](Phishing/Resultat_Final_Test_Campagne.png)
 
@@ -311,4 +328,3 @@ Le dossier `Phishing/` contient toutes les captures utilisées pour documenter c
 - envoi des emails,
 - page de sensibilisation,
 - tableau de bord et résultats.
-```
