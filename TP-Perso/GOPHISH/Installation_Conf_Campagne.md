@@ -38,20 +38,26 @@ VirtualBox permet d’exécuter un système invité dans un environnement isolé
 Avant installation, j’ai téléchargé VirtualBox depuis le site officiel d’Oracle, puis j’ai vérifié le hash du fichier d’installation.  
 Cette vérification permet de contrôler l’intégrité du fichier et de s’assurer qu’il provient bien de la version publiée officiellement.
 
+![Hash VirtualBox](Phishing/Hash_VirtualBox.png)
+
+![Verif Hash VirtualBox](Phishing/Verif_Hash_VirtualBox.png)
+
 ### Téléchargement de l’ISO Kali
 J’ai ensuite téléchargé l’image ISO officielle de Kali Linux depuis le site officiel de Kali.  
 Le but était d’utiliser une image propre, fiable et identique à celle publiée par l’éditeur.
 
 Avant installation, j’ai vérifié le hash SHA-256 de l’ISO Kali.  
-Cette étape permet de vérifier :
-- l’intégrité du fichier, pour confirmer qu’il n’a pas été corrompu pendant le téléchargement ;
-- l’authenticité du fichier, pour confirmer qu’il correspond bien à l’image officielle.
+Cette étape permet de vérifier l’intégrité du fichier et son authenticité.
+
+![Hash ISO Kali](Phishing/Hash_ISO_Kali.png)
+
+![Verif Hash ISO Kali](Phishing/Verif_Hash_ISO_Kali.png)
 
 ### Installation
 J’ai créé une nouvelle machine virtuelle dans VirtualBox, puis j’ai monté l’ISO Kali dans le lecteur virtuel.  
 J’ai alloué suffisamment de mémoire, de processeurs et d’espace disque pour que la VM soit confortable à utiliser.
 
-J’ai ensuite lancé l’installation avec les paramètres par défaut de Kali, en gardant un bureau léger pour de meilleures performances.
+![Création VM Kali](Phishing/Creation_VM_Kali.png)
 
 ### Vérification réseau
 Une fois Kali démarré, j’ai vérifié l’adresse IP de la VM avec :
@@ -65,6 +71,21 @@ Puis j’ai testé la connectivité avec :
 ```bash
 ping 192.168.1.10
 ```
+
+![Vérification IP et ping AD](Phishing/Check_IP_Kali_Ping_AD.png)
+
+### Mise à jour des paquets Kali
+Avant de continuer, j’ai mis à jour les paquets du système afin de partir sur un environnement propre et à jour.
+
+```bash
+sudo apt update
+sudo apt upgrade -y
+sudo apt autoremove -y
+```
+
+Cette étape permet de mettre à jour la liste des paquets, d’appliquer les correctifs disponibles et de supprimer les paquets devenus inutiles.
+
+![Mise à jour des paquets Kali](Phishing/MAJ_Installation_Paquet_Remove_Vieux_Paquets.png)
 
 ## 2. Extraction des utilisateurs AD
 
@@ -81,6 +102,8 @@ Remove-Item "$env:USERPROFILE\Desktop\temp.csv"
 
 Le fichier obtenu contient les utilisateurs du domaine dans un format directement réutilisable dans GoPhish.
 
+![Exportation liste utilisateurs AD](Phishing/Exportation_Liste_User_Email_AD.PNG)
+
 ## 3. Installation et configuration de GoPhish
 
 J’ai téléchargé et décompressé la version Linux de GoPhish dans `/opt`.
@@ -94,9 +117,55 @@ sudo chmod +x gophish
 sudo ./gophish
 ```
 
-### Configuration réseau
+![Téléchargement et décompression GoPhish](Phishing/dowload_gophish_zip_decompresse.png)
 
-J’ai modifié `config.json` pour exposer les services sur le réseau local.
+![Rendre GoPhish exécutable](Phishing/Check_gophish_rendre_Executable_lancer_gophish.png)
+
+### Premier lancement de GoPhish
+J’ai lancé GoPhish pour la première fois afin de récupérer les identifiants initiaux de l’interface d’administration.
+
+```bash
+sudo ./gophish
+```
+
+GoPhish affiche alors les informations de connexion de départ.  
+J’ai ensuite modifié le mot de passe administrateur pour sécuriser l’accès à l’interface.
+
+![Premier lancement GoPhish](Phishing/Prmeiere_login_Gophish.png)
+
+![Premier lancement GoPhish](Phishing/premier_lancement_Gophish.png)
+
+![Réinitialisation du mot de passe GoPhish](Phishing/Réinitialisation_Login_Gophish.png)
+
+### Configuration du compte Gmail pour l’envoi des emails
+Avant de configurer le profil SMTP dans GoPhish, j’ai préparé un compte Gmail dédié à l’envoi des emails de campagne.
+
+#### Activation de la vérification en deux étapes
+J’ai d’abord activé la vérification en deux étapes sur le compte Gmail afin de sécuriser l’accès et de pouvoir générer un mot de passe d’application.
+
+![Activation 2FA Gmail](Phishing/Activation_2FA_Gmail.png)
+
+#### Génération du mot de passe d’application
+Une fois la vérification en deux étapes activée, j’ai créé un mot de passe d’application spécifique pour GoPhish.
+
+J’ai donné un nom explicite à l’application pour identifier facilement ce mot de passe dans la configuration Gmail.
+
+![Nom de l’application GoPhish](Phishing/nom_appli_Gophish.png)
+
+Gmail a ensuite généré un mot de passe d’application que j’ai utilisé dans la configuration SMTP de GoPhish.
+
+![Mot de passe application GoPhish Gmail](Phishing/password_appli_Gophish_Gmail.png)
+
+### Configuration réseau
+J’ai modifié le fichier `config.json` afin d’adapter GoPhish à mon environnement réseau local.
+
+Plus précisément, j’ai :
+- changé l’adresse d’écoute de l’interface d’administration en `0.0.0.0:3333` pour pouvoir y accéder depuis le réseau local ;
+- conservé l’interface d’administration en TLS afin de sécuriser l’accès ;
+- configuré le serveur de phishing sur `0.0.0.0:80` pour qu’il soit accessible depuis les postes cibles ;
+- conservé la base de données en SQLite avec le chemin par défaut de GoPhish.
+
+Le fichier de configuration utilisé est le suivant :
 
 ```json
 {
@@ -116,12 +185,14 @@ J’ai modifié `config.json` pour exposer les services sur le réseau local.
 }
 ```
 
-Ensuite, j’ai redémarré GoPhish et vérifié que les ports 3333 et 80 étaient bien en écoute.
+Après cette modification, j’ai redémarré GoPhish puis vérifié que les ports 3333 et 80 étaient bien en écoute.
 
 ```bash
 sudo systemctl restart gophish
 sudo netstat -tlnp | grep -E "3333|80"
 ```
+
+![Tableau de bord GoPhish](Phishing/Dashboard_Gophish.png)
 
 ## 4. Serveur Python et page de sensibilisation
 
@@ -134,6 +205,12 @@ sudo python3 -m http.server 8080 --bind 0.0.0.0
 
 Le paramètre `--bind 0.0.0.0` permet d’écouter sur toutes les interfaces réseau.  
 Cela rend la page accessible depuis le réseau local, et pas seulement depuis la machine Kali elle-même.
+
+![Création serveur page sensibilisation](Phishing/Creation_server_heberge_page_sensibilisation_html.png)
+
+![Lancement serveur Python](Phishing/lancement_server.png)
+
+![Extraction fichier sensibilisation](Phishing/extrait_fichier_sensibilisation_html.png)
 
 L’URL utilisée pour la page de sensibilisation est la suivante :
 
@@ -152,6 +229,22 @@ J’ai ensuite :
 - choisi la landing page,
 - lancé d’abord un test, puis la campagne complète.
 
+![Importation CSV dans Kali](Phishing/Importation_Fichier_CSV_User_AD_VM_Kali.png)
+
+![Importation du CSV dans GoPhish](Phishing/Importation_fichier_csv_userAD_dans_Gophish.png)
+
+![Importation CSV réussie](Phishing/Importation_fichier_csv_userAD_dans_Gophish_OK.png)
+
+![Configuration landing page sensibilisation](Phishing/Conf_Landpage_Sensibilisation_HTML.png)
+
+![Configuration landing page Outlook](Phishing/Conf_Landpage_outlook_HTML.png)
+
+![Template email](Phishing/new_email_template.png)
+
+![Profil d’envoi OK](Phishing/Sending_profile_OK.png)
+
+![Configuration test campagne](Phishing/Conf_Test_Campagne_Phishing.png)
+
 ## 6. Flux utilisateur complet
 
 1. L’utilisateur reçoit l’email.
@@ -159,6 +252,20 @@ J’ai ensuite :
 3. Il arrive sur la fausse page de connexion.
 4. GoPhish capture la saisie.
 5. L’utilisateur est redirigé vers la page de sensibilisation.
+
+![Email reçu](Phishing/Email_Test_Campagne_Recu.png)
+
+![Email de test OK](Phishing/Email_Test_recu_OK.png)
+
+![Email faux login](Phishing/Email_Test_Campagne_Fake_Login.png)
+
+![Page de login fake](Phishing/resultat_landpage_outlook_Login_Fake.png)
+
+![Redirection sensibilisation](Phishing/Redirection_Sensibilisation_%20apres_Fake_Login.png)
+
+![Redirection vers site de sensibilisation](Phishing/Redirection_Sensibilisation_Cybermalveillance_gouv_fr.png)
+
+![Résultat final campagne](Phishing/Resultat_Final_Test_Campagne.png)
 
 ## 7. Commandes de secours
 
@@ -178,3 +285,15 @@ Après la campagne, j’arrête les services et j’archive les résultats.
 sudo systemctl stop gophish
 sudo pkill python3
 ```
+
+## Captures d’écran
+
+Le dossier `Phishing/` contient toutes les captures utilisées pour documenter chaque étape :
+- vérification des hashes,
+- installation de Kali,
+- installation de GoPhish,
+- configuration des landing pages,
+- import CSV,
+- envoi des emails,
+- page de sensibilisation,
+- tableau de bord et résultats.
