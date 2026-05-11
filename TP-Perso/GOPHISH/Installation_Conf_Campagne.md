@@ -1,3 +1,4 @@
+```md
 # Campagne Phishing Entreprise
 
 Ce dépôt documente une simulation de phishing interne basée sur une VM Kali, GoPhish, un serveur Python pour la page de sensibilisation, et l’import d’utilisateurs AD depuis un CSV.
@@ -140,6 +141,8 @@ J’ai ensuite modifié le mot de passe administrateur pour sécuriser l’accè
 ### Configuration du compte Gmail pour l’envoi des emails
 Avant de configurer le profil SMTP dans GoPhish, j’ai préparé un compte Gmail dédié à l’envoi des emails de campagne.
 
+Ce compte servait de compte expéditeur pour le `Sending Profile` de GoPhish.
+
 #### Activation de la vérification en deux étapes
 J’ai d’abord activé la vérification en deux étapes sur le compte Gmail afin de sécuriser l’accès et de pouvoir générer un mot de passe d’application.
 
@@ -166,11 +169,10 @@ sudo nano /etc/gophish/config.json
 ```
 
 J’ai ensuite :
-- configuré l’interface d’administration sur `0.0.0.0:3333` pour y accéder depuis le réseau local ;
-- conservé l’interface d’administration en TLS ;
+- configuré l’interface d’administration sur `0.0.0.0:3333` afin de pouvoir y accéder depuis le réseau local ;
+- conservé l’interface d’administration en TLS pour sécuriser l’accès ;
 - configuré le serveur de phishing sur `0.0.0.0:80` pour le rendre accessible depuis les postes cibles ;
-- laissé la base de données en SQLite.
-
+- laissé la base de données en SQLite avec le chemin par défaut de GoPhish.
 
 Le fichier de configuration utilisé est le suivant :
 
@@ -191,19 +193,19 @@ Le fichier de configuration utilisé est le suivant :
   "db_path": "/var/lib/gophish/gophish.db"
 }
 ```
-![Verification fichier config.json](Phishing/Verif_Port_3333_80.png)
 
+Le choix de `0.0.0.0` permet à GoPhish d’écouter sur toutes les interfaces réseau de la machine Kali, ce qui rend l’interface d’administration et le serveur de phishing accessibles depuis le LAN.
+
+![Vérification fichier config.json](Phishing/Conf_Fichier_config_json.png)
 
 Après cette modification, j’ai redémarré GoPhish puis vérifié que les ports 3333 et 80 étaient bien en écoute.
-
-![Verification PORTS 3333 & 80](Phishing/Verif_Port_3333_80.png)
 
 ```bash
 sudo systemctl restart gophish
 sudo netstat -tlnp | grep -E "3333|80"
 ```
 
-![Tableau de bord GoPhish](Phishing/Dashboard_Gophish.png)
+![Vérification ports 3333 et 80](Phishing/Verif_Port_3333_80.png)
 
 ## 4. Serveur Python et page de sensibilisation
 
@@ -231,13 +233,13 @@ http://192.168.1.198:8080/sensibilisation.html
 
 ## 5. Configuration de la campagne
 
-Dans GoPhish, j’ai créé une landing page qui redirige vers la page de sensibilisation.
+Dans GoPhish, j’ai créé une landing page qui enregistre l’interaction de l’utilisateur avant de le rediriger vers la page de sensibilisation.
 
 J’ai ensuite :
-- importé le CSV des utilisateurs,
-- sélectionné le profil SMTP,
-- sélectionné le template email,
-- choisi la landing page,
+- importé le CSV des utilisateurs au format attendu par GoPhish ;
+- sélectionné le profil SMTP ;
+- sélectionné le template email ;
+- choisi la landing page ;
 - lancé d’abord un test, puis la campagne complète.
 
 ![Importation CSV dans Kali](Phishing/Importation_Fichier_CSV_User_AD_VM_Kali.png)
@@ -308,3 +310,4 @@ Le dossier `Phishing/` contient toutes les captures utilisées pour documenter c
 - envoi des emails,
 - page de sensibilisation,
 - tableau de bord et résultats.
+```
