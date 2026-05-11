@@ -1,4 +1,3 @@
-```md
 # Campagne Phishing Entreprise
 
 Ce dépôt documente une simulation de phishing interne basée sur une VM Kali, GoPhish, un serveur Python pour la page de sensibilisation, et l’import d’utilisateurs AD depuis un CSV.
