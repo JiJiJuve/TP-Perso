@@ -157,13 +157,20 @@ Gmail a ensuite généré un mot de passe d’application que j’ai utilisé da
 ![Mot de passe application GoPhish Gmail](Phishing/password_appli_Gophish_Gmail.png)
 
 ### Configuration réseau
-J’ai modifié le fichier `config.json` afin d’adapter GoPhish à mon environnement réseau local.
+J’ai ouvert le fichier `config.json` situé dans `/etc/gophish/`, puis j’ai modifié les paramètres d’écoute de GoPhish pour l’adapter à mon réseau local.
 
-Plus précisément, j’ai :
-- changé l’adresse d’écoute de l’interface d’administration en `0.0.0.0:3333` pour pouvoir y accéder depuis le réseau local ;
-- conservé l’interface d’administration en TLS afin de sécuriser l’accès ;
-- configuré le serveur de phishing sur `0.0.0.0:80` pour qu’il soit accessible depuis les postes cibles ;
-- conservé la base de données en SQLite avec le chemin par défaut de GoPhish.
+Pour cela, j’ai utilisé l’éditeur `nano` :
+
+```bash
+sudo nano /etc/gophish/config.json
+```
+
+J’ai ensuite :
+- configuré l’interface d’administration sur `0.0.0.0:3333` pour y accéder depuis le réseau local ;
+- conservé l’interface d’administration en TLS ;
+- configuré le serveur de phishing sur `0.0.0.0:80` pour le rendre accessible depuis les postes cibles ;
+- laissé la base de données en SQLite.
+
 
 Le fichier de configuration utilisé est le suivant :
 
@@ -184,8 +191,12 @@ Le fichier de configuration utilisé est le suivant :
   "db_path": "/var/lib/gophish/gophish.db"
 }
 ```
+![Verification fichier config.json](Phishing/Verif_Port_3333_80.png)
+
 
 Après cette modification, j’ai redémarré GoPhish puis vérifié que les ports 3333 et 80 étaient bien en écoute.
+
+![Verification PORTS 3333 & 80](Phishing/Verif_Port_3333_80.png)
 
 ```bash
 sudo systemctl restart gophish
