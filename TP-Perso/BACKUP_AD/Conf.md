@@ -8,16 +8,6 @@ avec évolution du script PowerShell :
 
 ---
 
-# Sauvegarde AD/DC → NAS 192.168.1.2
-
-Documentation complète de la sauvegarde Active Directory vers le NAS `\\192.168.1.2\SauvegardeAD`,  
-avec évolution du script PowerShell :
-
-- version **basique** : `AD-Backup-Rotate.ps1` (vérification manuelle),  
-- version **évoluée** : `AD-Backup-Rotate2.ps1` (rotation 2 versions + automatisation).
-
----
-
 ## Sommaire
 
 - [1. Présentation](#1-présentation)
