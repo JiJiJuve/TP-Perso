@@ -45,7 +45,6 @@ avec évolution du script PowerShell :
   - [6.3. Création de la clé bootable](#63-création-de-la-clé-bootable)
   - [6.4. Comment restaurer avec WinRE](#64-comment-restaurer-avec-winre)
 - [7. Pourquoi cette méthode est robuste](#7-pourquoi-cette-méthode-est-robuste)
-- [8. License / Auteur](#8-license--auteur)
 
 ---
 
