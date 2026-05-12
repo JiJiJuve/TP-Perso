@@ -77,6 +77,8 @@ wbadmin start systemstatebackup -backupTarget:... -quiet
 
 pour sauvegarder **l’état du système du DC** vers le NAS, sans gérer soi‑même les fichiers NTDS.dit, etc.
 
+![](NAS/Sauvegarde_AD_220426.PNG)
+
 ---
 
 ## 2. Préparation du NAS
@@ -167,7 +169,6 @@ En production, on travaillera avec des comptes Windows + droits réseau, pas de 
 
 ![](NAS/creation_script_sur_AD.PNG)
 
-![](NAS/Modif_script_backup_test.PNG)
 
 ### 3.3. Lancement manuel et résultat
 
@@ -194,8 +195,6 @@ Get-ChildItem "\\192.168.1.2\SauvegardeAD" | Where-Object { $_.Name -like "Backu
 On voit apparaître un dossier `Backup YYYY-MM-DD HHMMSS` → la sauvegarde est bien là.
 
 ![Backup OK depuis script](NAS/Backup_OK_depuis_Script_Verif_OK2.PNG)
-
-![](NAS/Sauvegarde_AD_220426.PNG)
 
 ![](NAS/Verif_Sauvegarde_aboutie_depuis_AD.PNG)
 
@@ -271,13 +270,11 @@ Puis vérification :
 Get-ChildItem "\\192.168.1.2\SauvegardeAD" | Where-Object { $_.Name -like "Backup_*" }
 ```
 
-![Backup_OK_depuis_Script_Verif_OK2](https://github.com/JiJiJuve/TP-Perso/blob/master/TP-Perso/BACKUP_AD/NAS/Backup_OK_depuis_Script_Verif_OK2.PNG)
-
 ![](NAS/Backup2_OK.PNG)
 
-![](NAS/Backup2_OK_depuis_NAS.png)
+![Backup_OK_depuis_Script_Verif_OK2](https://github.com/JiJiJuve/TP-Perso/blob/master/TP-Perso/BACKUP_AD/NAS/Backup_OK_depuis_Script_Verif_OK2.PNG)
 
-![](NAS/Backup_OK_depuis_Script_Verif_OK.PNG)
+![](NAS/Backup2_OK_depuis_NAS.png)
 
 ---
 
@@ -370,8 +367,6 @@ Sur le serveur (physique ou VM) :
 
 À la fin, le DC est **exactement dans l’état de la sauvegarde** (AD, GPO, services, boot, etc.).
 
-![](NAS/Backup2_OK_depuis_NAS.png)
-
 ---
 
 ## 7. Pourquoi cette méthode est robuste
@@ -382,10 +377,3 @@ Sur le serveur (physique ou VM) :
 - **`wbadmin`** utilisé de façon **simple et standard** (outil Microsoft natif).  
 - **Documentation complète** → tu peux **refaire tout le parcours depuis zéro** avec ce `README.md`.
 
----
-
-## 8. License / Auteur
-
-- **Auteur** : JiJiJuve  
-- **Projet** : `TP-Perso / BACKUP_AD`  
-- **License** : Propriétaire (TP personnel).
