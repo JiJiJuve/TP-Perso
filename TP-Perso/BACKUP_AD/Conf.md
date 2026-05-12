@@ -8,6 +8,47 @@ avec évolution du script PowerShell :
 
 ---
 
+# Sauvegarde AD/DC → NAS 192.168.1.2
+
+Documentation complète de la sauvegarde Active Directory vers le NAS `\\192.168.1.2\SauvegardeAD`,  
+avec évolution du script PowerShell :
+
+- version **basique** : `AD-Backup-Rotate.ps1` (vérification manuelle),  
+- version **évoluée** : `AD-Backup-Rotate2.ps1` (rotation 2 versions + automatisation).
+
+---
+
+## Sommaire
+
+- [1. Présentation](#1-présentation)
+  - [1.1. Qu’est‑ce que `wbadmin` ?](#11-questce-que-wbadmin-)
+- [2. Préparation du NAS](#2-préparation-du-nas)
+  - [2.1. Réseau et partage](#21-réseau-et-partage)
+  - [2.2. Montage du partage sur le DC](#22-montage-du-partage-sur-le-dc)
+  - [2.3. Test d’écriture sur le NAS](#23-test-décriture-sur-le-nas)
+- [3. Version 1 : Script `AD-Backup-Rotate.ps1` (basique)](#3-version-1--script-ad-backup-rotateps1--basique)
+  - [3.1. But](#31-but)
+  - [3.2. Création du script](#32-création-du-script)
+  - [3.3. Lancement manuel et résultat](#33-lancement-manuel-et-résultat)
+  - [3.4. Vérification sur le NAS](#34-vérification-sur-le-nas)
+- [4. Version 2 : Script `AD-Backup-Rotate2.ps1` (évoluée)](#4-version-2--script-ad-backup-rotate2ps1--évoluée)
+  - [4.1. Problème de la version 1](#41-problème-de-la-version-1)
+  - [4.2. Contenu du script évolué](#42-contenu-du-script-évolué)
+  - [4.3. Lancement et rotation](#43-lancement-et-rotation)
+- [5. Automatisation via la tâche planifiée](#5-automatisation-via-la-tâche-planifiée)
+  - [5.1. Pourquoi automatiser](#51-pourquoi-automatiser)
+  - [5.2. Vérification des exécutions](#52-vérification-des-exécutions)
+  - [5.3. Vérification générale](#53-vérification-générale)
+- [6. Restauration via WinRE (clé bootable)](#6-restauration-via-winre-clé-bootable)
+  - [6.1. Qu’est‑ce que WinRE](#61-questce-que-winre)
+  - [6.2. À quoi sert la clé bootable](#62-à-quoi-sert-la-clé-bootable)
+  - [6.3. Création de la clé bootable](#63-création-de-la-clé-bootable)
+  - [6.4. Comment restaurer avec WinRE](#64-comment-restaurer-avec-winre)
+- [7. Pourquoi cette méthode est robuste](#7-pourquoi-cette-méthode-est-robuste)
+- [8. License / Auteur](#8-license--auteur)
+
+---
+
 ## 1. Présentation
 
 - **Serveur** : Windows Server 2019 (DC).  
