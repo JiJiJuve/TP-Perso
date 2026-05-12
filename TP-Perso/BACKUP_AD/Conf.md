@@ -166,6 +166,7 @@ Ce script utilise le **mot de passe en clair** pour simplifier le test.
 En production, on travaillera avec des comptes Windows + droits réseau, pas de mot de passe dans le script.
 
 ![](NAS/creation_script_sur_AD.PNG)
+
 ![](NAS/Modif_script_backup_test.PNG)
 
 ### 3.3. Lancement manuel et résultat
@@ -184,12 +185,21 @@ cd C:\Scripts\BackupAD
 ```powershell
 Get-ChildItem "\\192.168.1.2\SauvegardeAD\WindowsImageBackup\DC"
 ```
+ou 
+
+```powershell
+Get-ChildItem "\\192.168.1.2\SauvegardeAD" | Where-Object { $_.Name -like "Backup_*" }
+```
 
 On voit apparaître un dossier `Backup YYYY-MM-DD HHMMSS` → la sauvegarde est bien là.
 
 ![](NAS/Sauvegarde_AD_220426.PNG)
+
 ![](NAS/Verif_Sauvegarde_aboutie_depuis_AD.PNG)
+
 ![](NAS/Verif_Sauvegarde_aboutie_depuis_NAS.png)
+
+![](NAS/Backup_OK_depuis_Script_Verif_OK2.png)
 
 ---
 
