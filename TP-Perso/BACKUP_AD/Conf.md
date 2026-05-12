@@ -269,8 +269,12 @@ Puis vérification :
 Get-ChildItem "\\192.168.1.2\SauvegardeAD" | Where-Object { $_.Name -like "Backup_*" }
 ```
 
+![Backup_OK_depuis_Script_Verif_OK2](https://github.com/JiJiJuve/TP-Perso/blob/master/TP-Perso/BACKUP_AD/NAS/Backup_OK_depuis_Script_Verif_OK2.PNG)
+
 ![](NAS/Backup2_OK.PNG)
+
 ![](NAS/Backup2_OK_depuis_NAS.png)
+
 ![](NAS/Backup_OK_depuis_Script_Verif_OK.PNG)
 
 ---
