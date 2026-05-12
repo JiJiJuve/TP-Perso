@@ -193,6 +193,8 @@ Get-ChildItem "\\192.168.1.2\SauvegardeAD" | Where-Object { $_.Name -like "Backu
 
 On voit apparaître un dossier `Backup YYYY-MM-DD HHMMSS` → la sauvegarde est bien là.
 
+![Backup OK depuis script](NAS/Backup_OK_depuis_Script_Verif_OK2.PNG)
+
 ![](NAS/Sauvegarde_AD_220426.PNG)
 
 ![](NAS/Verif_Sauvegarde_aboutie_depuis_AD.PNG)
