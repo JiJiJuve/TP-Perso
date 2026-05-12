@@ -157,7 +157,7 @@ $password   = "PASSWORD"
 
 Write-Host "=== SAUVEGARDE AD/DC - $(Get-Date) ==="
 
-wbadmin start backup -backupTarget:$backupPath -user:admin -password:$password -systemState -quiet
+wbadmin start backup -backupTarget:$backupPath -user:USER -password:$password -systemState -quiet
 
 Write-Host "TERMINE: $(Get-Date)"
 ```
