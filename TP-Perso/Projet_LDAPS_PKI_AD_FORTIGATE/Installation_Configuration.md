@@ -31,13 +31,19 @@ Avant de commencer, une machine Windows Server a été préparée et reliée au 
 
 Cette machine a été déployée sous VirtualBox. L’ISO de Windows Server 2022 a été téléchargée puis son hash a été vérifié afin de contrôler l’intégrité du support d’installation avant la mise en service.
 
- ![Vérification du hash ISO](./Images/Hash_ISO_WS2022.png)
+ * Vérification de l’ISO avant le hash
+
+![Vérification du hash ISO](./Images/Hash_ISO_WS2022.png)
 
 ![Vérification alternative du hash ISO](./Images/verification_hash_iso_windows_server_2025.png)
 
 La machine a ensuite été configurée avec une adresse IP fixe adaptée au réseau local et reliée au domaine Active Directory pour pouvoir héberger le rôle de certification.
 
+ * Configuration réseau avant l’image IP fixe
+
 ![Configuration IP et jonction au domaine](./Images/Configuration_Windows_Server_IP_lier_Domaine_AD_Maj.png)
+
+ * Jonction au domaine avant la vérification finale
 
 ![Vérification de la configuration IP et du domaine](./Images/Verif_Configuration_Windows_Server_IP_lier_Domaine_AD_Maj.png)
 
@@ -47,12 +53,18 @@ La machine a ensuite été configurée avec une adresse IP fixe adaptée au rés
 
 La première étape de sécurisation a consisté à activer LDAP signing sur le contrôleur de domaine. Cette configuration permet d’imposer une signature des requêtes LDAP afin de réduire les risques liés aux authentifications non sécurisées et de garantir l’intégrité des échanges.
 
+ * Activation de LDAP signing
+
 ![GPO LDAP signing sur le DC](./Images/GPO_LDAP_SIGNING_DC.PNG)
 
 La journalisation LDAP a également été activée afin d’identifier les clients utilisant encore des binds non sécurisés et de pouvoir contrôler les impacts avant généralisation de la configuration. Un bind LDAP correspond à l’étape d’authentification qui permet à un client de se connecter à l’annuaire avec un compte et un mot de passe ; en simple bind, ces identifiants peuvent être envoyés en clair si le canal n’est pas protégé.
 
+ * Vérification de la GPO
+
 ![Vérification des logs liés à la GPO LDAP signing](./Images/log_verification_GPO_LADP_SIGNING.PNG)
 
+ * Activation de la journalisation LDAP
+   
 ![Activation de la journalisation LDAP sur le DC](./Images/activation_Journalisation_LDAP_sur_DC_pour_identifier_clients_avec_binds_non_s%C3%A9curis%C3%A9.PNG)
 
 ***
@@ -60,6 +72,8 @@ La journalisation LDAP a également été activée afin d’identifier les clien
 ## Mise en place de la PKI / AD CS
 
 Pour permettre le fonctionnement de LDAPS, une infrastructure de certificats a été mise en place via le rôle Active Directory Certificate Services.
+
+ * Installation du rôle AD CS
 
  ![Ajout du rôle AD CS](./Images/Ajout_role_Service_Certif_AD.png)
 
@@ -73,8 +87,12 @@ Le certificat serveur du contrôleur de domaine permet au client de vérifier qu
 
 La CA racine a ensuite été configurée sur la machine dédiée. Cette étape permet de disposer d’une autorité interne capable d’émettre les certificats nécessaires au contrôleur de domaine.
 
+ * Configuration de la CA
+
 ![Configuration de la CA](./Images/Configuration_CA_CELDUC.png)
 
+ * Vérification de la CA
+   
 ![Vérification de la CA](./Images/Verification_CA.png)
 
 ***
@@ -83,15 +101,23 @@ La CA racine a ensuite été configurée sur la machine dédiée. Cette étape p
 
 Une demande de certificat serveur a été préparée pour le service LDAPS du contrôleur de domaine. Cette demande contient les informations nécessaires pour identifier le serveur et préciser l’usage attendu du certificat.
 
+ * Préparation de la demande
+
 ![Préparation de la demande de certificat serveur](./Images/Preparation_Generer_Certificat_SRV_LDAPS.PNG)
 
 Le fichier de demande a ensuite été généré, puis transmis à l’autorité de certification pour validation. La CA a délivré manuellement le certificat serveur afin qu’il puisse être utilisé par le contrôleur de domaine pour les connexions LDAPS.
 
+ * Envoi de la demande à la CA
+
 ![Envoi de la demande à la CA](./Images/Envoie_Demande_CA.png)
+
+ * Délivrance manuelle
 
 ![Délivrance manuelle de la demande](./Images/Delivrer_Manuellement_Demande_CA.png)
 
 Le certificat serveur émis par la CA a ensuite été récupéré et installé sur le serveur concerné. Le certificat serveur du DC a aussi été exporté, ainsi que le certificat racine public, afin de conserver la chaîne de confiance complète et de préparer les imports nécessaires sur les autres équipements du projet.
+
+ * Export des certificats
 
 ![Certificat serveur délivré par la CA](./Images/Certificat_Server_Delivre_Depuis_CA.png)
 
@@ -109,7 +135,11 @@ Les certificats ont été placés dans les magasins Windows appropriés via `cer
 
 Ces contrôles ont permis de confirmer que le contrôleur de domaine pouvait utiliser son certificat pour LDAPS et que les systèmes clients pouvaient faire confiance à l’autorité de certification interne. Le certificat serveur du DC et le certificat racine public de la CA ont ensuite été exportés afin de préparer l’import côté FortiGate.
 
+ * Validation du certificat serveur
+
 ![Vérification du certificat serveur pour LDAPS](./Images/Verification_certificat_server_pour_LDAPS.PNG)
+
+ * Import dans les magasins Windows
 
 ![Vérification de l’import du certificat serveur DC](./Images/Verification_Importation_Certificat_Server_DC.PNG)
 
@@ -127,9 +157,13 @@ Les certificats requis pour LDAPS ont été installés sur le contrôleur de dom
 
 Une fois la CA importée et le certificat serveur en place, le contrôleur de domaine a pu exposer le service LDAP en mode sécurisé.
 
+ * Import du certificat serveur
+
 ![Importation du certificat serveur DC](./Images/Importation_Certificat_Server_DC.PNG)
 
 ![Vérification de l’import du certificat serveur DC](./Images/Verification_Importation_Certificat_Server_DC.PNG)
+
+ * Import du certificat racine
 
 ![Importation du certificat racine public](./Images/Importation_Certificat_Securite_Public.PNG)
 
@@ -147,8 +181,12 @@ Un utilisateur a enfin été créé pour tester la connexion VPN SSL avec FortiC
 
 ![Importation du certificat de sécurité sur FortiGate](./Images/Importation_Certificat_Securite_Fortigate.PNG)
 
+ * Configuration DNS
+
 ![Configuration DNS sur FortiGate](./Images/conf_server_DNS_sur_Fortigard.jpg)
 
+ * Création de l’utilisateur de test
+   
 ![Création de l’utilisateur FortiGate](./Images/Creation_User_Fortigade.jpg)
 
 ***
@@ -161,6 +199,8 @@ Plusieurs tests ont été effectués pour valider le bon fonctionnement de LDAPS
 
 La connexion LDAPS a d’abord été testée avec l’outil LDP afin de vérifier directement la communication avec le contrôleur de domaine. Ce test permet de confirmer que le service LDAP sécurisé répond bien, que le port 636 est accessible et que le certificat présenté est accepté.
 
+ * Test avec LDP.exe
+
 ![Test LDAPS avec LDP.exe](./Images/Test_connexion_LDAPS_avec_LDP_EXE.PNG)
 
 ![Test LDAPS avec LDP.exe depuis un poste utilisateur](./Images/Test_connexion_LDAPS_avec_LDP_EXE_depuis_PC_User.png)
@@ -168,6 +208,8 @@ La connexion LDAPS a d’abord été testée avec l’outil LDP afin de vérifie
 ### Test depuis FortiGate
 
 Le test LDAP/LDAPS depuis FortiGate a confirmé le bon fonctionnement de la configuration côté équipement réseau. Il a permis de vérifier que le FortiGate pouvait bien interroger l’Active Directory en s’appuyant sur la CA interne et sur la configuration DNS mise en place.
+
+ * Test depuis FortiGate
 
 ![Test LDAPS sur FortiGate](./Images/Test_LDAPS_sur_Fortigade_OK.jpg)
 
@@ -178,6 +220,8 @@ Le test LDAP/LDAPS depuis FortiGate a confirmé le bon fonctionnement de la conf
 ### Test VPN FortiClient
 
 Un test de connexion VPN SSL avec FortiClient a également été réalisé. L’objectif était de valider que l’authentification des utilisateurs fonctionnait correctement à travers l’annuaire sécurisé et que l’ensemble de la chaîne, du client jusqu’au contrôleur de domaine, était opérationnel.
+
+ * Test VPN FortiClient
 
 ![Test connexion VPN FortiClient](./Images/Test_connexion_LDAPS_avec_FortiClient_VPN.jpg)
 
