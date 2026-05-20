@@ -27,147 +27,98 @@ Dans la continuité, le projet s’est orienté vers la sécurisation des échan
 
 ## Préparation de l’environnement
 
-Avant de commencer, une machine Windows Server a été préparée et reliée au domaine afin de servir de base au déploiement AD / PKI.
+Avant de commencer, une machine Windows Server a été préparée et reliée au domaine afin de servir de base au déploiement de l’infrastructure AD / PKI.
+
+Cette machine a été déployée sous VirtualBox. L’ISO de Windows Server 2022 a été téléchargée puis son hash a été vérifié afin de contrôler l’intégrité du support d’installation avant la mise en service.
+
+La machine a ensuite été configurée avec une adresse IP fixe adaptée au réseau local et reliée au domaine Active Directory pour pouvoir héberger le rôle de certification.
 
 ***
 
 ## Durcissement LDAP sur Active Directory
 
-La première étape de sécurisation a consisté à activer **LDAP signing** sur le contrôleur de domaine.  
-Cette configuration permet d’imposer une signature des requêtes LDAP et de réduire les risques liés aux authentifications non sécurisées.
+La première étape de sécurisation a consisté à activer LDAP signing sur le contrôleur de domaine. Cette configuration permet d’imposer une signature des requêtes LDAP afin de réduire les risques liés aux authentifications non sécurisées et de garantir l’intégrité des échanges.
 
-
+La journalisation LDAP a également été activée afin d’identifier les clients utilisant encore des binds non sécurisés et de pouvoir contrôler les impacts avant généralisation de la configuration. Un bind LDAP correspond à l’étape d’authentification qui permet à un client de se connecter à l’annuaire avec un compte et un mot de passe ; en simple bind, ces identifiants peuvent être envoyés en clair si le canal n’est pas protégé.
 
 La journalisation LDAP a également été activée afin d’identifier les clients utilisant des binds non sécurisés.
-
-
-
-
 
 ***
 
 ## Mise en place de la PKI / AD CS
 
-Pour permettre le fonctionnement de LDAPS, une infrastructure de certificats a été mise en place via le rôle **Active Directory Certificate Services**.
+Pour permettre le fonctionnement de LDAPS, une infrastructure de certificats a été mise en place via le rôle Active Directory Certificate Services.
 
+Une PKI, ou infrastructure à clé publique, sert à créer et à gérer des certificats numériques. Elle repose sur une autorité de certification, appelée CA, qui signe les certificats pour établir une chaîne de confiance entre les serveurs et les clients.
 
+Dans ce projet, deux certificats principaux ont été utilisés :
 
-La CA racine du projet a ensuite été configurée.
+Le certificat racine de la CA permet aux systèmes de faire confiance à l’autorité de certification interne. Il établit la base de la chaîne de confiance et indique que les certificats qu’elle signe peuvent être considérés comme légitimes.
 
+le certificat serveur du contrôleur de domaine, qui permet au client de vérifier qu’il communique bien avec le bon serveur lors des connexions LDAPS.
 
+La CA racine a ensuite été configurée sur la machine dédiée. Cette étape permet de disposer d’une autorité interne capable d’émettre les certificats nécessaires au contrôleur de domaine.
+
+La CA racine a ensuite été configurée sur la machine dédiée. Cette étape permet de disposer d’une autorité interne capable d’émettre les certificats nécessaires au contrôleur de domaine.
 
 ***
 
 ## Création et émission des certificats
 
-Une demande de certificat serveur a été préparée pour le service LDAPS du contrôleur de domaine.
+Une demande de certificat serveur a été préparée pour le service LDAPS du contrôleur de domaine. Cette demande contient les informations nécessaires pour identifier le serveur et préciser l’usage attendu du certificat.
 
+Le fichier de demande a ensuite été généré, puis transmis à l’autorité de certification pour validation. La CA a délivré manuellement le certificat serveur afin qu’il puisse être utilisé par le contrôleur de domaine pour les connexions LDAPS.
 
-
-Le fichier de demande a ensuite été généré.
-
-
-
-La demande a été délivrée manuellement par l’autorité de certification.
-
-
-
-Le certificat serveur émis par la CA a ensuite été récupéré.
-
-
-
-Le certificat serveur du DC a aussi été exporté, ainsi que le certificat racine public.
-
-
-
-
+Le certificat serveur émis par la CA a ensuite été récupéré et installé sur le serveur concerné. Le certificat serveur du DC a aussi été exporté, ainsi que le certificat racine public, afin de conserver la chaîne de confiance complète et de préparer les imports nécessaires sur les autres équipements du projet.
 
 ***
 
 ## Vérification des certificats
 
-Avant de poursuivre, plusieurs vérifications ont été faites pour confirmer que les certificats étaient valides et correctement émis.
+Avant de poursuivre, plusieurs vérifications ont été réalisées pour confirmer que les certificats étaient valides et correctement émis.
 
+Les certificats ont été placés dans les magasins Windows appropriés via certlm.msc : le certificat serveur dans le magasin Personnel et le certificat racine dans le magasin des autorités de certification racines de confiance.
 
-
-
-
-
-
-
-
-Les imports ont également été contrôlés dans l’interface.
-
-
-
-
-
-Une erreur liée à un certificat auto-signé a été observée avant la correction de la chaîne de confiance.
-
-
+Ces contrôles ont permis de confirmer que le contrôleur de domaine pouvait utiliser son certificat pour LDAPS et que les systèmes clients pouvaient faire confiance à l’autorité de certification interne. Le certificat serveur du DC et le certificat racine public de la CA ont ensuite été exportés afin de préparer l’import côté FortiGate.
 
 ***
 
 ## Configuration LDAPS sur le DC
 
-Les fichiers de certificat utilisés pour LDAPS ont été conservés et validés pour le contrôleur de domaine.
+Les certificats requis pour LDAPS ont été installés sur le contrôleur de domaine.
 
-
-
-
-
-Une fois la CA importée et le certificat serveur installé, le contrôleur de domaine a pu exposer le service LDAP en mode sécurisé.
+Une fois la CA importée et le certificat serveur en place, le contrôleur de domaine a pu exposer le service LDAP en mode sécurisé.
 
 ***
 
 ## Configuration FortiGate
 
-Le FortiGate a ensuite été préparé pour faire confiance à la CA interne et utiliser le serveur LDAPS du domaine.
+Les vérifications réalisées lors de l’audit LDAP signing ont montré que le FortiGate utilisait encore LDAP en clair sur le port 389. Il a donc fallu adapter la configuration pour sécuriser les échanges avec l’Active Directory via LDAPS sur le port 636.
 
+Le certificat racine de la CA interne a été importé sur le FortiGate afin qu’il puisse faire confiance au contrôleur de domaine lors des échanges LDAPS. La configuration DNS a également été ajustée pour permettre la résolution du contrôleur de domaine interne.
 
-
-La configuration DNS a été adaptée pour permettre la résolution du contrôleur de domaine interne.
-
-
-
-Un utilisateur / groupe a également été créé pour l’intégration à l’authentification VPN SSL.
-
-
+Un utilisateur a enfin été créé pour tester la connexion VPN SSL avec FortiClient et valider le bon fonctionnement de l’authentification via l’annuaire sécurisé.
 
 ***
 
 ## Tests de connexion
 
-Plusieurs tests ont été effectués pour valider le bon fonctionnement de LDAPS.
+Plusieurs tests ont été effectués pour valider le bon fonctionnement de LDAPS et confirmer que la chaîne de confiance était bien opérationnelle.
 
-### Test avec LDP.exe
-La connexion LDAPS a d’abord été testée avec l’outil LDP.
+Test avec LDP.exe
+La connexion LDAPS a d’abord été testée avec l’outil LDP afin de vérifier directement la communication avec le contrôleur de domaine. Ce test permet de confirmer que le service LDAP sécurisé répond bien, que le port 636 est accessible et que le certificat présenté est accepté.
 
+Test depuis FortiGate
+Le test LDAP/LDAPS depuis FortiGate a confirmé le bon fonctionnement de la configuration côté équipement réseau. Il a permis de vérifier que le FortiGate pouvait bien interroger l’Active Directory en s’appuyant sur la CA interne et sur la configuration DNS mise en place.
 
-
-
-
-### Test depuis FortiGate
-Le test LDAP/LDAPS depuis FortiGate a confirmé le bon fonctionnement de la configuration.
-
-
-
-
-
-
-
-### Test VPN FortiClient
-Un test de connexion VPN SSL avec FortiClient a également été réalisé.
-
-
+Test VPN FortiClient
+Un test de connexion VPN SSL avec FortiClient a également été réalisé. L’objectif était de valider que l’authentification des utilisateurs fonctionnait correctement à travers l’annuaire sécurisé et que l’ensemble de la chaîne, du client jusqu’au contrôleur de domaine, était opérationnel.
 
 ***
 
 ## Journalisation et validation
 
 Les journaux du contrôleur de domaine ont permis de confirmer que les connexions LDAPS étaient bien prises en compte et que le fonctionnement était conforme à ce qui était attendu.
-
-
 
 ***
 
@@ -177,6 +128,5 @@ Ce projet a permis de sécuriser l’authentification entre Active Directory et 
 
 Il a également permis de valider la chaîne complète de confiance, depuis la création de la CA jusqu’aux tests fonctionnels sur le VPN SSL.
 
-***
 
-Si tu veux, je peux maintenant te faire une **version encore plus propre et plus “README GitHub final”**, avec un style plus fluide et plus pro, prête à copier directement.
+
