@@ -219,9 +219,9 @@ Le test LDAP/LDAPS depuis FortiGate a confirmé le bon fonctionnement de la conf
 
 ![Test LDAPS sur FortiGate](./Images/Test_LDAPS_sur_Fortigade_OK.jpg)
 
-![Test LDAP/LDAPS avec plusieurs utilisateurs AD sur FortiGate](./Images/Test_LDAPS_sur_Fortigade_CLI_Differents_User_AD_OK.jpg)
-
 ![Test credential LDAPS sur FortiGate](./Images/TestCredential_LDAPS_sur_Fortigade_OK.jpg)
+
+![Test LDAP/LDAPS avec plusieurs utilisateurs AD sur FortiGate](./Images/Test_LDAPS_sur_Fortigade_CLI_Differents_User_AD_OK.jpg)
 
 ### Test VPN FortiClient
 
@@ -236,8 +236,6 @@ Un test de connexion VPN SSL avec FortiClient a également été réalisé. L’
 ## Journalisation et validation
 
 Les journaux du contrôleur de domaine ont permis de confirmer que les connexions LDAPS étaient bien prises en compte et que le fonctionnement était conforme à ce qui était attendu.
-
-![Vérification des logs LDAPS](./Images/Verification_Log_connexion_LDAPS.PNG)
 
 ***
 
