@@ -43,11 +43,11 @@ Cette machine a été déployée sous VirtualBox. L’ISO de Windows Server 2022
 
 La machine a ensuite été configurée avec une adresse IP fixe adaptée au réseau local et reliée au domaine Active Directory pour pouvoir héberger le rôle de certification.
 
- * Configuration réseau avant l’image IP fixe
+ * Configuration réseau avec IP fixe
 
 ![Configuration IP et jonction au domaine](./Images/Configuration_Windows_Server_IP_lier_Domaine_AD_Maj.png)
 
- * Jonction au domaine avant la vérification finale
+ * Jonction au domaine 
 
 ![Vérification de la configuration IP et du domaine](./Images/Verif_Configuration_Windows_Server_IP_lier_Domaine_AD_Maj.png)
 
