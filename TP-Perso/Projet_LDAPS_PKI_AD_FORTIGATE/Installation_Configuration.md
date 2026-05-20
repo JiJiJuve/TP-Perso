@@ -23,6 +23,10 @@ En complément de la remédiation initiale sur les comptes administrateurs locau
 
 Dans la continuité, le projet s’est orienté vers la sécurisation des échanges entre le FortiGate et l’Active Directory, avec la mise en place de l’infrastructure PKI puis la configuration de LDAPS pour chiffrer les communications avec le contrôleur de domaine.
 
+   * Audit LDAP initial
+
+![Audit LDAP - risque identifié](./Images/audit_LDAP_Risk.jpg)
+     
 ***
 
 ## Préparation de l’environnement
