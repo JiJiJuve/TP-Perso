@@ -179,7 +179,9 @@ Le certificat racine de la CA interne a été importé sur le FortiGate afin qu�
 
 Un utilisateur a enfin été créé pour tester la connexion VPN SSL avec FortiClient et valider le bon fonctionnement de l’authentification via l’annuaire sécurisé.
 
-![Importation du certificat de sécurité sur FortiGate](./Images/Importation_Certificat_Securite_Fortigate.PNG)
+   * Importation du certificat racine sur FortiGate
+     
+![Importation du certificat racine sur FortiGate](./Images/Importation_Certificat_Securite_Fortigate.PNG)
 
  * Configuration DNS
 
