@@ -124,7 +124,11 @@ Les journaux du contrôleur de domaine ont permis de confirmer que les connexion
 
 ## Conclusion
 
-Ce projet a permis de sécuriser l’authentification entre Active Directory et le FortiGate grâce à une combinaison de **LDAP signing**, de **PKI interne** et de **LDAPS**.
+Ce projet a permis de sécuriser l’authentification entre Active Directory et le FortiGate grâce à une combinaison de LDAP signing, de PKI interne et de LDAPS.
+
+Il a également permis de valider la chaîne complète de confiance, depuis la création de la CA jusqu’aux tests fonctionnels sur le VPN SSL.
+
+Au-delà de la mise en place technique, ce travail a confirmé l’importance du durcissement des échanges LDAP et de la gestion correcte des certificats dans un environnement Active Directory.
 
 Il a également permis de valider la chaîne complète de confiance, depuis la création de la CA jusqu’aux tests fonctionnels sur le VPN SSL.
 
