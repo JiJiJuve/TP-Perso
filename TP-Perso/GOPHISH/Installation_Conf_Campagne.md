@@ -321,7 +321,7 @@ sudo systemctl stop gophish
 sudo pkill python3
 ```
 
-## 9 .Captures d’écran
+## 9. Captures d’écran
 
 Le dossier `Phishing/` contient toutes les captures utilisées pour documenter chaque étape :
 - vérification des hashes,
