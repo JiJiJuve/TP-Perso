@@ -14,7 +14,11 @@ Ce dépôt documente une simulation de phishing interne basée sur une VM Kali, 
 - [6. Flux utilisateur complet](#6-flux-utilisateur-complet)
 - [7. Commandes de secours](#7-commandes-de-secours)
 - [8. Nettoyage](#8-nettoyage)
-- [Captures d’écran](#captures-décran)
+- [9. Captures d’écran](#captures-décran)
+- [10. Analyse des risques](#10-analyse-des-risques)
+- [11. Sensibilisation et bonnes pratiques](#11-sensibilisation-et-bonnes-pratiques)
+- [12. Ressources de sensibilisation](#12-ressources-de-sensibilisation)
+- [Conclusion](#conclusion)
 
 ## Objectif
 
@@ -317,7 +321,7 @@ sudo systemctl stop gophish
 sudo pkill python3
 ```
 
-## Captures d’écran
+## 9 .Captures d’écran
 
 Le dossier `Phishing/` contient toutes les captures utilisées pour documenter chaque étape :
 - vérification des hashes,
@@ -328,3 +332,42 @@ Le dossier `Phishing/` contient toutes les captures utilisées pour documenter c
 - envoi des emails,
 - page de sensibilisation,
 - tableau de bord et résultats.
+
+## 10. Analyse des risques
+
+Cette campagne de phishing simulée met en évidence plusieurs risques concrets pour les utilisateurs et pour l’organisation. Un simple clic sur un lien frauduleux peut conduire à l’ouverture d’une page malveillante ou à la saisie d’identifiants sur un faux site. Dans un contexte réel, cela peut entraîner une compromission de compte, une fuite d’informations sensibles ou une utilisation du compte compromis pour cibler d’autres utilisateurs.
+
+Les principaux risques observés sont les suivants :
+
+- Clic sur un lien frauduleux.
+- Saisie d’identifiants sur une fausse page.
+- Compromission d’un compte utilisateur.
+- Rebond de l’attaque vers d’autres destinataires.
+
+## 11. Sensibilisation et bonnes pratiques
+
+Afin de réduire les risques liés au phishing, il est important d’adopter quelques réflexes simples au quotidien. Avant toute action, il faut vérifier l’adresse de l’expéditeur et survoler les liens avec la souris pour contrôler l’URL réelle. Il est également essentiel de ne jamais saisir ses identifiants à partir d’un e-mail reçu et de rester prudent face aux messages urgents ou inhabituels.
+
+Bonnes pratiques à retenir :
+
+- Vérifier l’adresse de l’expéditeur.
+- Survoler les liens avant de cliquer.
+- Ne jamais saisir ses identifiants via un lien reçu par e-mail.
+- Se méfier des messages urgents ou inhabituels.
+- Ne pas ouvrir une pièce jointe douteuse.
+- Signaler immédiatement tout message suspect.
+- En cas de doute, confirmer l’information par un autre canal.
+
+## 12. Ressources de sensibilisation
+
+Pour prolonger la sensibilisation, plusieurs ressources gratuites et officielles peuvent être consultées. Elles permettent de mieux comprendre les mécanismes du phishing et de renforcer les bons réflexes face aux messages frauduleux.
+
+Ressources recommandées :
+
+- Cybermalveillance.gouv.fr : https://www.cybermalveillance.gouv.fr/tous-nos-contenus/kit-de-sensibilisation
+- CNIL : https://www.cnil.fr/fr/phishing-detecter-un-message-malveillant
+- Microsoft Security : https://www.microsoft.com/fr-fr/security/business/solutions/phishing
+
+## Conclusion
+
+Cette campagne rappelle qu’un message frauduleux peut sembler légitime au premier regard. La vigilance, la vérification de l’expéditeur et le contrôle des liens restent des réflexes essentiels pour limiter les risques. La sensibilisation régulière des utilisateurs constitue un levier important pour renforcer la sécurité globale de l’organisation.
