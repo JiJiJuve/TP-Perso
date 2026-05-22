@@ -7,10 +7,10 @@
 - [Prérequis](#prérequis)
 - [1. Préparation de la VM Debian](#1-préparation-de-la-vm-debian)
 - [2. Installation des dépendances](#2-installation-des-dépendances)
-- [3. Installation d’AD Miner](#3-installation-dad-miner)
-- [4. Mise en place de Neo4j](#4-mise-en-place-de-neo4j)
-- [5. Installation de BloodHound](#5-installation-de-bloodhound)
-- [6. Collecte avec SharpHound](#6-collecte-avec-sharphound)
+- [3. Collecte avec SharpHound](#3-collecte-avec-sharphound)
+- [4. Installation d’AD Miner](#4-installation-dad-miner)
+- [5. Mise en place de Neo4j](#5-mise-en-place-de-neo4j)
+- [6. Installation de BloodHound](#6-installation-de-bloodhound)
 - [7. Résultats et analyse](#7-résultats-et-analyse)
 - [8. Recommandations](#8-recommandations)
 - [9. Nettoyage final](#9-nettoyage-final)
@@ -135,7 +135,50 @@ git --version
 
 Sans Git, il serait plus compliqué de récupérer proprement les sources des outils ou de gérer les mises à jour.
 
-## 3. Installation d’AD Miner
+## 3. Collecte avec SharpHound
+
+SharpHound est le collecteur côté Windows. Son rôle est d’interroger Active Directory et de récupérer les informations nécessaires à l’analyse dans BloodHound.
+
+En pratique, SharpHound collecte :
+
+- les utilisateurs ;
+- les groupes ;
+- les machines ;
+- les sessions ;
+- les appartenances ;
+- certaines permissions et relations utiles à l’audit.
+
+### Décompression de l’archive
+
+![Décompression SharpHound](Images/decompression_archive_SharpHound.PNG)
+
+### Exécution sur PowerShell administrateur
+
+SharpHound a été lancé depuis un terminal PowerShell administrateur afin de disposer des droits suffisants pour collecter les données nécessaires.
+
+```powershell
+.\SharpHound.exe --CollectionMethods All --Domain celduc.lan --ZipFileName celduc_data.zip
+```
+
+![Exécution SharpHound](Images/Execution_sharphound_powershell_admin.PNG)
+
+- `--CollectionMethods All` demande la collecte de tous les types de données disponibles.
+- `--Domain celduc.lan` précise le domaine ciblé.
+- `--ZipFileName celduc_data.zip` définit le nom du fichier de sortie.
+
+### Génération de l’archive
+
+![Archive AD générée](Images/New_zip_AD_Donnees.PNG)
+
+Cette archive ZIP sera ensuite importée dans BloodHound.
+
+### Nettoyage
+
+Une fois la collecte terminée, j’ai procédé au nettoyage de l’environnement SharpHound.
+
+![Nettoyage SharpHound](Images/Nettoyage_SharpHound.PNG)
+
+## 4. Installation d’AD Miner
 
 AD Miner est un outil d’audit Active Directory qui s’appuie sur les données exportées par BloodHound pour produire un rapport HTML.
 
@@ -174,7 +217,7 @@ AD Miner a ensuite été lancé afin d’analyser les données d’Active Direct
 
 ![Lancement du rapport AD Miner](Images/Installation_AD_Miner_lancement_Rapport_AD_Miner.png)
 
-## 4. Mise en place de Neo4j
+## 5. Mise en place de Neo4j
 
 Neo4j est une base de données orientée graphe. Contrairement à une base classique qui stocke des lignes et des colonnes, Neo4j stocke des nœuds et des relations.  
 Dans le contexte d’Active Directory, c’est particulièrement adapté, car les utilisateurs, groupes, machines et permissions sont liés les uns aux autres par des relations qu’il faut pouvoir explorer rapidement.
@@ -220,7 +263,7 @@ Neo4j dispose d’une interface web qui permet de vérifier que le service fonct
 
 Le tableau de bord permet de confirmer que la base est prête avant l’import des données.
 
-## 5. Installation de BloodHound
+## 6. Installation de BloodHound
 
 BloodHound est l’outil de visualisation utilisé pour explorer le graphe Active Directory. C’est l’interface qui permet d’identifier les chemins d’attaque possibles, les relations de confiance, les appartenances aux groupes et les privilèges cumulés.
 
@@ -256,49 +299,6 @@ C’est cette logique qui rend l’outil très intéressant pour un audit défen
 ![Exemple de chemin d’attaque 2](Images/Exemple2_Path_Attack_to_Admin_Domain_via_droits_administrateur_local.png)
 
 Ces captures montrent comment un compte peut potentiellement se retrouver relié à d’autres machines ou à des privilèges plus élevés via des droits mal configurés.
-
-## 6. Collecte avec SharpHound
-
-SharpHound est le collecteur côté Windows. Son rôle est d’interroger Active Directory et de récupérer les informations nécessaires à l’analyse dans BloodHound.
-
-En pratique, SharpHound collecte :
-
-- les utilisateurs ;
-- les groupes ;
-- les machines ;
-- les sessions ;
-- les appartenances ;
-- certaines permissions et relations utiles à l’audit.
-
-### Décompression de l’archive
-
-![Décompression SharpHound](Images/decompression_archive_SharpHound.PNG)
-
-### Exécution sur PowerShell administrateur
-
-SharpHound a été lancé depuis un terminal PowerShell administrateur afin de disposer des droits suffisants pour collecter les données nécessaires.
-
-```powershell
-.\SharpHound.exe --CollectionMethods All --Domain celduc.lan --ZipFileName celduc_data.zip
-```
-
-![Exécution SharpHound](Images/Execution_sharphound_powershell_admin.PNG)
-
-- `--CollectionMethods All` demande la collecte de tous les types de données disponibles.
-- `--Domain celduc.lan` précise le domaine ciblé.
-- `--ZipFileName celduc_data.zip` définit le nom du fichier de sortie.
-
-### Génération de l’archive
-
-![Archive AD générée](Images/New_zip_AD_Donnees.PNG)
-
-Cette archive ZIP sera ensuite importée dans BloodHound.
-
-### Nettoyage
-
-Une fois la collecte terminée, j’ai procédé au nettoyage de l’environnement SharpHound.
-
-![Nettoyage SharpHound](Images/Nettoyage_SharpHound.PNG)
 
 ## 7. Résultats et analyse
 
