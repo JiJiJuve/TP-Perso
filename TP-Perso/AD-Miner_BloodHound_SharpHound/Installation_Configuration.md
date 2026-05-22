@@ -217,6 +217,8 @@ AD Miner a ensuite été lancé afin d’analyser les données d’Active Direct
 
 ![Lancement du rapport AD Miner](Images/Installation_AD_Miner_lancement_Rapport_AD_Miner.png)
 
+![Rapport AD Miner](Images/dashboard_AD_Miner.jpg)
+
 ## 5. Mise en place de Neo4j
 
 Neo4j est une base de données orientée graphe. Contrairement à une base classique qui stocke des lignes et des colonnes, Neo4j stocke des nœuds et des relations.  
