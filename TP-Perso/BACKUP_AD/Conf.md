@@ -364,5 +364,5 @@ Sur le serveur (physique ou VM) :
 - **Rotation 2 versions** → historique tout en gardant l’espace limité.  
 - **Restauration via WinRE** → restitution **complète** du DC, pas seulement des données AD.  
 - **`wbadmin`** utilisé de façon **simple et standard** (outil Microsoft natif).  
-- **Documentation complète** → tu peux **refaire tout le parcours depuis zéro** avec ce `README.md`.
+
 
