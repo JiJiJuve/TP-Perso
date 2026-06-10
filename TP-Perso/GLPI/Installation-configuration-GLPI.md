@@ -404,6 +404,4 @@ sudo glpi-agent
 
 4. Vérifier dans GLPI : Parc → Ordinateurs : ta VM doit apparaître.
 
-***
 
-Si tu veux, message suivant je peux te faire une version “ultra courte” (suite de commandes + 1 phrase max de description) pour t’en servir comme antisèche en TP.
