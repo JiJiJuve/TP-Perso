@@ -197,6 +197,20 @@ nano /etc/apache2/sites-available/glpi.conf
 </VirtualHost>
 ```
 
+```bash
+a2enmod rewrite
+```
+
+```bash
+a2ensite glpi.conf
+```
+
+```bash
+systemctl restart apache2
+```
+
+
+
 ---
 
 ## 9. Installation de GLPI via l’interface web
