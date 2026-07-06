@@ -150,6 +150,10 @@ puis
 tar -xvzf glpi-11.0.8.tgz
 ```
 
+```bash
+chown -R www-data:www-data /var/www/html/glpi
+```
+
 ---
 
 ## 8. Configuration d’Apache et de PHP-FPM (VirtualHost GLPI)
