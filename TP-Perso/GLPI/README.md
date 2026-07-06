@@ -153,6 +153,13 @@ tar -xvzf glpi-11.0.8.tgz
 ```bash
 chown -R www-data:www-data /var/www/html/glpi
 ```
+```bash
+chmod -R 755 /var/www/html/glpi
+```
+
+```bash
+systemctl restart apache2
+```
 
 ---
 
