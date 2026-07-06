@@ -108,6 +108,10 @@ Objectif : créer une base dédiée à GLPI + un utilisateur SQL avec les droits
 
 ![Création de la base et de l’utilisateur MariaDB](images/creation_base_donnée_mariadb_utilisateur_motpass.png)  
 
+```bash
+CREATE DATABASE glpi CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+```
+
 ---
 
 ## 7. Téléchargement et installation de GLPI
