@@ -138,6 +138,12 @@ Objectif : télécharger l’archive GLPI, la décompresser dans `/var/www/html`
 ![Décompression de l’archive GLPI](images/decompression_archive_glpi.png)  
 ![www-data propriétaire des fichiers GLPI](images/utilisateur_services_web_proprietaire_new_files.png)  
 
+ou 
+
+```bash
+wget https://github.com/glpi-project/glpi/releases/download/11.0.8/glpi-11.0.8.tgz
+```
+
 ---
 
 ## 8. Configuration d’Apache et de PHP-FPM (VirtualHost GLPI)
