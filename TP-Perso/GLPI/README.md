@@ -182,14 +182,18 @@ nano /etc/apache2/sites-available/glpi.conf
 
 ```bash
 <VirtualHost *:80>
-    ServerName glpi.local
+    ServerName 192.168.1.247
 
     DocumentRoot /var/www/html/glpi/public
 
     <Directory /var/www/html/glpi/public>
-        AllowOverride All
         Require all granted
-        Options FollowSymLinks
+        AllowOverride All
+        RewriteEngine On
+
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^ index.php [QSA,L]
     </Directory>
 
     ErrorLog ${APACHE_LOG_DIR}/glpi_error.log
