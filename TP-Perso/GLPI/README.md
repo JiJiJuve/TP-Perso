@@ -112,6 +112,14 @@ Objectif : créer une base dédiée à GLPI + un utilisateur SQL avec les droits
 CREATE DATABASE glpi CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
+```bash
+GRANT ALL PRIVILEGES ON glpi.* TO 'glpi'@'localhost';
+```
+
+```bash
+FLUSH PRIVILEGES;
+```
+
 ---
 
 ## 7. Téléchargement et installation de GLPI
