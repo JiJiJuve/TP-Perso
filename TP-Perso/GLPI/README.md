@@ -144,6 +144,12 @@ ou
 wget https://github.com/glpi-project/glpi/releases/download/11.0.8/glpi-11.0.8.tgz
 ```
 
+puis 
+
+```bash
+tar -xvzf glpi-11.0.8.tgz
+```
+
 ---
 
 ## 8. Configuration d’Apache et de PHP-FPM (VirtualHost GLPI)
