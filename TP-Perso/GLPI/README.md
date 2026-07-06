@@ -198,6 +198,14 @@ nano /etc/apache2/sites-available/glpi.conf
 ```
 
 ```bash
+a2enmod proxy_fcgi setenvif rewrite
+```
+
+```bash
+a2enconf php*-fpm
+```
+
+```bash
 a2enmod rewrite
 ```
 
