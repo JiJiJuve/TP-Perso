@@ -176,6 +176,10 @@ Objectif : créer un VirtualHost propre pour GLPI, lier Apache à PHP‑FPM, et 
 ![VirtualHost GLPI dans Apache](images/virtualhost_glpi.png)  
 ![Activation des modules PHP pour Apache](images/activation_modules_php_apache.png)  
 
+```bash
+nano /etc/apache2/sites-available/glpi.conf
+```
+
 ---
 
 ## 9. Installation de GLPI via l’interface web
