@@ -113,6 +113,10 @@ CREATE DATABASE glpi CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
 ```bash
+CREATE USER 'glpi'@'localhost' IDENTIFIED BY 'MotDePasseFort';
+```
+
+```bash
 GRANT ALL PRIVILEGES ON glpi.* TO 'glpi'@'localhost';
 ```
 
