@@ -92,6 +92,10 @@ apt install php-{mysql,mbstring,curl,gd,xml,intl,ldap,apcu,xmlrpc,zip,bz2,bcmath
 
 ![Installation de la gestion des processus PHP (PHP-FPM)](images/installation_gestio_processus_php.png)  
 
+```bash
+apt install php-fpm -y
+```
+
 ---
 
 ## 6. Préparation de la base de données MariaDB
