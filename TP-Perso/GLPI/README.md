@@ -180,6 +180,23 @@ Objectif : créer un VirtualHost propre pour GLPI, lier Apache à PHP‑FPM, et 
 nano /etc/apache2/sites-available/glpi.conf
 ```
 
+```bash
+<VirtualHost *:80>
+    ServerName glpi.local
+
+    DocumentRoot /var/www/html/glpi/public
+
+    <Directory /var/www/html/glpi/public>
+        AllowOverride All
+        Require all granted
+        Options FollowSymLinks
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/glpi_error.log
+    CustomLog ${APACHE_LOG_DIR}/glpi_access.log combined
+</VirtualHost>
+```
+
 ---
 
 ## 9. Installation de GLPI via l’interface web
