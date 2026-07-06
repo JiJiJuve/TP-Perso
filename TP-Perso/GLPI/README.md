@@ -206,6 +206,10 @@ a2ensite glpi.conf
 ```
 
 ```bash
+a2dissite 000-default.conf
+```
+
+```bash
 systemctl restart apache2
 ```
 
