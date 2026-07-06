@@ -79,7 +79,17 @@ Objectif : installer le serveur web Apache, la base MariaDB, PHP, PHP‑FPM et l
 
 ![Mise à jour du serveur Debian](images/maj_server_debian.png)  
 ![Installation du LAMP](images/installation_LAMP.png)  
+
+```bash
+apt install apache2 mariadb-server php -y
+```
+
 ![Installation des dépendances PHP](images/installation_dependances_php.png)  
+
+```bash
+apt install php-{mysql,mbstring,curl,gd,xml,intl,ldap,apcu,xmlrpc,zip,bz2,bcmath} -y
+```
+
 ![Installation de la gestion des processus PHP (PHP-FPM)](images/installation_gestio_processus_php.png)  
 
 ---
