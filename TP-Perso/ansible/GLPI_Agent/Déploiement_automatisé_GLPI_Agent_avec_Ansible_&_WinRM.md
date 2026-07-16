@@ -322,12 +322,6 @@ win11_migration/
 └── ...
 ```
 
-Le programme d'installation est conservé sur le Controller Node :
-
-```text
-files/GLPI-Agent-1.18-x64.msi
-```
-
 Le programme utilisé pour le déploiement est GLPI Agent 1.18 pour Windows 64 bits.
 
 Le programme d'installation est téléchargé depuis la page officielle des releases du projet GLPI Agent sur GitHub.
