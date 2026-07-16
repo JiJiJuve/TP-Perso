@@ -207,6 +207,256 @@ Cette méthode permet de préparer progressivement les postes avant leur adminis
 
 ---
 
+## ⚙️ Préparation des postes Windows avec les GPO
+
+Avant qu'Ansible puisse administrer les postes Windows à distance, ceux-ci doivent être préparés au niveau d'Active Directory.
+
+Deux GPO ont été utilisées pour préparer les postes cibles :
+
+```text
+Active Directory
+        │
+        ├── Activation_WinRM_Ansible
+        │
+        └── GPO_Ansible_Local_Admin
+                    │
+                    ▼
+             Postes Windows
+                    │
+                    ▼
+          Administration par Ansible
+```
+
+Ces deux GPO ont des rôles différents mais complémentaires.
+
+---
+
+### 🔐 GPO `Activation_WinRM_Ansible`
+
+Cette GPO permet d'activer et de préparer le service **Windows Remote Management (WinRM)** sur les postes Windows.
+
+Elle permet notamment de configurer :
+
+```text
+WinRM
+  │
+  ├── Service activé
+  │
+  ├── Démarrage automatique
+  │
+  ├── Administration distante autorisée
+  │
+  └── Port TCP 5985 accessible
+```
+
+Une règle de pare-feu Windows est également déployée afin d'autoriser les connexions WinRM nécessaires à l'administration distante.
+
+![Règle GPO Firewall WinRM](Images/regle_firewall_gpo_open_winrm_port_5985_&_ip_server_ansible.PNG)
+
+La communication entre le Controller Node et les postes Windows suit alors ce chemin :
+
+```text
+Controller Node Debian
+        │
+        │ TCP 5985
+        ▼
+Pare-feu Windows
+        │
+        ▼
+Service WinRM
+        │
+        ▼
+Poste Windows
+```
+
+Sans cette configuration, Ansible ne pourrait pas établir sa connexion distante avec les postes Windows.
+
+---
+
+### 👤 GPO `GPO_Ansible_Local_Admin`
+
+La deuxième GPO permet d'ajouter le compte de service Ansible aux administrateurs locaux des postes Windows.
+
+Le compte utilisé est :
+
+```text
+CELDUC\ansible
+```
+
+Le fonctionnement est le suivant :
+
+```text
+Compte de domaine
+        │
+        ▼
+CELDUC\ansible
+        │
+        ▼
+GPO_Ansible_Local_Admin
+        │
+        ▼
+Administrateurs locaux
+        │
+        ▼
+Poste Windows
+```
+
+Le compte `CELDUC\ansible` dispose ainsi des droits nécessaires pour effectuer les opérations d'administration à distance avec Ansible.
+
+Il peut notamment :
+
+* vérifier l'état des services Windows ;
+* créer des dossiers ;
+* copier des fichiers ;
+* installer des logiciels ;
+* démarrer ou arrêter des services ;
+* exécuter des commandes PowerShell ;
+* effectuer des opérations d'administration à distance.
+
+---
+
+## 🔗 Complémentarité des deux GPO
+
+Les deux GPO sont indispensables au fonctionnement de l'administration automatisée :
+
+```text
+Activation_WinRM_Ansible
+        │
+        ├── Service WinRM disponible
+        ├── Administration distante activée
+        └── Port TCP 5985 accessible
+                    │
+                    ▼
+              Communication
+                    │
+                    ▼
+GPO_Ansible_Local_Admin
+        │
+        └── CELDUC\ansible
+            administrateur local
+                    │
+                    ▼
+          Droits suffisants pour agir
+                    │
+                    ▼
+              Ansible fonctionne
+```
+
+La chaîne complète est donc :
+
+```text
+Active Directory
+        │
+        ▼
+Application des GPO
+        │
+        ├──────────────────────────┐
+        │                          │
+        ▼                          ▼
+Activation_WinRM_Ansible    GPO_Ansible_Local_Admin
+        │                          │
+        ▼                          ▼
+WinRM + TCP 5985             CELDUC\ansible
+        │                          │
+        └──────────────┬───────────┘
+                       ▼
+                 Ansible
+                       │
+                       ▼
+              Administration distante
+```
+
+Pour qu'Ansible puisse administrer un poste Windows, plusieurs conditions doivent donc être réunies :
+
+```text
+1. Le poste est membre du domaine Active Directory
+                    ↓
+2. Les GPO sont appliquées
+                    ↓
+3. WinRM est activé
+                    ↓
+4. Le port TCP 5985 est accessible
+                    ↓
+5. Le compte CELDUC\ansible est administrateur local
+                    ↓
+6. Ansible peut établir sa connexion
+```
+
+---
+
+## 🧪 Vérification de l'accès au port WinRM
+
+Depuis le Controller Node Debian, la disponibilité du port TCP 5985 peut être vérifiée avec :
+
+```bash
+nc -vz -w 3 PC-JIJI 5985
+```
+
+Exemple de résultat :
+
+```text
+PC-JIJI.celduc.lan [192.168.1.231] 5985 open
+```
+
+![Vérification du port WinRM 5985](Images/verification_port_5985_Open_OK.PNG)
+
+Cette commande permet de vérifier que le port TCP utilisé par WinRM est accessible depuis le Controller Node.
+
+---
+
+## 🔄 Validation de la communication avec Ansible
+
+Une fois le réseau, WinRM et les droits configurés, la communication complète peut être testée avec Ansible :
+
+```bash
+ansible pc_jiji \
+-i inventory/glpi_agent.yml \
+-m ansible.windows.win_ping
+```
+
+Résultat attendu :
+
+```text
+pc_jiji | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+La réponse `pong` confirme que la chaîne complète fonctionne :
+
+```text
+DNS
+ ↓
+Réseau
+ ↓
+TCP 5985
+ ↓
+WinRM
+ ↓
+Authentification NTLM
+ ↓
+Compte CELDUC\ansible
+ ↓
+Administrateur local
+ ↓
+Ansible
+```
+
+Les postes Windows sont alors prêts à être administrés automatiquement depuis le Controller Node Debian.
+
+La même infrastructure peut ensuite être utilisée pour :
+
+* déployer GLPI Agent ;
+* installer des logiciels ;
+* vérifier des services ;
+* exécuter des commandes PowerShell ;
+* automatiser des opérations d'administration ;
+* préparer d'autres opérations sur le parc Windows.
+
+
+---
+
 # 🌐 WinRM et communication distante
 
 **WinRM (Windows Remote Management)** est le protocole utilisé par Ansible pour communiquer avec les postes Windows.
