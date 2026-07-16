@@ -244,7 +244,7 @@ La communication est validée avec :
 nc -vz -w 3 NOM_DU_POSTE 5985
 ```
 
-![Vérification du port WinRM 5985](Images/verification_port_5985_Open_OK.PNG)
+![Vérification du port WinRM 5985](Images/verification_port_5985_Open_OK.png)
 
 Puis avec Ansible :
 
@@ -330,7 +330,7 @@ files/GLPI-Agent-1.18-x64.msi
 
 Il est ensuite copié temporairement sur le poste Windows uniquement lorsque cela est nécessaire.
 
-![Programme installation agent glpi](Images/programme_installation_glpi_agent_files_server_ansible.PNG)
+![Programme installation agent glpi](Images/programme_installation_glpi_agent_files_server_ansible.png)
 
 ---
 
