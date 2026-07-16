@@ -244,6 +244,7 @@ La communication est validée avec :
 nc -vz -w 3 NOM_DU_POSTE 5985
 ```
 
+![Règle GPO Firewall WinRM](Images/verification_port_5985_Open_OK.PNG)
 Puis avec Ansible :
 
 ```bash
