@@ -577,18 +577,6 @@ playbook: playbooks/install_glpi_agent.yml
 Cette étape permet de détecter les erreurs YAML avant de contacter les postes Windows.
 
 ---
-![Déroulement des étapes du playbook](Images/deroulement_etapes_playbook.png)
-
-Le service doit finalement être :
-
-```text
-Service : glpi-agent
-État    : Running
-Mode    : Automatic
-Compte  : LocalSystem
-```
-
----
 
 # 🚀 Exécution du playbook
 
