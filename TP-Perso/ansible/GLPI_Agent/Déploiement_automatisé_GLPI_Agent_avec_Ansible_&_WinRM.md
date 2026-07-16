@@ -895,24 +895,3 @@ Ce projet constitue une base évolutive pour l'administration automatisée d'un 
 | GLPI Inventory   | Réception et traitement des inventaires |
 | GitHub           | Versionnement et documentation          |
 
----
-
-## 👤 Projet personnel
-
-Projet réalisé dans le cadre de ma montée en compétences en administration des infrastructures et automatisation.
-
-Domaines abordés :
-
-```text
-Administration système
-Réseaux
-Active Directory
-Windows Server
-Linux
-Automatisation
-Ansible
-PowerShell
-GLPI
-Gestion de parc
-```
-
