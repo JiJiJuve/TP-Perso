@@ -435,6 +435,8 @@ getent hosts PC-JIJI
 
 Cette méthode évite de maintenir manuellement les adresses IP dans l'inventaire.
 
+![Resolution DNS](Images/Verification_Resolution_DNS_getent.png)
+
 ---
 
 # 🧪 Validation de la connectivité
