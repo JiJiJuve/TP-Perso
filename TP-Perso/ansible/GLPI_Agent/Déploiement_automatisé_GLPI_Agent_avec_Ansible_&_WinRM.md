@@ -263,7 +263,7 @@ SUCCESS => {
 }
 ```
 
-![Validation WinRM et Firewall](Images/test_winRM_&_Firewall_GPO.png)
+![Validation WinRM et Firewall](Images/Test_Ping_Pong_OK.png)
 
 ---
 
