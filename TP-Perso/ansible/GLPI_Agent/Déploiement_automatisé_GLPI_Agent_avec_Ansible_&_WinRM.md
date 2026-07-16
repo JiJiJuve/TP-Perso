@@ -248,7 +248,7 @@ Activation_WinRM_Ansible
 
 Une règle de pare-feu Windows est également déployée afin d'autoriser le trafic nécessaire à la communication entre le Controller Node Ansible et les postes Windows.
 
-![Règle GPO Firewall WinRM](Images/regle_firewall_gpo_open_winrm_port_5985_&_ip_server_ansible.PNG)
+
 
 Le protocole WinRM utilisé dans ce projet fonctionne sur le port :
 
