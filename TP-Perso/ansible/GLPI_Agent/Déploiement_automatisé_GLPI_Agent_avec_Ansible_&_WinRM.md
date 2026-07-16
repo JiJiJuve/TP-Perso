@@ -702,7 +702,7 @@ Service démarré
 Démarrage automatique
 ```
 
-![Vérification distante de GLPI Agent](Images/verification_depuis_server_ansible_installation_glpi_agent_cible.png)
+![Vérification distante de GLPI Agent](Images/Verification_a_distance_deploiement_glpi_agent_sur_machines.png)
 
 ---
 
