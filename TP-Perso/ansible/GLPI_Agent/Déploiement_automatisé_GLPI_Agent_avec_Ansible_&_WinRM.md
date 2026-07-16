@@ -330,6 +330,8 @@ files/GLPI-Agent-1.18-x64.msi
 
 Il est ensuite copié temporairement sur le poste Windows uniquement lorsque cela est nécessaire.
 
+![Programme installation agent glpi](Images/programme_installation_glpi_agent_files_server_ansible.PNG)
+
 ---
 
 # 📦 Préparation de GLPI Agent
