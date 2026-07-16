@@ -553,21 +553,8 @@ Le playbook suit les étapes suivantes :
 8. Afficher le résultat
                     ↓
 9. Supprimer le MSI temporaire
+
 ```
-
-![Déroulement des étapes du playbook](Images/deroulement_etapes_playbook.png)
-
-Le service doit finalement être :
-
-```text
-Service : glpi-agent
-État    : Running
-Mode    : Automatic
-Compte  : LocalSystem
-```
-
----
-
 # 🧪 Vérification de la syntaxe
 
 Avant l'exécution, la syntaxe du playbook est vérifiée :
@@ -588,6 +575,18 @@ playbook: playbooks/install_glpi_agent.yml
 ![Vérification du playbook](Images/verification_playbook.png)
 
 Cette étape permet de détecter les erreurs YAML avant de contacter les postes Windows.
+
+---
+![Déroulement des étapes du playbook](Images/deroulement_etapes_playbook.png)
+
+Le service doit finalement être :
+
+```text
+Service : glpi-agent
+État    : Running
+Mode    : Automatic
+Compte  : LocalSystem
+```
 
 ---
 
