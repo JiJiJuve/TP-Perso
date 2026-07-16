@@ -405,8 +405,6 @@ glpi_targets
 
 ![Création de l'inventaire GLPI Agent](Images/Creation_Inventaire_glpi_agent_yml.png)
 
-![Inventaire complet des postes](Images/extrait_inventaire_tous_les_pc.png)
-
 ---
 
 # 🔎 Résolution DNS des postes
