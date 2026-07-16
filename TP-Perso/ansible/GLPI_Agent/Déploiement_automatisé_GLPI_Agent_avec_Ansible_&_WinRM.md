@@ -328,9 +328,13 @@ Le programme d'installation est conservé sur le Controller Node :
 files/GLPI-Agent-1.18-x64.msi
 ```
 
-Il est ensuite copié temporairement sur le poste Windows uniquement lorsque cela est nécessaire.
+Le programme utilisé pour le déploiement est GLPI Agent 1.18 pour Windows 64 bits.
 
-![Programme installation agent glpi](Images/programme_installation_glpi_agent_files_server_ansible.png)
+Le programme d'installation est téléchargé depuis la page officielle des releases du projet GLPI Agent sur GitHub.
+
+![Téléchargement de GLPI Agent](Images/lien_dowload_glpi_agent_github.png)
+
+Il est ensuite copié temporairement sur le poste Windows uniquement lorsque cela est nécessaire.
 
 ---
 
@@ -344,7 +348,7 @@ GLPI-Agent-1.18-x64.msi
 
 Le fichier MSI est stocké sur le Controller Node.
 
-![Téléchargement de GLPI Agent](Images/lien_dowload_glpi_agent_github.png)
+![Programme installation agent glpi](Images/programme_installation_glpi_agent_files_server_ansible.png)
 
 Le principe est :
 
