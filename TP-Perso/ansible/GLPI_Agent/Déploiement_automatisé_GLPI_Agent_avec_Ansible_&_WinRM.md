@@ -340,7 +340,7 @@ Application des GPO
 
 Cette préparation est ensuite vérifiée dans les étapes suivantes du projet, avec les tests de connectivité réseau, de disponibilité du port WinRM et de communication Ansible.
 
-````markdown
+
 ### Résolution DNS : noms courts et FQDN
 
 Lors des premiers tests, l'inventaire utilisait les noms courts des postes, par exemple :
