@@ -394,7 +394,7 @@ playbooks/install_glpi_agent.yml \
 
 Cette méthode permet de déployer progressivement l'agent GLPI sur les postes accessibles, sans bloquer le déploiement à cause des machines éteintes, non résolues par DNS ou présentant encore un problème WinRM.
 
-```
+---
 
 # 🌐 WinRM et communication distante
 
