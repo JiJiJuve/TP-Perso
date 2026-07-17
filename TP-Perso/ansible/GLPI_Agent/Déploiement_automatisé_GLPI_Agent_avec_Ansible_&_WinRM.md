@@ -809,6 +809,59 @@ car Ansible détecte que l'installation existe déjà.
 
 ---
 
+### ⚠️ Cas particulier : incompatibilité d'architecture 32 bits / 64 bits
+
+Le playbook utilise le package d'installation :
+
+```text
+GLPI-Agent-1.18-x64.msi
+```
+
+Ce package est destiné aux systèmes Windows 64 bits.
+
+Lors du déploiement, une machine (`RECEPTION-DTR`) a généré l'erreur MSI suivante :
+
+```text
+rc: 1633
+```
+
+avec le message :
+
+```text
+Ce package d’installation n’est pas pris en charge par ce type de processeur.
+```
+
+Le diagnostic a montré que le poste utilisait :
+
+```text
+Microsoft Windows 10 Professionnel 32 bits
+```
+
+Le problème provenait donc d'une incompatibilité entre l'architecture du système d'exploitation et le package MSI x64 utilisé par le playbook.
+
+L'architecture du système distant peut être vérifiée directement depuis le Controller Node Ansible avec :
+
+```bash
+ansible reception_dtr \
+-i inventory/glpi_agent.yml \
+-m ansible.windows.win_shell \
+-a 'Get-CimInstance Win32_OperatingSystem | Select-Object Caption,OSArchitecture; Get-CimInstance Win32_Processor | Select-Object Name,AddressWidth'
+```
+
+Exemple de résultat :
+
+```text
+Caption                            OSArchitecture
+-------                            --------------
+Microsoft Windows 10 Professionnel 32 bits
+```
+
+Cette vérification permet d'identifier rapidement les postes incompatibles avec le package `GLPI-Agent-1.18-x64.msi`.
+
+Pour ces postes, il est nécessaire d'utiliser une version de l'agent compatible avec l'architecture 32 bits, ou de prévoir un traitement spécifique dans le playbook.
+
+---
+
 # 🎯 Déploiement ciblé avec `--limit`
 
 Lorsque l'inventaire contient de nombreux postes, il n'est pas nécessaire d'exécuter le playbook sur l'ensemble du parc.
