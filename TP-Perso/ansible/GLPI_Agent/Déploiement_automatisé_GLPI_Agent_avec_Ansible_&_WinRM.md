@@ -831,6 +831,8 @@ avec le message :
 Ce package d’installation n’est pas pris en charge par ce type de processeur.
 ```
 
+![Erreur MSI liée à l'architecture](Images/extrait_erreur_architecture_windows_x32_x64.png)
+
 Le diagnostic a montré que le poste utilisait :
 
 ```text
@@ -855,6 +857,8 @@ Caption                            OSArchitecture
 -------                            --------------
 Microsoft Windows 10 Professionnel 32 bits
 ```
+
+![Vérification de l'architecture du poste distant](Images/check_architecture_pc_windows_x32_x64.png)
 
 Cette vérification permet d'identifier rapidement les postes incompatibles avec le package `GLPI-Agent-1.18-x64.msi`.
 
