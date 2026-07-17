@@ -340,9 +340,61 @@ Application des GPO
 
 Cette préparation est ensuite vérifiée dans les étapes suivantes du projet, avec les tests de connectivité réseau, de disponibilité du port WinRM et de communication Ansible.
 
+````markdown
+### Résolution DNS : noms courts et FQDN
 
+Lors des premiers tests, l'inventaire utilisait les noms courts des postes, par exemple :
 
----
+```yaml
+ansible_host: PC-JIJI
+````
+
+Certains postes étaient correctement résolus, mais la majorité ne l'était pas depuis le Controller Node Ansible.
+
+L'inventaire a donc été standardisé avec les **FQDN** (*Fully Qualified Domain Name*), c'est-à-dire le nom complet d'une machine incluant son domaine DNS :
+
+```yaml
+ansible_host: PC-JIJI.celduc.lan
+```
+
+L'utilisation du FQDN permet une résolution DNS plus explicite et plus fiable depuis le Controller Node :
+
+```text
+PC-JIJI.celduc.lan → 192.168.1.231
+```
+
+Après cette modification, les tests de connexion WinRM ont fonctionné correctement sur davantage de postes.
+
+### Sélection automatique des postes accessibles
+
+Lorsque le test `win_ping` est effectué sur l'ensemble de l'inventaire, il est possible de récupérer uniquement les machines ayant répondu avec succès :
+
+```bash
+ansible glpi_targets \
+-i inventory/glpi_agent.yml \
+-m ansible.windows.win_ping \
+| awk '/SUCCESS/ {print $1}' \
+| paste -sd, -
+```
+
+La commande génère une liste au format :
+
+```text
+pc_jiji,transfo_ada,transfo_prod,info_mgregoire
+```
+
+Cette liste peut ensuite être utilisée directement avec l'option `--limit` afin de lancer le playbook uniquement sur les machines accessibles :
+
+```bash
+ansible-playbook \
+-i inventory/glpi_agent.yml \
+playbooks/install_glpi_agent.yml \
+--limit "pc_jiji,transfo_ada,transfo_prod,info_mgregoire"
+```
+
+Cette méthode permet de déployer progressivement l'agent GLPI sur les postes accessibles, sans bloquer le déploiement à cause des machines éteintes, non résolues par DNS ou présentant encore un problème WinRM.
+
+```
 
 # 🌐 WinRM et communication distante
 
