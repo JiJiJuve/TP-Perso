@@ -269,6 +269,8 @@ Délai d'attente       : 30 secondes
 Ouvrir une session en tant que : Aucune modification
 ```
 
+![Configuration GPO Activation WinRM Ansible](Images/GPO_Activation_WinRM_Ansible.PNG)
+
 Cette configuration permet de s'assurer que le service WinRM est démarré automatiquement sur les postes ciblés et qu'il est disponible pour les connexions d'administration distante.
 
 ---
@@ -328,6 +330,9 @@ Administrateurs (intégré)
 Membre ajouté :
 CELDUC\ansible
 ```
+
+![Configuration GPO Ansible Local Admin](Images/GPO_Ansible_Local_Admin.PNG)
+
 
 Le fonctionnement est le suivant :
 
