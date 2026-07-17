@@ -228,16 +228,16 @@ Ces deux GPO ont des rôles complémentaires.
 
 ---
 
-### 🔐 GPO `Activation_WinRM_Ansible`
+## 🔐 GPO `Activation_WinRM_Ansible`
 
-Cette GPO prépare le service **Windows Remote Management (WinRM)** sur les postes Windows.
+Cette GPO prépare le service Windows Remote Management (WinRM) sur les postes Windows.
 
 Elle permet notamment de configurer les éléments nécessaires à l'administration distante :
 
 ```text
 Activation_WinRM_Ansible
         │
-        ├── Service WinRM activé
+        ├── Service WinRM configuré
         │
         ├── Démarrage automatique du service
         │
@@ -246,9 +246,46 @@ Activation_WinRM_Ansible
         └── Autorisation du trafic WinRM
 ```
 
+### 🔧 Configuration du service WinRM
+
+Le service WinRM est configuré via les préférences de stratégie de groupe.
+
+#### Chemin de configuration
+
+```text
+Configuration ordinateur
+└── Préférences
+    └── Paramètres du Panneau de configuration
+        └── Services
+```
+
+#### Configuration appliquée
+
+```text
+Nom du service        : WinRM
+Action du service     : Démarrer le service
+Type de démarrage     : Automatique
+Délai d'attente       : 30 secondes
+Ouvrir une session en tant que : Aucune modification
+```
+
+Cette configuration permet de s'assurer que le service WinRM est démarré automatiquement sur les postes ciblés et qu'il est disponible pour les connexions d'administration distante.
+
+---
+
+### 🔥 Configuration de la règle de pare-feu WinRM
+
 Une règle de pare-feu Windows est également déployée afin d'autoriser le trafic nécessaire à la communication entre le Controller Node Ansible et les postes Windows.
 
+#### Chemin de configuration
 
+```text
+Configuration ordinateur
+└── Préférences
+    └── Paramètres du Panneau de configuration
+        └── Pare-feu Windows avec fonctions avancées de sécurité
+            └── Règles de trafic entrant
+```
 
 Le protocole WinRM utilisé dans ce projet fonctionne sur le port :
 
@@ -256,17 +293,39 @@ Le protocole WinRM utilisé dans ce projet fonctionne sur le port :
 TCP 5985
 ```
 
-La GPO permet ainsi de préparer les postes Windows afin qu'ils puissent recevoir des connexions d'administration distante.
+La règle de pare-feu autorise ainsi les connexions WinRM entrantes depuis le Controller Node Ansible.
 
 ---
 
-### 👤 GPO `GPO_Ansible_Local_Admin`
+## 👤 GPO `GPO_Ansible_Local_Admin`
 
 La deuxième GPO permet d'ajouter le compte de service utilisé par Ansible au groupe des administrateurs locaux des postes Windows.
 
 Le compte utilisé est :
 
 ```text
+CELDUC\ansible
+```
+
+### 🔧 Chemin de configuration
+
+```text
+Configuration ordinateur
+└── Préférences
+    └── Paramètres du Panneau de configuration
+        └── Utilisateurs et groupes locaux
+```
+
+### ⚙️ Configuration appliquée
+
+```text
+Action :
+Mettre à jour
+
+Nom du groupe :
+Administrateurs (intégré)
+
+Membre ajouté :
 CELDUC\ansible
 ```
 
@@ -302,7 +361,7 @@ Cette configuration permet notamment à Ansible de :
 
 ---
 
-### 🔗 Rôle complémentaire des deux GPO
+## 🔗 Rôle complémentaire des deux GPO
 
 Les deux GPO répondent à deux besoins différents :
 
@@ -339,6 +398,7 @@ Application des GPO
 ```
 
 Cette préparation est ensuite vérifiée dans les étapes suivantes du projet, avec les tests de connectivité réseau, de disponibilité du port WinRM et de communication Ansible.
+
 
 
 ### Résolution DNS : noms courts et FQDN
