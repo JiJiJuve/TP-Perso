@@ -872,11 +872,11 @@ Lorsque l'inventaire contient de nombreux postes, il n'est pas nécessaire d'ex�
 
 L'option :
 
-```bash
+```text
 --limit
 ```
 
-permet de limiter l'exécution.
+permet de limiter l'exécution du playbook à une ou plusieurs machines précises.
 
 ## Un seul poste
 
@@ -896,23 +896,78 @@ playbooks/install_glpi_agent.yml \
 --limit "transfo_ada,transfo_prod"
 ```
 
-La stratégie utilisée est :
+## 🎯 Cibler automatiquement les machines accessibles
+
+Lorsque l'inventaire contient un grand nombre de postes, il est possible de tester la connectivité WinRM de l'ensemble des machines et de récupérer uniquement celles ayant répondu avec succès :
+
+```bash
+ansible glpi_targets \
+-i inventory/glpi_agent.yml \
+-m ansible.windows.win_ping \
+| awk '/SUCCESS/ {print $1}' \
+| paste -sd, -
+```
+
+![Machines accessibles après le test WinRM](Images/cli_machine_success_depuis_ping_pong.png)
+
+La commande :
+
+```text
+awk '/SUCCESS/ {print $1}'
+```
+
+récupère uniquement les noms des machines ayant répondu avec :
+
+```text
+SUCCESS
+```
+
+Puis :
+
+```text
+paste -sd, -
+```
+
+assemble ces noms sur une seule ligne, séparés par des virgules.
+
+Exemple :
+
+```text
+pc_jiji,transfo_ada,transfo_prod,compta_sgr,...
+```
+
+Cette liste peut ensuite être utilisée directement avec l'option `--limit` :
+
+```bash
+ansible-playbook \
+-i inventory/glpi_agent.yml \
+playbooks/install_glpi_agent.yml \
+--limit "pc_jiji,transfo_ada,transfo_prod,compta_sgr"
+```
+
+Le playbook est ainsi exécuté uniquement sur les machines ayant répondu correctement au test `win_ping`.
+
+![Lancement du playbook uniquement sur les machines accessibles](Images/lancement_playbook_uniquement_sur_machines_success_avec_--limit.png)
+
+La stratégie utilisée est donc :
 
 ```text
 Inventaire complet
         ↓
-      --limit
+Test de connectivité WinRM
         ↓
-Petit groupe de test
+Machines répondant SUCCESS
         ↓
-Validation
+awk + paste -sd, -
         ↓
-Déploiement progressif
+Liste des machines accessibles
         ↓
-Ensemble du parc
+--limit
+        ↓
+Déploiement uniquement sur ces machines
 ```
 
-Cette méthode permet de conserver un inventaire complet tout en contrôlant précisément le périmètre de chaque déploiement.
+Cette méthode permet de conserver un inventaire complet tout en contrôlant précisément le périmètre de chaque déploiement et en évitant de lancer le playbook sur les machines qui ne sont pas accessibles au moment du déploiement.
 
 ---
 
