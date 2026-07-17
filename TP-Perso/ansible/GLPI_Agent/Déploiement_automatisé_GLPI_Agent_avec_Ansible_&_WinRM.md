@@ -412,7 +412,7 @@ Lors des premiers tests, l'inventaire utilisait les noms courts des postes, par 
 
 ```yaml
 ansible_host: PC-JIJI
-````
+```
 
 Certains postes étaient correctement résolus, mais la majorité ne l'était pas depuis le Controller Node Ansible.
 
