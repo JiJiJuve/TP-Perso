@@ -1070,7 +1070,7 @@ Port : 10050
 
 L'interface Agent permet à Zabbix Server de communiquer directement avec le service **Zabbix Agent 2** installé sur le serveur PKI.
 
-![Création manuelle du serveur PKI dans Zabbix](Images/Creation_Manuellement_server_pki_gui_server_zabbix.png)
+
 
 ### Association du template de supervision
 
@@ -1116,6 +1116,8 @@ Une fois l'hôte créé et le template associé, Zabbix peut interroger l'agent 
 La disponibilité de l'agent et la remontée des premières métriques sont ensuite vérifiées dans l'interface Zabbix.
 
 ![Vérification de la disponibilité du serveur PKI dans Zabbix](Images/Creation_Manuellement_server_pki_gui_server_zabbix.png)
+
+![Remontée des métriques du serveur PKI dans Zabbix](Images/Extrait_remontee_metrique_PKI_in_server_zabbix.png)
 
 ```
 
