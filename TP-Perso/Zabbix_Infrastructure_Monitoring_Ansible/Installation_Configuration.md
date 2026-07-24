@@ -1109,14 +1109,17 @@ PKI
 192.168.1.236
 ```
 
+![Création de l'hôte PKI dans l'interface graphique Zabbix](Images/Creation_Hote_PKI_in_server_zabbix_gui.png)
+
 Une fois l'hôte créé et le template associé, Zabbix peut interroger l'agent installé sur le serveur PKI et commencer à collecter ses données.
 
 La disponibilité de l'agent et la remontée des premières métriques sont ensuite vérifiées dans l'interface Zabbix.
 
+![Vérification de la disponibilité du serveur PKI dans Zabbix](Images/Creation_Manuellement_server_pki_gui_server_zabbix.png)
+
 ```
 
-Cette version explique maintenant **le chemin dans l'interface**, **la création de l'hôte**, **le rôle de l'interface Agent**, **l'utilité du template** et **la logique de communication** sans refaire les étapes déjà documentées précédemment.
-```
+
 
 
 ## 6.6 Validation de la communication réseau depuis le serveur Zabbix
