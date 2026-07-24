@@ -915,7 +915,6 @@ Depuis le contrôleur Ansible, un test `ping` est effectué vers le serveur PKI 
 ping -c 4 192.168.1.236
 ```
 
-![Test de connectivité réseau avec le serveur PKI](Images/Test_Connectivite_reseau_PKI_Ping_Pong_OK.png)
 
 Le résultat confirme que la communication IP est fonctionnelle.
 
@@ -952,6 +951,8 @@ pki | SUCCESS => {
     "ping": "pong"
 }
 ```
+
+![Test de connectivité réseau avec le serveur PKI](Images/Test_Connectivite_reseau_PKI_Ping_Pong_OK.png)
 
 Ce résultat valide simultanément :
 
