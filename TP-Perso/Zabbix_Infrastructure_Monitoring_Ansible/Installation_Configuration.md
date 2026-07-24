@@ -844,3 +844,598 @@ Les données de supervision sont visibles directement dans l'interface graphique
 Cette première intégration manuelle valide le fonctionnement de la supervision d'un serveur Linux.
 
 Elle permet ensuite de passer à l'étape suivante du projet : l'automatisation du déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible.
+
+
+# 6. Déploiement automatisé de Zabbix Agent 2 avec Ansible
+
+Après avoir validé manuellement la supervision du serveur Linux GLPI, l'étape suivante consiste à automatiser le déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible.
+
+Le serveur PKI est utilisé comme première machine de validation de cette automatisation.
+
+L'objectif est de vérifier progressivement :
+
+* la communication entre le contrôleur Ansible et le serveur Windows ;
+* le déploiement automatisé de l'agent ;
+* la configuration du service ;
+* l'ouverture du port TCP 10050 ;
+* la communication entre Zabbix et l'agent ;
+* puis, dans un second temps, la création automatique de l'hôte dans Zabbix via l'API.
+
+La démarche suivie est donc :
+
+```text
+Contrôleur Ansible
+        ↓
+Test réseau et WinRM
+        ↓
+Déploiement de Zabbix Agent 2
+        ↓
+Validation du service Windows
+        ↓
+Ouverture du port TCP 10050
+        ↓
+Test depuis le serveur Zabbix
+        ↓
+Création manuelle initiale de l'hôte PKI
+        ↓
+Validation de la supervision
+        ↓
+Création du token API Zabbix
+        ↓
+Test Ansible → API Zabbix
+        ↓
+Automatisation de la création des hôtes
+```
+
+---
+
+## 6.1 Validation de la communication avec le serveur PKI
+
+Avant de déployer l'agent Zabbix, la communication entre le contrôleur Ansible et le serveur PKI est vérifiée.
+
+Le contrôleur Ansible est situé sur :
+
+```text
+ControllerNodeAnsible
+192.168.1.246
+```
+
+Le serveur PKI est situé sur :
+
+```text
+WS2022-CA
+192.168.1.236
+```
+
+La première étape consiste à vérifier la connectivité réseau entre les deux machines.
+
+Depuis le contrôleur Ansible, un test `ping` est effectué vers le serveur PKI :
+
+```bash
+ping -c 4 192.168.1.236
+```
+
+Le résultat confirme que la communication IP est fonctionnelle.
+
+La communication utilisée par Ansible repose ensuite sur :
+
+```text
+WinRM
+TCP 5985
+Transport NTLM
+```
+
+L'accessibilité du service WinRM est vérifiée avec :
+
+```bash
+nc -zv 192.168.1.236 5985
+```
+
+Le port doit apparaître comme accessible.
+
+La connexion Ansible est ensuite testée avec le module :
+
+```bash
+ansible pki \
+-i inventory/zabbix_agent.yml \
+-m ansible.windows.win_ping \
+--ask-vault-pass
+```
+
+Le résultat attendu est :
+
+```text
+pki | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Ce résultat valide simultanément :
+
+* la connectivité réseau ;
+* l'accès au service WinRM ;
+* l'authentification du compte `CELDUC\ansible` ;
+* l'utilisation du transport NTLM ;
+* la capacité d'Ansible à exécuter une tâche distante sur le serveur Windows.
+
+Le serveur PKI est donc prêt à recevoir le déploiement automatisé de Zabbix Agent 2.
+
+---
+
+## 6.2 Premier déploiement automatisé sur le serveur PKI
+
+Une fois la communication validée, le playbook de déploiement est exécuté sur le serveur PKI.
+
+Le déploiement est réalisé avec :
+
+```bash
+ansible-playbook \
+-i inventory/zabbix_agent.yml \
+playbooks/install_zabbix_agent.yml \
+--limit pki \
+--ask-vault-pass
+```
+
+Le playbook réalise automatiquement les opérations nécessaires à l'installation de l'agent Zabbix 2.
+
+Les principales étapes sont :
+
+1. vérifier si l'agent est déjà installé ;
+2. créer un répertoire temporaire ;
+3. copier le fichier MSI sur le serveur Windows ;
+4. installer Zabbix Agent 2 ;
+5. configurer l'agent ;
+6. démarrer le service ;
+7. configurer le démarrage automatique ;
+8. ouvrir le port TCP 10050 ;
+9. supprimer le fichier MSI temporaire.
+
+Le déploiement est réalisé depuis le contrôleur Ansible sans intervention manuelle sur le serveur PKI.
+
+![Déploiement automatisé de Zabbix Agent 2 sur le serveur PKI](Images/Verification_apres_deploiement_agent_zabbix_installe_configure_running_server_PKI.png)
+
+---
+
+## 6.3 Vérification du service Zabbix Agent 2
+
+Après le déploiement, l'état du service est vérifié sur le serveur PKI.
+
+La commande utilisée est :
+
+```powershell
+Get-Service -Name "Zabbix Agent 2"
+```
+
+Le service doit apparaître dans l'état :
+
+```text
+Status   : Running
+```
+
+Le démarrage automatique du service est également vérifié.
+
+La configuration attendue est :
+
+```text
+Status    : Running
+StartType : Automatic
+```
+
+Cette vérification confirme que l'installation de l'agent a été correctement réalisée par Ansible.
+
+---
+
+## 6.4 Vérification de l'écoute sur le port TCP 10050
+
+Zabbix Agent 2 utilise le port :
+
+```text
+TCP 10050
+```
+
+La présence du service en écoute est vérifiée sur le serveur PKI.
+
+Cette étape permet de confirmer que l'agent est prêt à recevoir les requêtes du serveur Zabbix.
+
+La communication attendue est :
+
+```text
+Serveur Zabbix
+192.168.1.230
+        │
+        │ TCP 10050
+        ▼
+Zabbix Agent 2
+PKI
+192.168.1.236
+```
+
+---
+
+## 6.5 Configuration du pare-feu Windows
+
+Pour permettre au serveur Zabbix d'interroger l'agent, le port TCP 10050 doit être autorisé dans le pare-feu Windows.
+
+La règle est créée avec :
+
+```powershell
+New-NetFirewallRule `
+-DisplayName "Zabbix Agent 2 - TCP 10050" `
+-Direction Inbound `
+-Protocol TCP `
+-LocalPort 10050 `
+-Action Allow `
+-Enabled True `
+-Profile Any
+```
+
+La présence de la règle est ensuite vérifiée avec :
+
+```powershell
+Get-NetFirewallRule `
+-DisplayName "Zabbix Agent 2 - TCP 10050"
+```
+
+La règle doit être active et autoriser les connexions entrantes sur le port TCP 10050.
+
+Lors des tests suivants, cette même configuration a également été appliquée lors du déploiement automatisé sur d'autres serveurs, notamment `srv_veeam`.
+
+![Création de la règle de pare-feu pour srv\_veeam](Images/creation_regle_parefeu_srv_veeam.png)
+
+---
+
+## 6.6 Validation de la communication réseau depuis le serveur Zabbix
+
+Une fois l'agent installé et le pare-feu configuré, l'accessibilité du port TCP 10050 est testée depuis le serveur Zabbix.
+
+Pour le serveur PKI :
+
+```bash
+nc -zv 192.168.1.236 10050
+```
+
+Le résultat attendu est :
+
+```text
+open
+```
+
+Cette étape confirme que le serveur Zabbix peut atteindre l'agent installé sur le serveur Windows.
+
+---
+
+## 6.7 Installation et utilisation de zabbix_get
+
+Pour effectuer une validation fonctionnelle de l'agent, l'outil `zabbix_get` est installé sur le serveur Zabbix.
+
+Cet outil permet d'interroger directement un agent Zabbix et de vérifier les réponses retournées.
+
+La communication est alors testée avec la clé :
+
+```text
+agent.ping
+```
+
+La commande utilisée est :
+
+```bash
+zabbix_get -s 192.168.1.236 -k agent.ping
+```
+
+Le résultat attendu est :
+
+```text
+1
+```
+
+La valeur `1` confirme que l'agent répond correctement aux requêtes du serveur Zabbix.
+
+La version de l'agent est également vérifiée :
+
+```bash
+zabbix_get -s 192.168.1.236 -k agent.version
+```
+
+Le résultat obtenu est :
+
+```text
+7.4.12
+```
+
+Cette validation permet de confirmer simultanément :
+
+* l'accessibilité réseau ;
+* l'ouverture du port TCP 10050 ;
+* le fonctionnement du service Zabbix Agent 2 ;
+* la capacité de l'agent à répondre aux requêtes ;
+* la version de l'agent déployée.
+
+![Installation de zabbix\_get et validation de la communication avec l'agent](Images/Installation_zabbix_get_&_verification_reseau_resultat_1.png)
+
+---
+
+## 6.8 Première intégration de PKI dans Zabbix
+
+Après avoir validé le fonctionnement de l'agent, le serveur PKI est ajouté dans l'interface Zabbix.
+
+Cette première intégration est réalisée manuellement afin de valider le fonctionnement complet de la supervision avant d'automatiser la création des hôtes.
+
+L'hôte est configuré avec :
+
+```text
+Nom de l'hôte : pki
+Adresse IP    : 192.168.1.236
+Port          : 10050
+```
+
+Le modèle utilisé est :
+
+```text
+Windows by Zabbix agent
+```
+
+![Création manuelle du serveur PKI dans Zabbix](Images/Creation_Manuellement_server_pki_gui_server_zabbix.png)
+
+Cette étape permet de séparer les deux problématiques :
+
+```text
+Déploiement de l'agent
+        ↓
+Validation de l'agent
+        ↓
+Création de l'hôte dans Zabbix
+        ↓
+Validation de la supervision
+```
+
+Le déploiement de l'agent étant déjà automatisé avec Ansible, la création de l'hôte dans Zabbix constitue alors la prochaine étape à automatiser.
+
+---
+
+## 6.9 Validation de la supervision de PKI dans l'interface Zabbix
+
+Après la création de l'hôte, la disponibilité de l'agent est vérifiée dans l'interface Zabbix.
+
+L'indicateur `ZBX` apparaît en vert.
+
+Cette validation confirme que :
+
+* l'agent est installé ;
+* le service est démarré ;
+* le port TCP 10050 est accessible ;
+* le serveur Zabbix peut communiquer avec l'agent ;
+* le nom d'hôte est correctement configuré ;
+* le template Windows est correctement associé.
+
+![Validation de la disponibilité du serveur PKI dans Zabbix](Images/Test_Validation_remontee_server_dans_zabbix_gui.png)
+
+Le premier déploiement automatisé de Zabbix Agent 2 sur un serveur Windows est donc validé.
+
+---
+
+## 6.10 Création du token API Zabbix
+
+Afin d'automatiser également la création des hôtes dans Zabbix, l'API Zabbix est utilisée.
+
+Un token API est créé dans l'interface Zabbix.
+
+Ce token permet à Ansible de communiquer avec le serveur Zabbix et de créer ou mettre à jour automatiquement les hôtes.
+
+![Création du token API Zabbix](Images/creation_token_API_server_zabbix.png)
+
+Le token est ensuite utilisé par Ansible pour les opérations réalisées via l'API.
+
+Pour des raisons de sécurité, le token n'est pas stocké directement en clair dans le playbook.
+
+Il est stocké dans Ansible Vault avec les autres informations sensibles :
+
+```text
+zabbix_api_token
+```
+
+---
+
+## 6.11 Test de communication entre Ansible et l'API Zabbix
+
+Avant d'ajouter la création automatique des hôtes au playbook principal, un test spécifique est réalisé.
+
+L'objectif est de vérifier séparément la communication entre :
+
+```text
+Contrôleur Ansible
+        │
+        │ API Zabbix
+        ▼
+Serveur Zabbix
+192.168.1.230
+```
+
+Un playbook de test est utilisé afin de valider :
+
+* l'accès au serveur Zabbix ;
+* l'utilisation du token API ;
+* l'authentification auprès de l'API ;
+* la communication entre Ansible et Zabbix.
+
+Le résultat du test est validé avec succès.
+
+![Test de communication entre Ansible et l'API Zabbix](Images/PLayboo_Test_communication_server_ansible_api_zabbix_OK.png)
+
+Cette validation permet d'éviter de modifier directement le playbook de déploiement avant d'avoir confirmé que la communication avec l'API fonctionne correctement.
+
+---
+
+## 6.12 Automatisation de la création de l'hôte dans Zabbix
+
+Une fois la communication avec l'API validée, le playbook est amélioré.
+
+Une nouvelle tâche est ajoutée afin de créer ou mettre à jour automatiquement l'hôte dans Zabbix.
+
+Le module utilisé est :
+
+```text
+community.zabbix.zabbix_host
+```
+
+Cette tâche permet notamment de configurer automatiquement :
+
+* le nom de l'hôte ;
+* le groupe Zabbix ;
+* le template ;
+* l'interface agent ;
+* l'adresse IP ;
+* le port TCP 10050.
+
+La chaîne de déploiement devient alors :
+
+```text
+Ansible
+    ↓
+WinRM
+    ↓
+Installation de Zabbix Agent 2
+    ↓
+Configuration du service
+    ↓
+Pare-feu TCP 10050
+    ↓
+API Zabbix
+    ↓
+Création automatique de l'hôte
+```
+
+![Ajout de la tâche de création automatique de l'hôte](Images/Playbook_avec_New_Tache.png)
+
+Le playbook permet désormais d'automatiser à la fois le déploiement de l'agent et l'intégration du serveur dans Zabbix.
+
+---
+
+## 6.13 Première création automatisée d'un hôte dans Zabbix
+
+Le playbook est ensuite exécuté avec la nouvelle tâche d'intégration API.
+
+L'hôte est créé automatiquement dans Zabbix depuis le contrôleur Ansible.
+
+Cette opération permet de supprimer l'étape de création manuelle de l'hôte.
+
+La nouvelle chaîne est donc :
+
+```text
+Serveur Windows
+        ↓
+Ansible
+        ↓
+Installation de l'agent
+        ↓
+Configuration Windows
+        ↓
+Pare-feu
+        ↓
+API Zabbix
+        ↓
+Création automatique de l'hôte
+        ↓
+Supervision
+```
+
+![Création automatique d'un hôte depuis Ansible dans Zabbix](Images/creation_automatisee_hote_depuis_ansible_sur_zabbix_server.png)
+
+La création automatique de l'hôte est ainsi validée.
+
+---
+
+## 6.14 Déploiement automatisé sur plusieurs serveurs
+
+Après validation du fonctionnement sur le serveur PKI, le déploiement est étendu à plusieurs serveurs Windows.
+
+Le playbook permet de déployer automatiquement Zabbix Agent 2 et de créer les hôtes correspondants dans Zabbix.
+
+Le lancement du déploiement est réalisé depuis le contrôleur Ansible.
+
+Plusieurs serveurs sont déployés avec succès.
+
+![Déploiement automatisé sur plusieurs serveurs Windows](Images/lancement_playbook_5_server_OK.png)
+
+Les machines intégrées comprennent notamment :
+
+```text
+PKI
+SRV-VEEAM
+CAO-RELAIS
+CAO-TRANSFO
+DATA1-2014
+SAGE
+```
+
+Chaque serveur est automatiquement :
+
+* préparé ;
+* équipé de Zabbix Agent 2 ;
+* configuré ;
+* associé à une règle de pare-feu ;
+* intégré dans Zabbix via l'API.
+
+---
+
+## 6.15 Vérification après déploiement
+
+Après le déploiement, les serveurs sont vérifiés directement sur leur système d'exploitation.
+
+L'état du service Zabbix Agent 2 doit être :
+
+```text
+Running
+```
+
+Le port TCP 10050 doit également être accessible.
+
+Des validations complémentaires sont réalisées depuis le serveur Zabbix avec :
+
+```bash
+zabbix_get -s <IP> -k agent.ping
+```
+
+Le résultat attendu est :
+
+```text
+1
+```
+
+Ces tests permettent de vérifier que les agents déployés automatiquement fonctionnent correctement.
+
+---
+
+## 6.16 Validation finale dans l'interface Zabbix
+
+La dernière étape consiste à vérifier la disponibilité des serveurs dans l'interface Zabbix.
+
+Les hôtes apparaissent comme disponibles avec l'indicateur `ZBX` en vert.
+
+Cette validation confirme que la chaîne complète fonctionne :
+
+```text
+Active Directory / GPO
+        ↓
+WinRM
+        ↓
+Ansible
+        ↓
+Installation de Zabbix Agent 2
+        ↓
+Configuration Windows
+        ↓
+Pare-feu TCP 10050
+        ↓
+API Zabbix
+        ↓
+Création automatique de l'hôte
+        ↓
+Supervision opérationnelle
+```
+
+L'automatisation du déploiement et de l'intégration des serveurs Windows dans Zabbix est désormais fonctionnelle.
+
+La procédure initialement réalisée sur un seul serveur de test peut donc être reproduite sur plusieurs serveurs de l'infrastructure.
+
+La prochaine étape consiste à valider le déploiement complet sur un premier serveur, puis à l'étendre progressivement aux autres serveurs de l'infrastructure.
