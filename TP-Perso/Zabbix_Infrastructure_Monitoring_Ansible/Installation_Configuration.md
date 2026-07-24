@@ -996,50 +996,105 @@ Les principales étapes sont :
 
 Le déploiement est réalisé depuis le contrôleur Ansible sans intervention manuelle sur le serveur PKI.
 
-![Déploiement automatisé de Zabbix Agent 2 sur le serveur PKI](Images/Verification_apres_deploiement_agent_zabbix_installe_configure_running_server_PKI.png)
+![Déploiement automatisé de Zabbix Agent 2 sur le serveur PKI](Images/Premier_déploiement_automatisé_sur_le_serveur_PKI.png)
 
 ---
 
-## 6.3 Vérification du service Zabbix Agent 2
+## 6.3 Vérification du service et de la règle de pare-feu
 
-Après le déploiement, l'état du service est vérifié sur le serveur PKI.
+Après le déploiement, le fonctionnement de l'agent Zabbix Agent 2 est vérifié à distance depuis le contrôleur Ansible.
 
-La commande utilisée est :
+La vérification est réalisée avec le module `win_shell` afin d'exécuter des commandes PowerShell directement sur le serveur Windows PKI :
 
-```powershell
-Get-Service -Name "Zabbix Agent 2"
+```bash
+ansible pki \
+-i inventory/zabbix_agent.yml \
+-m ansible.windows.win_shell \
+-a "Get-Service 'Zabbix Agent 2'; Get-NetFirewallRule -DisplayName 'Zabbix Agent 2 - TCP 10050'" \
+--ask-vault-pass
 ```
+
+Cette commande permet de vérifier simultanément :
+
+* l'existence du service **Zabbix Agent 2** ;
+* son état de fonctionnement ;
+* la présence de la règle de pare-feu autorisant le port TCP 10050.
 
 Le service doit apparaître dans l'état :
 
 ```text
-Status   : Running
+Status : Running
 ```
 
-Le démarrage automatique du service est également vérifié.
+La règle de pare-feu doit également être présente et active afin d'autoriser les connexions entrantes vers l'agent Zabbix.
 
-La configuration attendue est :
+Cette vérification confirme que le déploiement automatisé a correctement configuré les principaux composants nécessaires à la supervision du serveur PKI.
 
-```text
-Status    : Running
-StartType : Automatic
-```
-
-Cette vérification confirme que l'installation de l'agent a été correctement réalisée par Ansible.
+![Vérification du service Zabbix Agent 2 après déploiement](Images/Verification_apres_deploiement_agent_zabbix_installe_configure_running_server_PKI.png)
 
 ---
 
-## 6.4 Vérification de l'écoute sur le port TCP 10050
+## 6.4 Création manuelle du serveur PKI dans Zabbix
 
-Zabbix Agent 2 utilise le port :
+À ce stade, Zabbix Agent 2 est installé et fonctionnel sur le serveur PKI.
+
+La création de l'hôte dans Zabbix est d'abord réalisée manuellement afin de valider le fonctionnement complet de la supervision avant d'automatiser cette étape avec l'API Zabbix.
+
+### Création de l'hôte
+
+Dans l'interface Web de Zabbix, accéder à :
 
 ```text
-TCP 10050
+Collecte de données → Hôtes
+````
+
+Cliquer ensuite sur :
+
+```text
+Créer un hôte
 ```
 
-La présence du service en écoute est vérifiée sur le serveur PKI.
+L'hôte est créé avec les paramètres suivants :
 
-Cette étape permet de confirmer que l'agent est prêt à recevoir les requêtes du serveur Zabbix.
+```text
+Nom de l'hôte : PKI
+```
+
+Dans la section **Interfaces**, ajouter une interface de type :
+
+```text
+Type : Agent
+IP   : 192.168.1.236
+Port : 10050
+```
+
+L'interface Agent permet à Zabbix Server de communiquer directement avec le service **Zabbix Agent 2** installé sur le serveur PKI.
+
+![Création manuelle du serveur PKI dans Zabbix](Images/Creation_Manuellement_server_pki_gui_server_zabbix.png)
+
+### Association du template de supervision
+
+Un template de supervision Windows est ensuite associé à l'hôte.
+
+Le template contient notamment :
+
+* les éléments de collecte ;
+* les règles de découverte ;
+* les déclencheurs ;
+* les paramètres permettant de récupérer les métriques du système.
+
+Le template permet ainsi d'éviter de créer manuellement chaque élément de supervision.
+
+L'association d'un template permet donc à Zabbix de commencer automatiquement à collecter les informations du serveur PKI, telles que :
+
+* l'utilisation du processeur ;
+* la mémoire ;
+* les disques ;
+* les interfaces réseau ;
+* les services Windows ;
+* différents paramètres système.
+
+La configuration de l'hôte est ensuite enregistrée.
 
 La communication attendue est :
 
@@ -1054,39 +1109,15 @@ PKI
 192.168.1.236
 ```
 
----
+Une fois l'hôte créé et le template associé, Zabbix peut interroger l'agent installé sur le serveur PKI et commencer à collecter ses données.
 
-## 6.5 Configuration du pare-feu Windows
+La disponibilité de l'agent et la remontée des premières métriques sont ensuite vérifiées dans l'interface Zabbix.
 
-Pour permettre au serveur Zabbix d'interroger l'agent, le port TCP 10050 doit être autorisé dans le pare-feu Windows.
-
-La règle est créée avec :
-
-```powershell
-New-NetFirewallRule `
--DisplayName "Zabbix Agent 2 - TCP 10050" `
--Direction Inbound `
--Protocol TCP `
--LocalPort 10050 `
--Action Allow `
--Enabled True `
--Profile Any
 ```
 
-La présence de la règle est ensuite vérifiée avec :
-
-```powershell
-Get-NetFirewallRule `
--DisplayName "Zabbix Agent 2 - TCP 10050"
+Cette version explique maintenant **le chemin dans l'interface**, **la création de l'hôte**, **le rôle de l'interface Agent**, **l'utilité du template** et **la logique de communication** sans refaire les étapes déjà documentées précédemment.
 ```
 
-La règle doit être active et autoriser les connexions entrantes sur le port TCP 10050.
-
-Lors des tests suivants, cette même configuration a également été appliquée lors du déploiement automatisé sur d'autres serveurs, notamment `srv_veeam`.
-
-![Création de la règle de pare-feu pour srv\_veeam](Images/creation_regle_parefeu_srv_veeam.png)
-
----
 
 ## 6.6 Validation de la communication réseau depuis le serveur Zabbix
 
