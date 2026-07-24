@@ -714,193 +714,133 @@ Avant d'automatiser le déploiement de Zabbix Agent 2 sur les serveurs Windows a
 
 Le serveur utilisé est le serveur GLPI.
 
-Cette étape permet de valider progressivement le fonctionnement de la supervision d'un serveur Linux avant de passer à l'automatisation.
+Cette étape permet de valider le fonctionnement de la supervision d'un serveur Linux avant de passer à l'automatisation.
 
-La démarche suivie est la suivante :
+---
 
-```text
-Installation de Zabbix Agent 2
-              ↓
-Configuration de l'agent
-              ↓
-Démarrage du service
-              ↓
-Vérification du port TCP 10050
-              ↓
-Ajout de l'hôte dans Zabbix
-              ↓
-Association du template Linux
-              ↓
-Validation de la disponibilité
-              ↓
-Remontée des métriques
-              ↓
-Visualisation des données
+## 5.1 Vérification et installation de l'agent Zabbix
+
+La disponibilité du paquet `zabbix-agent` est d'abord vérifiée avec :
+
+```bash
+apt policy zabbix-agent
 ```
 
+![Vérification de la disponibilité du paquet Zabbix Agent](Images/verification_depot_zabbix_server_debian_glpi.png)
+
+L'agent est ensuite installé manuellement :
+
+```bash
+sudo apt install zabbix-agent -y
+```
+
+Après l'installation, l'état du service est vérifié :
+
+```bash
+systemctl status zabbix-agent
+```
+
+Le service doit apparaître comme actif et fonctionnel.
+
+![Installation et vérification de l'agent Zabbix](Images/Installation_&_Verification_depot_zabbix_agent.png)
+
 ---
 
-## 5.1 Installation de Zabbix Agent 2
-
-Zabbix Agent 2 est installé manuellement sur le serveur GLPI.
-
-Cette première installation permet de valider le fonctionnement de l'agent Linux avant de rechercher une éventuelle automatisation de cette étape.
-
----
-
-## 5.2 Configuration de l'agent
+## 5.2 Configuration de l'agent Zabbix
 
 Le fichier de configuration utilisé est :
 
 ```text
-/etc/zabbix/zabbix_agent2.conf
+/etc/zabbix/zabbix_agentd.conf
 ```
 
-La configuration de l'agent permet notamment d'indiquer :
+Le fichier est modifié manuellement avec :
 
-* l'adresse du serveur Zabbix ;
-* le serveur autorisé à interroger l'agent ;
-* le serveur utilisé pour la supervision active ;
-* le nom de l'hôte.
+```bash
+sudo nano /etc/zabbix/zabbix_agentd.conf
+```
 
-La configuration est réalisée manuellement sur le serveur GLPI.
+Les principaux paramètres configurés sont ensuite vérifiés avec :
 
-![Configuration du fichier de configuration de Zabbix Agent 2](Images/Conf_fichier_agent_zabbix_server_glpi.png)
+```bash
+grep -E '^(Server|ServerActive|Hostname)=' \
+/etc/zabbix/zabbix_agentd.conf
+```
+
+Les paramètres permettent notamment de définir :
+
+* le serveur Zabbix autorisé à interroger l'agent ;
+* le serveur Zabbix utilisé pour la supervision active ;
+* le nom de l'hôte dans Zabbix.
+
+![Configuration du fichier zabbix\_agentd.conf](Images/Conf_fichier_agent_zabbix_server_glpi.png)
 
 ---
 
-## 5.3 Démarrage et activation du service
+## 5.3 Vérification du port d'écoute de l'agent
 
-Une fois la configuration terminée, le service Zabbix Agent 2 est démarré.
-
-Le service est également activé afin de démarrer automatiquement avec le système.
-
-Cette étape permet de garantir que l'agent reste disponible après un redémarrage du serveur.
-
----
-
-## 5.4 Vérification de la communication réseau
-
-Zabbix Agent 2 utilise le port TCP :
+L'agent Zabbix utilise le port TCP :
 
 ```text
 10050
 ```
 
-Ce port doit être accessible depuis le serveur Zabbix afin de permettre la collecte des données.
+La présence du service en écoute est vérifiée avec :
 
-La disponibilité du port est vérifiée depuis le serveur Zabbix.
-
-![Vérification du port TCP 10050 du serveur GLPI](Images/Verification_port_10050_server_glpi.png)
-
-Cette vérification confirme que le serveur Zabbix peut atteindre l'agent installé sur le serveur GLPI.
-
----
-
-## 5.5 Ajout manuel de l'hôte dans Zabbix
-
-Le serveur GLPI est ensuite ajouté manuellement dans l'interface Zabbix.
-
-Une interface de type :
-
-```text
-Zabbix Agent
+```bash
+ss -tulpn | grep 10050
 ```
 
-est configurée avec l'adresse IP du serveur GLPI et le port :
+Cette vérification confirme que l'agent est correctement démarré et écoute sur le port prévu.
 
-```text
-10050
+![Vérification du port TCP 10050](Images/Verification_port_10050_server_glpi.png)
+
+---
+
+## 5.4 Test de communication depuis le serveur Zabbix
+
+L'accessibilité du port TCP 10050 est ensuite testée depuis le serveur Zabbix :
+
+```bash
+nc -zv 192.168.1.247 10050
 ```
 
-Un template Linux est ensuite associé à l'hôte afin de permettre la collecte des métriques système.
+Le résultat obtenu est :
 
-Cette étape est volontairement réalisée manuellement afin de valider le fonctionnement de la supervision avant la mise en place de l'automatisation avec Ansible.
+```text
+open
+```
 
----
+La communication réseau entre le serveur Zabbix et l'agent installé sur le serveur GLPI est donc fonctionnelle.
 
-## 5.6 Vérification de la disponibilité de l'agent
-
-Après la création de l'hôte, la disponibilité de l'agent est vérifiée depuis l'interface Zabbix.
-
-L'agent du serveur GLPI apparaît comme disponible dans la supervision.
-
-![Agent GLPI disponible dans la supervision Zabbix](Images/Agent_GLPI_disponible_dans_surveillance_hotes.png)
-
-Cette validation confirme que :
-
-* l'hôte est correctement configuré ;
-* l'interface Agent est accessible ;
-* le serveur Zabbix communique avec l'agent Linux.
+![Test de communication entre le serveur Zabbix et l'agent GLPI](Images/Verification_depuis_server_zabbix_voit_agent_sur_server_glpi.png)
 
 ---
 
-## 5.7 Validation de la communication depuis le serveur Zabbix
+## 5.5 Vérification de la disponibilité dans Zabbix
 
-La communication entre le serveur Zabbix et l'agent installé sur le serveur GLPI est ensuite vérifiée.
+Le serveur GLPI est ajouté dans l'interface Zabbix et associé à un template Linux adapté.
 
-![Validation de la communication entre le serveur Zabbix et l'agent](Images/Verification_depuis_server_zabbix_voit_agent_sur_server_glpi.png)
+Dans :
 
-Cette étape confirme que la supervision de l'hôte Linux est opérationnelle.
+**Surveillance → Hôtes**
+
+l'interface de l'agent apparaît comme disponible.
+
+![Disponibilité de l'agent Zabbix sur le serveur GLPI](Images/Agent_GLPI_disponible_dans_surveillance_hotes.png)
+
+L'indicateur vert confirme que le serveur Zabbix communique correctement avec l'agent installé sur le serveur GLPI.
 
 ---
 
-## 5.8 Remontée des premières métriques
+## 5.6 Remontée des métriques
 
-Une fois la communication validée, Zabbix commence à collecter les informations du serveur GLPI.
+Une fois la communication établie, les premières métriques du serveur GLPI sont collectées par Zabbix.
 
-Les données collectées concernent notamment :
-
-* l'utilisation du processeur ;
-* la mémoire ;
-* l'espace disque ;
-* l'activité réseau ;
-* les performances générales du serveur.
+Les données de supervision sont visibles directement dans l'interface graphique.
 
 ![Remontée des métriques du serveur GLPI](Images/extrait_metriques_server_glpi_sur_server_zabbix.png)
 
----
+Cette première intégration manuelle valide le fonctionnement de la supervision d'un serveur Linux.
 
-## 5.9 Visualisation graphique des données
-
-Les données collectées peuvent être consultées sous forme de graphiques.
-
-Cette représentation permet de suivre l'évolution des performances du serveur dans le temps.
-
-![Métriques du serveur GLPI sous forme graphique](Images/exemple_collect_donnees_metrique_sous_forme_graphique_server_zabbix.png)
-
----
-
-## 5.10 Visualisation des performances dans un tableau de bord
-
-Les informations de supervision peuvent également être regroupées dans un tableau de bord.
-
-Cette présentation permet d'obtenir une vision synthétique de l'état et des performances du serveur GLPI.
-
-![Performances du serveur GLPI dans un tableau de bord](Images/exemple_collect_donnees_metrique_sous_forme_tableau_bord_system_performance_server_zabbix.png)
-
----
-
-## 5.11 Bilan de la première intégration
-
-L'intégration manuelle du serveur GLPI a permis de valider l'ensemble de la chaîne de supervision Linux :
-
-```text
-Serveur GLPI
-     ↓
-Zabbix Agent 2
-     ↓
-Port TCP 10050
-     ↓
-Serveur Zabbix
-     ↓
-Template Linux
-     ↓
-Collecte des métriques
-     ↓
-Graphiques et tableaux de bord
-```
-
-Cette validation constitue une étape importante du projet.
-
-Le fonctionnement de Zabbix ayant été confirmé manuellement sur un serveur Linux, le projet peut ensuite évoluer vers l'automatisation du déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible.
+Elle permet ensuite de passer à l'étape suivante du projet : l'automatisation du déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible.
