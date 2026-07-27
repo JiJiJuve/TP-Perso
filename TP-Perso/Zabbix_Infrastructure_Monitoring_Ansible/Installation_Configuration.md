@@ -1071,7 +1071,6 @@ Port : 10050
 L'interface Agent permet à Zabbix Server de communiquer directement avec le service **Zabbix Agent 2** installé sur le serveur PKI.
 
 
-
 ### Association du template de supervision
 
 Un template de supervision Windows est ensuite associé à l'hôte.
@@ -1119,44 +1118,21 @@ La disponibilité de l'agent et la remontée des premières métriques sont ensu
 
 ![Remontée des métriques du serveur PKI dans Zabbix](Images/Extrait_remontee_metrique_PKI_in_server_zabbix.png)
 
-```
-
-
-
-
-## 6.6 Validation de la communication réseau depuis le serveur Zabbix
-
-Une fois l'agent installé et le pare-feu configuré, l'accessibilité du port TCP 10050 est testée depuis le serveur Zabbix.
-
-Pour le serveur PKI :
-
-```bash
-nc -zv 192.168.1.236 10050
-```
-
-Le résultat attendu est :
-
-```text
-open
-```
-
-Cette étape confirme que le serveur Zabbix peut atteindre l'agent installé sur le serveur Windows.
-
 ---
 
-## 6.7 Installation et utilisation de zabbix_get
+## 6.5 Vérification de la communication avec `zabbix_get`
 
-Pour effectuer une validation fonctionnelle de l'agent, l'outil `zabbix_get` est installé sur le serveur Zabbix.
+Après la création manuelle de l'hôte PKI dans Zabbix, la communication avec l'agent est vérifiée directement depuis le serveur Zabbix à l'aide de l'outil `zabbix_get`.
 
-Cet outil permet d'interroger directement un agent Zabbix et de vérifier les réponses retournées.
+Cet outil permet d'interroger directement un agent Zabbix et de vérifier qu'il répond correctement aux requêtes.
 
-La communication est alors testée avec la clé :
+L'installation de l'outil est réalisée avec :
 
-```text
-agent.ping
+```bash
+sudo apt install zabbix-get -y
 ```
 
-La commande utilisée est :
+La communication avec l'agent installé sur le serveur PKI est ensuite testée avec :
 
 ```bash
 zabbix_get -s 192.168.1.236 -k agent.ping
@@ -1168,31 +1144,21 @@ Le résultat attendu est :
 1
 ```
 
-La valeur `1` confirme que l'agent répond correctement aux requêtes du serveur Zabbix.
-
-La version de l'agent est également vérifiée :
+La version de l'agent est ensuite vérifiée avec :
 
 ```bash
 zabbix_get -s 192.168.1.236 -k agent.version
 ```
 
-Le résultat obtenu est :
+Cette commande permet de confirmer la version de Zabbix Agent 2 installée sur le serveur PKI.
 
-```text
-7.4.12
-```
+Ces tests valident directement la communication entre le serveur Zabbix `192.168.1.230` et l'agent Zabbix Agent 2 installé sur le serveur PKI `192.168.1.236` via le port TCP `10050`.
 
-Cette validation permet de confirmer simultanément :
-
-* l'accessibilité réseau ;
-* l'ouverture du port TCP 10050 ;
-* le fonctionnement du service Zabbix Agent 2 ;
-* la capacité de l'agent à répondre aux requêtes ;
-* la version de l'agent déployée.
-
-![Installation de zabbix\_get et validation de la communication avec l'agent](Images/Installation_zabbix_get_&_verification_reseau_resultat_1.png)
+La communication entre le serveur Zabbix et l'agent étant validée, l'étape suivante consiste à préparer l'automatisation de la création des hôtes dans Zabbix via son API.
 
 ---
+
+
 
 ## 6.8 Première intégration de PKI dans Zabbix
 
