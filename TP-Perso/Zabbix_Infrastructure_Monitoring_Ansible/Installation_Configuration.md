@@ -183,44 +183,50 @@ Cette méthode permet de superviser les informations système et les métriques 
 
 # Sommaire
 
-* [1. Préparation de la machine virtuelle](#1-préparation-de-la-machine-virtuelle)
-* [2. Installation et configuration de Debian](#2-installation-et-configuration-de-debian)
-* [3. Installation du serveur Zabbix](#3-installation-du-serveur-zabbix)
-* [4. Configuration de MariaDB](#4-configuration-de-mariadb)
-* [5. Configuration d'Apache et PHP-FPM](#5-configuration-dapache-et-php-fpm)
-* [6. Première connexion à l'interface Zabbix](#6-première-connexion-à-linterface-zabbix)
-* [7. Préparation des serveurs Windows avec Active Directory et GPO](#7-préparation-des-serveurs-windows-avec-active-directory-et-gpo)
-* [8. Configuration de WinRM](#8-configuration-de-winrm)
-* [9. Déploiement de Zabbix Agent 2 avec Ansible](#9-déploiement-de-zabbix-agent-2-avec-ansible)
-* [10. Protection des secrets avec Ansible Vault](#10-protection-des-secrets-avec-ansible-vault)
-* [11. Création automatique des hôtes via l'API Zabbix](#11-création-automatique-des-hôtes-via-lapi-zabbix)
-* [12. Déploiement sur plusieurs serveurs Windows](#12-déploiement-sur-plusieurs-serveurs-windows)
-* [13. Cas particulier : Windows Server 2012 et PowerShell 3.0](#13-cas-particulier-windows-server-2012-et-powershell-30)
-* [14. Déploiement sur les contrôleurs de domaine](#14-déploiement-sur-les-contrôleurs-de-domaine)
-* [15. Supervision du contrôleur Ansible](#15-supervision-du-contrôleur-ansible)
-* [16. Supervision du FortiGate avec SNMPv3](#16-supervision-du-fortigate-avec-snmpv3)
-* [17. Exploitation de la supervision](#17-exploitation-de-la-supervision)
-* [18. Bilan du projet](#18-bilan-du-projet)
+* [1. Présentation du projet](#1-présentation-du-projet)
+* [2. Objectifs](#2-objectifs)
+* [3. Architecture globale](#3-architecture-globale)
+* [4. Rôles des composants](#4-rôles-des-composants)
+* [5. Préparation de la machine virtuelle](#5-préparation-de-la-machine-virtuelle)
+* [6. Installation du serveur Zabbix](#6-installation-du-serveur-zabbix)
+* [7. Configuration et première connexion à l'interface Zabbix](#7-configuration-et-première-connexion-à-linterface-zabbix)
+* [8. Validation opérationnelle du serveur Zabbix](#8-validation-opérationnelle-du-serveur-zabbix)
+* [9. Première intégration manuelle d'un serveur Linux](#9-première-intégration-manuelle-dun-serveur-linux)
+* [10. Déploiement automatisé de Zabbix Agent 2 avec Ansible](#10-déploiement-automatisé-de-zabbix-agent-2-avec-ansible)
+  * [10.1 Validation de la communication avec le serveur PKI](#101-validation-de-la-communication-avec-le-serveur-pki)
+  * [10.2 Premier déploiement automatisé sur le serveur PKI](#102-premier-déploiement-automatisé-sur-le-serveur-pki)
+  * [10.3 Vérification du service et de la règle de pare-feu](#103-vérification-du-service-et-de-la-règle-de-pare-feu)
+  * [10.4 Création manuelle du serveur PKI dans Zabbix](#104-création-manuelle-du-serveur-pki-dans-zabbix)
+  * [10.5 Vérification de la communication avec zabbix_get](#105-vérification-de-la-communication-avec-zabbix_get)
+  * [10.6 Création du token API Zabbix](#106-création-du-token-api-zabbix)
+  * [10.7 Protection du token API avec Ansible Vault](#107-protection-du-token-api-avec-ansible-vault)
+  * [10.8 Test de communication entre Ansible et l'API Zabbix](#108-test-de-communication-entre-ansible-et-lapi-zabbix)
+  * [10.9 Validation de l'automatisation sur le serveur srv_veeam](#109-validation-de-lautomatisation-sur-le-serveur-srv_veeam)
+  * [10.10 Validation de la détection des problèmes](#1010-validation-de-la-détection-des-problèmes)
+  * [10.11 Déploiement automatisé sur plusieurs serveurs Windows](#1011-déploiement-automatisé-sur-plusieurs-serveurs-windows)
+* [11. Cas particuliers et résolution des problèmes](#11-cas-particuliers-et-résolution-des-problèmes)
+  * [11.1 Problème lié à une version trop ancienne de PowerShell](#111-problème-lié-à-une-version-trop-ancienne-de-powershell)
+  * [11.2 Cas particulier des contrôleurs de domaine](#112-cas-particulier-des-contrôleurs-de-domaine)
+  * [11.3 Supervision du contrôleur Ansible Linux](#113-supervision-du-contrôleur-ansible-linux)
+  * [11.4 Supervision du FortiGate avec SNMPv3](#114-supervision-du-fortigate-avec-snmpv3)
 
 ---
 
-# 1. Préparation de la machine virtuelle
+# 5. Préparation de la machine virtuelle
 
 La première étape du projet consiste à créer et préparer la machine virtuelle destinée à héberger le serveur Zabbix.
 
 La machine virtuelle est déployée sous VMware et utilise Debian 13.
 
-## 1.1 Configuration de la machine virtuelle
+## 5.1 Configuration de la machine virtuelle
 
 La machine virtuelle est créée avec une configuration adaptée à l'hébergement du serveur Zabbix.
-
-
 
 La machine virtuelle constitue le socle de l'infrastructure de supervision.
 
 ---
 
-## 1.2 Installation de Debian
+## 5.2 Installation de Debian
 
 Après la création de la machine virtuelle, Debian 13 est installé.
 
@@ -233,7 +239,7 @@ sudo apt upgrade -y
 
 ---
 
-## 1.3 Configuration du réseau
+## 5.3 Configuration du réseau
 
 La machine utilise une adresse IP fixe afin de garantir la stabilité des communications avec les agents Zabbix et les équipements supervisés.
 
@@ -289,7 +295,7 @@ La configuration DNS permet notamment la résolution des noms nécessaires au fo
 
 ---
 
-## 1.4 Configuration du nom d'hôte
+## 5.4 Configuration du nom d'hôte
 
 Le serveur est identifié dans l'infrastructure sous le nom :
 
@@ -301,7 +307,7 @@ Le nom d'hôte permet d'identifier clairement le serveur dans l'environnement r�
 
 ---
 
-## 1.5 Installation de sudo
+## 5.5 Installation de sudo
 
 Le compte utilisateur utilisé pour l'administration du serveur est ajouté au groupe `sudo`.
 
@@ -311,7 +317,7 @@ Cette configuration permet d'exécuter des commandes nécessitant des privilège
 
 ---
 
-## 1.6 Validation de la configuration
+## 5.6 Validation de la configuration
 
 Une fois la configuration terminée, les éléments suivants sont vérifiés :
 
@@ -324,7 +330,9 @@ Une fois la configuration terminée, les éléments suivants sont vérifiés :
 
 Le serveur est désormais prêt à recevoir les composants nécessaires à l'installation de Zabbix.
 
-# 2. Installation du serveur Zabbix
+---
+
+# 6. Installation du serveur Zabbix
 
 Après la préparation de la machine Debian, les composants nécessaires au fonctionnement du serveur Zabbix sont installés.
 
@@ -339,7 +347,7 @@ L'architecture logicielle repose sur :
 
 ---
 
-## 2.1 Installation du dépôt officiel Zabbix
+## 6.1 Installation du dépôt officiel Zabbix
 
 Le dépôt officiel Zabbix est installé afin de récupérer les paquets nécessaires à la version utilisée.
 
@@ -363,7 +371,7 @@ Le dépôt Zabbix est désormais disponible sur le système.
 
 ---
 
-## 2.2 Installation de MariaDB
+## 6.2 Installation de MariaDB
 
 MariaDB est utilisé comme système de gestion de base de données pour stocker les données de supervision Zabbix.
 
@@ -391,7 +399,7 @@ active (running)
 
 ---
 
-## 2.3 Installation du serveur Zabbix et de ses composants
+## 6.3 Installation du serveur Zabbix et de ses composants
 
 Les composants principaux de Zabbix sont installés avec :
 
@@ -419,7 +427,7 @@ Ces paquets fournissent notamment :
 
 ---
 
-## 2.4 Importation du schéma SQL Zabbix
+## 6.4 Importation du schéma SQL Zabbix
 
 Le paquet `zabbix-sql-scripts` fournit le schéma SQL nécessaire à la création de la structure de la base de données Zabbix.
 
@@ -460,10 +468,9 @@ Cette vérification confirme que :
 * l'utilisateur MariaDB `zabbix` peut s'y connecter ;
 * le schéma SQL Zabbix a bien été importé.
 
-
 ---
 
-## 2.5 Configuration du serveur Zabbix
+## 6.5 Configuration du serveur Zabbix
 
 Le fichier de configuration principal du serveur Zabbix est :
 
@@ -495,10 +502,9 @@ sudo nano /etc/zabbix/zabbix_server.conf
 
 Cette configuration permet au processus `zabbix-server` de se connecter à la base de données `zabbix`.
 
-
 ---
 
-## 2.6 Démarrage des services
+## 6.6 Démarrage des services
 
 Les services nécessaires au fonctionnement de la plateforme sont activés et démarrés :
 
@@ -522,7 +528,7 @@ systemctl status mariadb
 
 ---
 
-## 2.7 Vérification des ports
+## 6.7 Vérification des ports
 
 Les ports utilisés par les différents composants sont vérifiés avec :
 
@@ -549,7 +555,9 @@ sudo ss -tulpn | grep :80
 
 La plateforme Zabbix est désormais installée et les services principaux sont opérationnels.
 
-# 3. Configuration et première connexion à l'interface Zabbix
+---
+
+# 7. Configuration et première connexion à l'interface Zabbix
 
 Une fois les composants du serveur installés et configurés, l'interface Web Zabbix est accessible depuis un navigateur.
 
@@ -557,7 +565,7 @@ L'installation finale est réalisée depuis l'interface Web.
 
 ---
 
-## 3.1 Accès à l'interface Web
+## 7.1 Accès à l'interface Web
 
 L'interface Zabbix est accessible à l'adresse :
 
@@ -569,7 +577,7 @@ La page d'installation de Zabbix est alors affichée.
 
 ---
 
-## 3.2 Vérification des prérequis
+## 7.2 Vérification des prérequis
 
 L'installateur Web vérifie automatiquement les composants nécessaires au fonctionnement de Zabbix.
 
@@ -587,7 +595,7 @@ Les prérequis doivent être validés avant de poursuivre l'installation.
 
 ---
 
-## 3.3 Configuration de la connexion à la base de données
+## 7.3 Configuration de la connexion à la base de données
 
 L'interface Web demande ensuite les informations nécessaires pour se connecter à la base de données MariaDB.
 
@@ -606,7 +614,7 @@ Ces informations permettent à l'interface Web et au serveur Zabbix d'utiliser l
 
 ---
 
-## 3.4 Finalisation de l'installation
+## 7.4 Finalisation de l'installation
 
 Après validation des paramètres, l'installateur termine la configuration de l'interface Zabbix.
 
@@ -616,7 +624,7 @@ La fin de l'installation est confirmée par l'affichage de la page de succès.
 
 ---
 
-## 3.5 Première connexion
+## 7.5 Première connexion
 
 Une première connexion à l'interface Web est réalisée avec le compte administrateur initial :
 
@@ -635,8 +643,9 @@ La plateforme Zabbix est désormais installée et accessible.
 
 Le serveur est prêt à être configuré pour superviser les différents équipements et serveurs de l'infrastructure.
 
+---
 
-# 4. Validation opérationnelle du serveur Zabbix
+# 8. Validation opérationnelle du serveur Zabbix
 
 Après l'installation et la configuration initiale, le fonctionnement général du serveur Zabbix est vérifié.
 
@@ -644,7 +653,7 @@ L'objectif est de confirmer que la plateforme est opérationnelle avant d'intég
 
 ---
 
-## 4.1 Vérification de la disponibilité du serveur Zabbix
+## 8.1 Vérification de la disponibilité du serveur Zabbix
 
 Après l'installation et la configuration des composants, la disponibilité du serveur Zabbix est vérifiée depuis l'interface Web.
 
@@ -663,9 +672,10 @@ Cette vérification confirme que :
 - l'agent Zabbix fonctionne sur le serveur ;
 - le serveur Zabbix peut communiquer avec son agent ;
 - la supervision du serveur Zabbix est opérationnelle.
+
 ---
 
-## 4.2 Vérification des informations système
+## 8.2 Vérification des informations système
 
 Les informations système du serveur Zabbix peuvent être consultées depuis l'interface d'administration.
 
@@ -675,7 +685,7 @@ Cette vue permet de vérifier les caractéristiques de l'environnement utilisé 
 
 ---
 
-## 4.3 Vérification des services Web et base de données
+## 8.3 Vérification des services Web et base de données
 
 Les services nécessaires au fonctionnement de l'interface Web et de la base de données sont vérifiés depuis le terminal.
 
@@ -687,13 +697,13 @@ Les services contrôlés sont :
 
 La vérification est réalisée avec les commandes `systemctl status` correspondantes.
 
-![Vérification des services de l'infrastructure](Images/verification_3services_running_glpi_apache2_mariadb_php_fpm.png)
+![Vérification des services de l'infrastructure](Images/verification_3services_running_apache2_mariadb_php_fpm.png)
 
 Les trois services sont actifs et fonctionnels.
 
 ---
 
-## 4.4 Première utilisation du tableau de bord
+## 8.4 Première utilisation du tableau de bord
 
 Après la validation de l'installation, le tableau de bord Zabbix est accessible.
 
@@ -707,8 +717,9 @@ Un tableau de bord personnalisé a également été créé afin de regrouper les
 
 Le serveur Zabbix est désormais opérationnel et prêt à intégrer les premiers équipements et serveurs supervisés.
 
+---
 
-# 5. Première intégration manuelle d'un serveur Linux
+# 9. Première intégration manuelle d'un serveur Linux
 
 Avant d'automatiser le déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible, un premier serveur Linux est intégré manuellement à Zabbix.
 
@@ -718,7 +729,7 @@ Cette étape permet de valider le fonctionnement de la supervision d'un serveur 
 
 ---
 
-## 5.1 Vérification et installation de l'agent Zabbix
+## 9.1 Vérification et installation de l'agent Zabbix
 
 La disponibilité du paquet `zabbix-agent` est d'abord vérifiée avec :
 
@@ -746,7 +757,7 @@ Le service doit apparaître comme actif et fonctionnel.
 
 ---
 
-## 5.2 Configuration de l'agent Zabbix
+## 9.2 Configuration de l'agent Zabbix
 
 Le fichier de configuration utilisé est :
 
@@ -777,7 +788,7 @@ Les paramètres permettent notamment de définir :
 
 ---
 
-## 5.3 Vérification du port d'écoute de l'agent
+## 9.3 Vérification du port d'écoute de l'agent
 
 L'agent Zabbix utilise le port TCP :
 
@@ -797,7 +808,7 @@ Cette vérification confirme que l'agent est correctement démarré et écoute s
 
 ---
 
-## 5.4 Test de communication depuis le serveur Zabbix
+## 9.4 Test de communication depuis le serveur Zabbix
 
 L'accessibilité du port TCP 10050 est ensuite testée depuis le serveur Zabbix :
 
@@ -817,7 +828,7 @@ La communication réseau entre le serveur Zabbix et l'agent installé sur le ser
 
 ---
 
-## 5.5 Vérification de la disponibilité dans Zabbix
+## 9.5 Vérification de la disponibilité dans Zabbix
 
 Le serveur GLPI est ajouté dans l'interface Zabbix et associé à un template Linux adapté.
 
@@ -833,7 +844,7 @@ L'indicateur vert confirme que le serveur Zabbix communique correctement avec l'
 
 ---
 
-## 5.6 Remontée des métriques
+## 9.6 Remontée des métriques
 
 Une fois la communication établie, les premières métriques du serveur GLPI sont collectées par Zabbix.
 
@@ -845,8 +856,9 @@ Cette première intégration manuelle valide le fonctionnement de la supervision
 
 Elle permet ensuite de passer à l'étape suivante du projet : l'automatisation du déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible.
 
+---
 
-# 6. Déploiement automatisé de Zabbix Agent 2 avec Ansible
+# 10. Déploiement automatisé de Zabbix Agent 2 avec Ansible
 
 Après avoir validé manuellement la supervision du serveur Linux GLPI, l'étape suivante consiste à automatiser le déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible.
 
@@ -889,7 +901,7 @@ Automatisation de la création des hôtes
 
 ---
 
-## 6.1 Validation de la communication avec le serveur PKI
+## 10.1 Validation de la communication avec le serveur PKI
 
 Avant de déployer l'agent Zabbix, la communication entre le contrôleur Ansible et le serveur PKI est vérifiée.
 
@@ -914,7 +926,6 @@ Depuis le contrôleur Ansible, un test `ping` est effectué vers le serveur PKI 
 ```bash
 ping -c 4 192.168.1.236
 ```
-
 
 Le résultat confirme que la communication IP est fonctionnelle.
 
@@ -966,7 +977,7 @@ Le serveur PKI est donc prêt à recevoir le déploiement automatisé de Zabbix 
 
 ---
 
-## 6.2 Premier déploiement automatisé sur le serveur PKI
+## 10.2 Premier déploiement automatisé sur le serveur PKI
 
 Une fois la communication validée, le playbook de déploiement est exécuté sur le serveur PKI.
 
@@ -1000,7 +1011,7 @@ Le déploiement est réalisé depuis le contrôleur Ansible sans intervention ma
 
 ---
 
-## 6.3 Vérification du service et de la règle de pare-feu
+## 10.3 Vérification du service et de la règle de pare-feu
 
 Après le déploiement, le fonctionnement de l'agent Zabbix Agent 2 est vérifié à distance depuis le contrôleur Ansible.
 
@@ -1034,7 +1045,7 @@ Cette vérification confirme que le déploiement automatisé a correctement conf
 
 ---
 
-## 6.4 Création manuelle du serveur PKI dans Zabbix
+## 10.4 Création manuelle du serveur PKI dans Zabbix
 
 À ce stade, Zabbix Agent 2 est installé et fonctionnel sur le serveur PKI.
 
@@ -1046,7 +1057,7 @@ Dans l'interface Web de Zabbix, accéder à :
 
 ```text
 Collecte de données → Hôtes
-````
+```
 
 Cliquer ensuite sur :
 
@@ -1069,7 +1080,6 @@ Port : 10050
 ```
 
 L'interface Agent permet à Zabbix Server de communiquer directement avec le service **Zabbix Agent 2** installé sur le serveur PKI.
-
 
 ### Association du template de supervision
 
@@ -1120,7 +1130,7 @@ La disponibilité de l'agent et la remontée des premières métriques sont ensu
 
 ---
 
-## 6.5 Vérification de la communication avec `zabbix_get`
+## 10.5 Vérification de la communication avec `zabbix_get`
 
 Après la création manuelle de l'hôte PKI dans Zabbix, la communication avec l'agent est vérifiée directement depuis le serveur Zabbix à l'aide de l'outil `zabbix_get`.
 
@@ -1162,7 +1172,7 @@ La communication entre le serveur Zabbix et l'agent étant validée, l'étape su
 
 ---
 
-## 6.6 Création du token API Zabbix
+## 10.6 Création du token API Zabbix
 
 Après avoir validé la communication entre le serveur Zabbix et l'agent installé sur le serveur PKI, l'étape suivante consiste à permettre à Ansible de communiquer avec l'API Zabbix.
 
@@ -1208,7 +1218,7 @@ Il est donc protégé à l'aide d'**Ansible Vault** dans l'étape suivante.
 
 ---
 
-## 6.7 Protection du token API avec Ansible Vault
+## 10.7 Protection du token API avec Ansible Vault
 
 Le token API créé précédemment est une donnée sensible. Il ne doit pas être stocké directement en clair dans un playbook ou dans un fichier de configuration accessible.
 
@@ -1244,12 +1254,11 @@ Le fichier chiffré apparaît sous forme de données protégées :
 
 ![Vérification du fichier Vault chiffré](Images/check_Fichier_Vault_chiffre.png)
 
-
 Le token API est ainsi séparé de la logique des playbooks et protégé contre une lecture directe.
 
 ---
 
-## 6.8 Test de communication entre Ansible et l'API Zabbix
+## 10.8 Test de communication entre Ansible et l'API Zabbix
 
 Avant d'automatiser la création des hôtes dans Zabbix, la communication entre le contrôleur Ansible et l'API Zabbix est vérifiée.
 
@@ -1302,8 +1311,9 @@ Gestion des hôtes Zabbix
 
 La communication entre Ansible et l'API Zabbix étant validée, la création des hôtes peut désormais être intégrée au playbook de déploiement de Zabbix Agent 2.
 
+---
 
-## 6.9 Validation de l'automatisation sur le serveur `srv_veeam`
+## 10.9 Validation de l'automatisation sur le serveur `srv_veeam`
 
 Après avoir validé la communication entre Ansible et l'API Zabbix, l'automatisation complète est testée sur un second serveur Windows : `srv_veeam`.
 
@@ -1383,7 +1393,7 @@ Le test réalisé sur `srv_veeam` étant concluant, l'automatisation peut désor
 
 ---
 
-## 6.10 Validation de la détection des problèmes
+## 10.10 Validation de la détection des problèmes
 
 Après la création automatique de l'hôte `srv_veeam` et la remontée de ses premières métriques, Zabbix est capable de surveiller automatiquement l'état du serveur et de détecter les situations anormales.
 
@@ -1441,7 +1451,7 @@ Cette étape permet de vérifier que la solution ne se limite pas à la collecte
 
 ---
 
-## 6.11 Déploiement automatisé sur plusieurs serveurs Windows
+## 10.11 Déploiement automatisé sur plusieurs serveurs Windows
 
 Après avoir validé le fonctionnement de l'automatisation sur les serveurs `PKI` et `srv_veeam`, le déploiement de Zabbix Agent 2 est étendu à plusieurs serveurs Windows de l'infrastructure.
 
@@ -1535,7 +1545,7 @@ Cette étape marque le passage d'une supervision configurée serveur par serveur
 
 ---
 
-# 7. Cas particuliers et résolution des problèmes
+# 11. Cas particuliers et résolution des problèmes
 
 Le déploiement automatisé a permis de superviser plusieurs serveurs Windows avec succès. Cependant, certains environnements ont nécessité des traitements spécifiques.
 
@@ -1557,10 +1567,9 @@ Problèmes de pare-feu et de port TCP 10050
 
 L'objectif de cette partie est de présenter les difficultés réellement rencontrées lors du déploiement et les solutions mises en œuvre pour les résoudre.
 
+---
 
-Oui 👍 Voici ta **partie 7.1 complète**, avec les cinq captures intégrées aux endroits logiques, sans modifier le contenu de fond.
-
-## 7.1 Problème lié à une version trop ancienne de PowerShell
+## 11.1 Problème lié à une version trop ancienne de PowerShell
 
 Lors des premiers tests de déploiement sur deux serveurs Windows anciens, le playbook Ansible ne fonctionnait pas correctement.
 
@@ -1678,9 +1687,9 @@ Ce cas montre l'importance de vérifier les prérequis techniques avant d'automa
 
 Après la mise à niveau de PowerShell, les deux serveurs ont pu être intégrés au processus de déploiement automatisé de Zabbix Agent 2 avec Ansible.
 
+---
 
-
-## 7.2 Cas particulier des contrôleurs de domaine
+## 11.2 Cas particulier des contrôleurs de domaine
 
 Le déploiement sur les contrôleurs de domaine a nécessité une configuration spécifique des droits du compte utilisé par Ansible.
 
@@ -1805,9 +1814,9 @@ Les contrôleurs de domaine nécessitent une attention particulière, car leur n
 
 Le fait de retirer les droits d'administration après le déploiement permet également de limiter les privilèges du compte de service et d'améliorer la sécurité de l'environnement.
 
+---
 
-
-## 7.3 Supervision du contrôleur Ansible Linux
+## 11.3 Supervision du contrôleur Ansible Linux
 
 Le contrôleur Ansible utilisé pour administrer les serveurs Windows est lui-même un serveur Debian Linux.
 
@@ -1884,12 +1893,9 @@ Cette étape permet donc d'étendre la supervision à l'infrastructure utilisée
 
 Le contrôleur Ansible n'est ainsi plus uniquement utilisé pour déployer et administrer les serveurs Windows : il est également intégré à la plateforme de supervision Zabbix.
 
+---
 
-Oui, là tu as raison : **je me suis trompé en disant que le SNMP n'était pas validé**. D'après les étapes que tu viens de rappeler, **la supervision SNMPv3 du FortiGate a bien été mise en place et validée dans Zabbix**. Je reprends donc toute la partie correctement, avec les étapes réelles.
-
-Oui, je reprends la partie **sans modifier le contenu**, en intégrant uniquement tes captures aux bons endroits avec les chemins GitHub.
-
-## 7.4 Supervision du FortiGate avec SNMPv3
+## 11.4 Supervision du FortiGate avec SNMPv3
 
 Après la supervision des serveurs Windows et Linux avec **Zabbix Agent 2**, la supervision est étendue à un équipement réseau : le pare-feu **FortiGate-80E**.
 
@@ -2227,6 +2233,3 @@ UDP 161
 La supervision SNMPv3 du FortiGate permet donc d'intégrer le pare-feu à l'infrastructure Zabbix sans installer d'agent supplémentaire sur l'équipement.
 
 L'utilisation de SNMPv3 apporte également un niveau de sécurité supérieur aux versions SNMPv1 et SNMPv2c grâce à l'authentification et au chiffrement des échanges.
-
-
-
