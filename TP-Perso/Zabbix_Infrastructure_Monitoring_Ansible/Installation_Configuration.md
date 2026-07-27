@@ -193,17 +193,18 @@ Cette méthode permet de superviser les informations système et les métriques 
 * [8. Validation opérationnelle du serveur Zabbix](#8-validation-opérationnelle-du-serveur-zabbix)
 * [9. Première intégration manuelle d'un serveur Linux](#9-première-intégration-manuelle-dun-serveur-linux)
 * [10. Déploiement automatisé de Zabbix Agent 2 avec Ansible](#10-déploiement-automatisé-de-zabbix-agent-2-avec-ansible)
-  * [10.1 Validation de la communication avec le serveur PKI](#101-validation-de-la-communication-avec-le-serveur-pki)
-  * [10.2 Premier déploiement automatisé sur le serveur PKI](#102-premier-déploiement-automatisé-sur-le-serveur-pki)
-  * [10.3 Vérification du service et de la règle de pare-feu](#103-vérification-du-service-et-de-la-règle-de-pare-feu)
-  * [10.4 Création manuelle du serveur PKI dans Zabbix](#104-création-manuelle-du-serveur-pki-dans-zabbix)
-  * [10.5 Vérification de la communication avec zabbix_get](#105-vérification-de-la-communication-avec-zabbix_get)
-  * [10.6 Création du token API Zabbix](#106-création-du-token-api-zabbix)
-  * [10.7 Protection du token API avec Ansible Vault](#107-protection-du-token-api-avec-ansible-vault)
-  * [10.8 Test de communication entre Ansible et l'API Zabbix](#108-test-de-communication-entre-ansible-et-lapi-zabbix)
-  * [10.9 Validation de l'automatisation sur le serveur srv_veeam](#109-validation-de-lautomatisation-sur-le-serveur-srv_veeam)
-  * [10.10 Validation de la détection des problèmes](#1010-validation-de-la-détection-des-problèmes)
-  * [10.11 Déploiement automatisé sur plusieurs serveurs Windows](#1011-déploiement-automatisé-sur-plusieurs-serveurs-windows)
+  * [10.1 Préparation de l'infrastructure Windows avec Active Directory et GPO](#101-préparation-de-linfrastructure-windows-avec-active-directory-et-gpo)
+  * [10.2 Validation de la communication avec le serveur PKI](#102-validation-de-la-communication-avec-le-serveur-pki)
+  * [10.3 Premier déploiement automatisé sur le serveur PKI](#103-premier-déploiement-automatisé-sur-le-serveur-pki)
+  * [10.4 Vérification du service et de la règle de pare-feu](#104-vérification-du-service-et-de-la-règle-de-pare-feu)
+  * [10.5 Création manuelle du serveur PKI dans Zabbix](#105-création-manuelle-du-serveur-pki-dans-zabbix)
+  * [10.6 Vérification de la communication avec zabbix_get](#106-vérification-de-la-communication-avec-zabbix_get)
+  * [10.7 Création du token API Zabbix](#107-création-du-token-api-zabbix)
+  * [10.8 Protection du token API avec Ansible Vault](#108-protection-du-token-api-avec-ansible-vault)
+  * [10.9 Test de communication entre Ansible et l'API Zabbix](#109-test-de-communication-entre-ansible-et-lapi-zabbix)
+  * [10.10 Validation de l'automatisation sur le serveur srv_veeam](#1010-validation-de-lautomatisation-sur-le-serveur-srv_veeam)
+  * [10.11 Validation de la détection des problèmes](#1011-validation-de-la-détection-des-problèmes)
+  * [10.12 Déploiement automatisé sur plusieurs serveurs Windows](#1012-déploiement-automatisé-sur-plusieurs-serveurs-windows)
 * [11. Cas particuliers et résolution des problèmes](#11-cas-particuliers-et-résolution-des-problèmes)
   * [11.1 Problème lié à une version trop ancienne de PowerShell](#111-problème-lié-à-une-version-trop-ancienne-de-powershell)
   * [11.2 Cas particulier des contrôleurs de domaine](#112-cas-particulier-des-contrôleurs-de-domaine)
@@ -901,7 +902,154 @@ Automatisation de la création des hôtes
 
 ---
 
-## 10.1 Validation de la communication avec le serveur PKI
+## 10.1 Préparation de l'infrastructure Windows avec Active Directory et GPO
+
+Avant de pouvoir automatiser le déploiement de Zabbix Agent 2 avec Ansible, les serveurs Windows doivent être préparés afin d'autoriser l'administration distante.
+
+Cette préparation repose sur Active Directory et plusieurs stratégies de groupe (GPO).
+
+L'objectif est de préparer automatiquement les serveurs Windows afin de permettre :
+
+* l'utilisation du compte de service Ansible ;
+* l'administration distante avec WinRM ;
+* l'exécution de commandes PowerShell à distance ;
+* l'installation automatisée de logiciels ;
+* la configuration du service Zabbix Agent 2 ;
+* la modification du pare-feu Windows.
+
+La préparation est donc réalisée avant toute tentative de déploiement avec Ansible.
+
+---
+
+### 10.1.1 Ajout du compte Ansible aux administrateurs locaux
+
+Le compte utilisé par Ansible est :
+
+```text
+CELDUC\ansible
+```
+
+Pour pouvoir installer et configurer Zabbix Agent 2 à distance, ce compte doit disposer de privilèges administrateur local sur les serveurs Windows ciblés.
+
+Une GPO est donc utilisée afin d'ajouter automatiquement le compte :
+
+```text
+CELDUC\ansible
+```
+
+au groupe local :
+
+```text
+Administrateurs
+```
+
+Cette configuration permet au compte Ansible d'effectuer les opérations nécessaires au déploiement, notamment :
+
+* installer le logiciel Zabbix Agent 2 ;
+* créer et supprimer des fichiers ;
+* gérer le service Windows ;
+* modifier la configuration du système ;
+* créer une règle de pare-feu ;
+* exécuter des commandes PowerShell nécessitant des privilèges élevés.
+
+Sans ces droits, la connexion WinRM peut fonctionner, mais certaines tâches d'administration exécutées par Ansible peuvent échouer.
+
+La chaîne de fonctionnement est donc :
+
+```text
+Active Directory
+        │
+        ▼
+GPO
+        │
+        ▼
+CELDUC\ansible
+        │
+        ▼
+Administrateur local
+        │
+        ▼
+Ansible peut administrer le serveur Windows
+```
+
+---
+
+### 10.1.2 Configuration de WinRM avec une GPO
+
+La deuxième étape consiste à préparer le service Windows Remote Management.
+
+WinRM est le protocole utilisé par Ansible pour administrer les serveurs Windows à distance.
+
+La communication utilisée dans cette infrastructure est :
+
+```text
+Contrôleur Ansible
+192.168.1.246
+        │
+        │ WinRM / NTLM
+        │ TCP 5985
+        ▼
+Serveur Windows
+```
+
+La GPO permet notamment de configurer :
+
+* le service WinRM ;
+* son démarrage automatique ;
+* l'écoute des connexions distantes ;
+* l'autorisation des connexions WinRM ;
+* l'utilisation du port TCP 5985 ;
+* le transport NTLM utilisé dans l'environnement configuré.
+
+La configuration de WinRM est indispensable avant de pouvoir utiliser les modules Windows d'Ansible.
+
+---
+
+### 10.1.3 Application et vérification des GPO
+
+Une fois les stratégies configurées dans Active Directory, leur application peut être forcée sur un serveur Windows avec :
+
+```powershell
+gpupdate /force
+```
+
+Les stratégies appliquées peuvent ensuite être vérifiées avec :
+
+```powershell
+gpresult /r
+```
+
+Un rapport HTML peut également être généré :
+
+```powershell
+gpresult /h C:\Temp\gpresult.html
+```
+
+Ce rapport permet de vérifier que les GPO de préparation Ansible sont bien appliquées au serveur concerné.
+
+La chaîne de préparation complète est donc :
+
+```text
+Active Directory
+        │
+        ▼
+GPO
+        ├── Compte CELDUC\ansible
+        │   ajouté aux administrateurs locaux
+        │
+        └── WinRM
+            configuré et accessible
+                    │
+                    ▼
+          Connexion Ansible possible
+```
+
+Cette préparation constitue le prérequis nécessaire avant de poursuivre avec la validation de la communication entre le contrôleur Ansible et les serveurs Windows.
+
+
+---
+
+## 10.2 Validation de la communication avec le serveur PKI
 
 Avant de déployer l'agent Zabbix, la communication entre le contrôleur Ansible et le serveur PKI est vérifiée.
 
@@ -977,7 +1125,7 @@ Le serveur PKI est donc prêt à recevoir le déploiement automatisé de Zabbix 
 
 ---
 
-## 10.2 Premier déploiement automatisé sur le serveur PKI
+## 10.3 Premier déploiement automatisé sur le serveur PKI
 
 Une fois la communication validée, le playbook de déploiement est exécuté sur le serveur PKI.
 
@@ -1011,7 +1159,7 @@ Le déploiement est réalisé depuis le contrôleur Ansible sans intervention ma
 
 ---
 
-## 10.3 Vérification du service et de la règle de pare-feu
+## 10.4 Vérification du service et de la règle de pare-feu
 
 Après le déploiement, le fonctionnement de l'agent Zabbix Agent 2 est vérifié à distance depuis le contrôleur Ansible.
 
@@ -1045,7 +1193,7 @@ Cette vérification confirme que le déploiement automatisé a correctement conf
 
 ---
 
-## 10.4 Création manuelle du serveur PKI dans Zabbix
+## 10.5 Création manuelle du serveur PKI dans Zabbix
 
 À ce stade, Zabbix Agent 2 est installé et fonctionnel sur le serveur PKI.
 
@@ -1130,7 +1278,7 @@ La disponibilité de l'agent et la remontée des premières métriques sont ensu
 
 ---
 
-## 10.5 Vérification de la communication avec `zabbix_get`
+## 10.6 Vérification de la communication avec `zabbix_get`
 
 Après la création manuelle de l'hôte PKI dans Zabbix, la communication avec l'agent est vérifiée directement depuis le serveur Zabbix à l'aide de l'outil `zabbix_get`.
 
@@ -1172,7 +1320,7 @@ La communication entre le serveur Zabbix et l'agent étant validée, l'étape su
 
 ---
 
-## 10.6 Création du token API Zabbix
+## 10.7 Création du token API Zabbix
 
 Après avoir validé la communication entre le serveur Zabbix et l'agent installé sur le serveur PKI, l'étape suivante consiste à permettre à Ansible de communiquer avec l'API Zabbix.
 
@@ -1218,7 +1366,7 @@ Il est donc protégé à l'aide d'**Ansible Vault** dans l'étape suivante.
 
 ---
 
-## 10.7 Protection du token API avec Ansible Vault
+## 10.8 Protection du token API avec Ansible Vault
 
 Le token API créé précédemment est une donnée sensible. Il ne doit pas être stocké directement en clair dans un playbook ou dans un fichier de configuration accessible.
 
@@ -1258,7 +1406,7 @@ Le token API est ainsi séparé de la logique des playbooks et protégé contre 
 
 ---
 
-## 10.8 Test de communication entre Ansible et l'API Zabbix
+## 10.9 Test de communication entre Ansible et l'API Zabbix
 
 Avant d'automatiser la création des hôtes dans Zabbix, la communication entre le contrôleur Ansible et l'API Zabbix est vérifiée.
 
@@ -1313,7 +1461,7 @@ La communication entre Ansible et l'API Zabbix étant validée, la création des
 
 ---
 
-## 10.9 Validation de l'automatisation sur le serveur `srv_veeam`
+## 10.10 Validation de l'automatisation sur le serveur `srv_veeam`
 
 Après avoir validé la communication entre Ansible et l'API Zabbix, l'automatisation complète est testée sur un second serveur Windows : `srv_veeam`.
 
@@ -1393,7 +1541,7 @@ Le test réalisé sur `srv_veeam` étant concluant, l'automatisation peut désor
 
 ---
 
-## 10.10 Validation de la détection des problèmes
+## 10.11 Validation de la détection des problèmes
 
 Après la création automatique de l'hôte `srv_veeam` et la remontée de ses premières métriques, Zabbix est capable de surveiller automatiquement l'état du serveur et de détecter les situations anormales.
 
@@ -1451,7 +1599,7 @@ Cette étape permet de vérifier que la solution ne se limite pas à la collecte
 
 ---
 
-## 10.11 Déploiement automatisé sur plusieurs serveurs Windows
+## 10.12 Déploiement automatisé sur plusieurs serveurs Windows
 
 Après avoir validé le fonctionnement de l'automatisation sur les serveurs `PKI` et `srv_veeam`, le déploiement de Zabbix Agent 2 est étendu à plusieurs serveurs Windows de l'infrastructure.
 
