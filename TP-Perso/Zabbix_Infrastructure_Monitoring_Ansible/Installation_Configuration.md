@@ -954,6 +954,8 @@ Cette configuration permet au compte Ansible d'effectuer les opérations nécess
 
 Sans ces droits, la connexion WinRM peut fonctionner, mais certaines tâches d'administration exécutées par Ansible peuvent échouer.
 
+![GPO ajoutant le compte Ansible aux administrateurs locaux](Images/GPO_Ansible_Local_Admin.PNG)
+
 La chaîne de fonctionnement est donc :
 
 ```text
@@ -1002,6 +1004,8 @@ La GPO permet notamment de configurer :
 * le transport NTLM utilisé dans l'environnement configuré.
 
 La configuration de WinRM est indispensable avant de pouvoir utiliser les modules Windows d'Ansible.
+
+![GPO activant et configurant WinRM pour Ansible](Images/GPO_Activation_WinRM_Ansible.PNG)
 
 ---
 
