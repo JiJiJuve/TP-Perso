@@ -1558,6 +1558,8 @@ Problèmes de pare-feu et de port TCP 10050
 L'objectif de cette partie est de présenter les difficultés réellement rencontrées lors du déploiement et les solutions mises en œuvre pour les résoudre.
 
 
+Oui 👍 Voici ta **partie 7.1 complète**, avec les cinq captures intégrées aux endroits logiques, sans modifier le contenu de fond.
+
 ## 7.1 Problème lié à une version trop ancienne de PowerShell
 
 Lors des premiers tests de déploiement sur deux serveurs Windows anciens, le playbook Ansible ne fonctionnait pas correctement.
@@ -1622,6 +1624,28 @@ Une fois cette vérification effectuée, le déploiement est relancé depuis le 
 
 Le playbook fonctionne alors correctement et permet de déployer Zabbix Agent 2 sur les deux serveurs.
 
+Le résultat obtenu sur le serveur `KELIO` confirme que la mise à niveau de PowerShell a permis de résoudre le problème initial et que le déploiement de l'agent Zabbix s'est ensuite terminé correctement.
+
+![Résolution du problème de version PowerShell et déploiement réussi sur KELIO](Images/Cas_Particulier_ancienne_version_Powershell_VM_Kelio_playbook_&_verifcation_OK.png)
+
+La remontée du serveur `KELIO` est ensuite vérifiée dans l'interface Zabbix afin de confirmer que l'agent est correctement supervisé.
+
+![Vérification de la remontée du serveur KELIO dans Zabbix](Images/Verification_remontee_dans_server_zabbix_vm_kelio_OK.png)
+
+Le même processus est ensuite validé sur le serveur `SQL1-2014`.
+
+La communication avec le serveur est d'abord vérifiée, puis l'installation de l'agent Zabbix est réalisée.
+
+![Test de communication et installation de l'agent Zabbix sur SQL1-2014](Images/Test_ping_pong_&_Installation_agent_zabbix_server_SQL_OK.png)
+
+Après l'installation, la présence et le fonctionnement de l'agent Zabbix sont vérifiés depuis la ligne de commande.
+
+![Vérification de l'agent Zabbix sur SQL1-2014 en ligne de commande](Images/Verification_agent_zabbix_CLI_Server_SQL_OK.png)
+
+Enfin, la remontée de `SQL1-2014` est vérifiée dans l'interface graphique de Zabbix.
+
+![Vérification de la supervision de SQL1-2014 dans Zabbix](Images/Verification_agent_zabbix_GUI_Server_SQL_OK.png)
+
 Le déroulement est donc le suivant :
 
 ```text
@@ -1644,6 +1668,10 @@ Vérification de la version PowerShell
 Relance du playbook Ansible
         ↓
 Déploiement réussi
+        ↓
+Validation de l'agent en CLI
+        ↓
+Validation de la supervision dans Zabbix
 ```
 
 Ce cas montre l'importance de vérifier les prérequis techniques avant d'automatiser le déploiement sur un parc Windows hétérogène.
