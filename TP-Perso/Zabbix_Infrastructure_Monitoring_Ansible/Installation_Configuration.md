@@ -1777,6 +1777,8 @@ Get-ADGroupMember -Identity "Administrateurs"
 
 Le compte `CELDUC\ansible` ne doit alors plus apparaître dans la liste des membres.
 
+![Retrait du compte ansible du groupe Administrateurs](Images/remove_compte_ansible_groupe_Admin.PNG)
+
 La démarche suivie est donc :
 
 ```text
