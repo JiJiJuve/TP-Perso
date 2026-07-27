@@ -1132,6 +1132,8 @@ L'installation de l'outil est réalisée avec :
 sudo apt install zabbix-get -y
 ```
 
+![Installation de zabbix_get](Images/Installation_zabbix_get.png)
+
 La communication avec l'agent installé sur le serveur PKI est ensuite testée avec :
 
 ```bash
@@ -1152,13 +1154,98 @@ zabbix_get -s 192.168.1.236 -k agent.version
 
 Cette commande permet de confirmer la version de Zabbix Agent 2 installée sur le serveur PKI.
 
+![Test de l'agent Zabbix depuis le serveur Zabbix avec zabbix_get](Images/Test_Agent_Zabbox_depuis_Server_Zabbix_avec_zabbix_get.png)
+
 Ces tests valident directement la communication entre le serveur Zabbix `192.168.1.230` et l'agent Zabbix Agent 2 installé sur le serveur PKI `192.168.1.236` via le port TCP `10050`.
 
 La communication entre le serveur Zabbix et l'agent étant validée, l'étape suivante consiste à préparer l'automatisation de la création des hôtes dans Zabbix via son API.
 
 ---
 
+## 6.6 Création du token API Zabbix
 
+Après avoir validé la communication entre le serveur Zabbix et l'agent installé sur le serveur PKI, l'étape suivante consiste à permettre à Ansible de communiquer avec l'API Zabbix.
+
+L'API Zabbix permet notamment d'automatiser la gestion des hôtes, des templates et de différents éléments de configuration.
+
+Dans le cadre de ce projet, elle sera utilisée pour automatiser la création des hôtes supervisés après leur déploiement.
+
+### Création du token API
+
+La création du token est réalisée depuis l'interface Web de Zabbix.
+
+Le menu suivant est utilisé :
+
+```text
+Administration → Utilisateurs
+```
+
+L'utilisateur utilisé pour l'accès à l'API est sélectionné, puis l'onglet :
+
+```text
+Tokens API
+```
+
+est ouvert.
+
+Un nouveau token est ensuite créé avec :
+
+```text
+Nom : Ansible-Zabbix-API
+```
+
+Le token généré est ensuite utilisé par Ansible pour s'authentifier auprès de l'API Zabbix.
+
+![Création du token API dans Zabbix](Images/creation_token_API_server_zabbix.png)
+
+Une fois la création terminée, le token généré est affiché.
+
+![Token API Zabbix créé](Images/Token_API_server_zabbix_cree.png)
+
+Le token constitue une donnée sensible. Il ne doit donc pas être intégré directement dans un playbook ou dans un fichier de configuration en clair.
+
+Il est donc protégé à l'aide d'**Ansible Vault** dans l'étape suivante.
+
+---
+
+## 6.7 Protection du token API avec Ansible Vault
+
+Le token API créé précédemment est une donnée sensible. Il ne doit pas être stocké directement en clair dans un playbook ou dans un fichier de configuration accessible.
+
+Ansible Vault est utilisé pour chiffrer les informations sensibles utilisées par Ansible.
+
+Un fichier Vault est créé dans le projet :
+
+```bash
+ansible-vault create group_vars/windows/vault.yml
+```
+
+Le mot de passe du Vault est ensuite défini afin de protéger le contenu du fichier.
+
+Le token API Zabbix est ensuite stocké dans une variable chiffrée :
+
+```yaml
+vault_zabbix_api_token: "TOKEN_API_ZABBIX"
+```
+
+Le fichier est ensuite chiffré par Ansible Vault.
+
+Le contenu du fichier peut être vérifié avec :
+
+```bash
+ansible-vault view group_vars/windows/vault.yml
+```
+
+Sans le mot de passe du Vault, le contenu du fichier n'est pas lisible directement.
+
+Le fichier chiffré apparaît sous forme de données protégées :
+
+
+
+
+Le token API est ainsi séparé de la logique des playbooks et protégé contre une lecture directe.
+
+La prochaine étape consiste à vérifier que le contrôleur Ansible peut effectivement communiquer avec l'API Zabbix en utilisant ce token.
 
 ## 6.8 Première intégration de PKI dans Zabbix
 
