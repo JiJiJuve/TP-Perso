@@ -261,7 +261,7 @@ La configuration est ensuite modifiée afin d'utiliser une adresse IP statique.
 La configuration finale utilisée est :
 
 ```text
-Adresse IP : 192.168.1.230
+Adresse IP : IP_ZABBIX
 Préfixe    : /24
 Passerelle : 192.168.1.254
 Interface  : ens192
@@ -301,7 +301,7 @@ La configuration DNS permet notamment la résolution des noms nécessaires au fo
 Le serveur est identifié dans l'infrastructure sous le nom :
 
 ```text
-ZABBIX-SRV
+HOST_ZABBIX
 ```
 
 Le nom d'hôte permet d'identifier clairement le serveur dans l'environnement réseau et dans les différents outils d'administration.
@@ -499,7 +499,7 @@ Le fichier peut être édité avec :
 sudo nano /etc/zabbix/zabbix_server.conf
 ```
 
-![Configuration du fichier zabbix\_server.conf](Images/Extrait_fichier_zabbix_server_conf.png)
+![Configuration du fichier zabbix_server.conf](Images/Extrait_fichier_zabbix_server_conf.png)
 
 Cette configuration permet au processus `zabbix-server` de se connecter à la base de données `zabbix`.
 
@@ -571,7 +571,7 @@ L'installation finale est réalisée depuis l'interface Web.
 L'interface Zabbix est accessible à l'adresse :
 
 ```text
-http://192.168.1.230/zabbix
+http://IP_ZABBIX/zabbix
 ```
 
 La page d'installation de Zabbix est alors affichée.
@@ -724,9 +724,7 @@ Le serveur Zabbix est désormais opérationnel et prêt à intégrer les premier
 
 Avant d'automatiser le déploiement de Zabbix Agent 2 sur les serveurs Windows avec Ansible, un premier serveur Linux est intégré manuellement à Zabbix.
 
-Le serveur utilisé est le serveur GLPI.
-
-Cette étape permet de valider le fonctionnement de la supervision d'un serveur Linux avant de passer à l'automatisation.
+Le serveur utilisé est le serveur GLPI. Cette étape permet de valider le fonctionnement de la supervision d'un serveur Linux avant de passer à l'automatisation.
 
 ---
 
@@ -785,7 +783,7 @@ Les paramètres permettent notamment de définir :
 * le serveur Zabbix utilisé pour la supervision active ;
 * le nom de l'hôte dans Zabbix.
 
-![Configuration du fichier zabbix\_agentd.conf](Images/Conf_fichier_agent_zabbix_server_glpi.png)
+![Configuration du fichier zabbix_agentd.conf](Images/Conf_fichier_agent_zabbix_server_glpi.png)
 
 ---
 
@@ -814,7 +812,7 @@ Cette vérification confirme que l'agent est correctement démarré et écoute s
 L'accessibilité du port TCP 10050 est ensuite testée depuis le serveur Zabbix :
 
 ```bash
-nc -zv 192.168.1.247 10050
+nc -zv IP_GLPI 10050
 ```
 
 Le résultat obtenu est :
@@ -926,7 +924,7 @@ La préparation est donc réalisée avant toute tentative de déploiement avec A
 Le compte utilisé par Ansible est :
 
 ```text
-CELDUC\ansible
+COMPTE_ANSIBLE
 ```
 
 Pour pouvoir installer et configurer Zabbix Agent 2 à distance, ce compte doit disposer de privilèges administrateur local sur les serveurs Windows ciblés.
@@ -934,7 +932,7 @@ Pour pouvoir installer et configurer Zabbix Agent 2 à distance, ce compte doit 
 Une GPO est donc utilisée afin d'ajouter automatiquement le compte :
 
 ```text
-CELDUC\ansible
+COMPTE_ANSIBLE
 ```
 
 au groupe local :
@@ -965,7 +963,7 @@ Active Directory
 GPO
         │
         ▼
-CELDUC\ansible
+COMPTE_ANSIBLE
         │
         ▼
 Administrateur local
@@ -986,7 +984,7 @@ La communication utilisée dans cette infrastructure est :
 
 ```text
 Contrôleur Ansible
-192.168.1.246
+IP_ANSIBLE
         │
         │ WinRM / NTLM
         │ TCP 5985
@@ -1038,7 +1036,7 @@ Active Directory
         │
         ▼
 GPO
-        ├── Compte CELDUC\ansible
+        ├── Compte COMPTE_ANSIBLE
         │   ajouté aux administrateurs locaux
         │
         └── WinRM
@@ -1047,9 +1045,6 @@ GPO
                     ▼
           Connexion Ansible possible
 ```
-
-Cette préparation constitue le prérequis nécessaire avant de poursuivre avec la validation de la communication entre le contrôleur Ansible et les serveurs Windows.
-
 
 ---
 
@@ -1060,15 +1055,15 @@ Avant de déployer l'agent Zabbix, la communication entre le contrôleur Ansible
 Le contrôleur Ansible est situé sur :
 
 ```text
-ControllerNodeAnsible
-192.168.1.246
+HOST_ANSIBLE
+IP_ANSIBLE
 ```
 
 Le serveur PKI est situé sur :
 
 ```text
-WS2022-CA
-192.168.1.236
+HOST_PKI
+IP_PKI
 ```
 
 La première étape consiste à vérifier la connectivité réseau entre les deux machines.
@@ -1076,7 +1071,7 @@ La première étape consiste à vérifier la connectivité réseau entre les deu
 Depuis le contrôleur Ansible, un test `ping` est effectué vers le serveur PKI :
 
 ```bash
-ping -c 4 192.168.1.236
+ping -c 4 IP_PKI
 ```
 
 Le résultat confirme que la communication IP est fonctionnelle.
@@ -1092,7 +1087,7 @@ Transport NTLM
 L'accessibilité du service WinRM est vérifiée avec :
 
 ```bash
-nc -zv 192.168.1.236 5985
+nc -zv IP_PKI 5985
 ```
 
 Le port doit apparaître comme accessible.
@@ -1121,7 +1116,7 @@ Ce résultat valide simultanément :
 
 * la connectivité réseau ;
 * l'accès au service WinRM ;
-* l'authentification du compte `CELDUC\ansible` ;
+* l'authentification du compte `COMPTE_ANSIBLE` ;
 * l'utilisation du transport NTLM ;
 * la capacité d'Ansible à exécuter une tâche distante sur le serveur Windows.
 
@@ -1227,7 +1222,7 @@ Dans la section **Interfaces**, ajouter une interface de type :
 
 ```text
 Type : Agent
-IP   : 192.168.1.236
+IP   : IP_PKI
 Port : 10050
 ```
 
@@ -1261,13 +1256,13 @@ La communication attendue est :
 
 ```text
 Serveur Zabbix
-192.168.1.230
+IP_ZABBIX
         │
         │ TCP 10050
         ▼
 Zabbix Agent 2
 PKI
-192.168.1.236
+IP_PKI
 ```
 
 ![Création de l'hôte PKI dans l'interface graphique Zabbix](Images/Creation_Hote_PKI_in_server_zabbix_gui.png)
@@ -1299,7 +1294,7 @@ sudo apt install zabbix-get -y
 La communication avec l'agent installé sur le serveur PKI est ensuite testée avec :
 
 ```bash
-zabbix_get -s 192.168.1.236 -k agent.ping
+zabbix_get -s IP_PKI -k agent.ping
 ```
 
 Le résultat attendu est :
@@ -1311,14 +1306,14 @@ Le résultat attendu est :
 La version de l'agent est ensuite vérifiée avec :
 
 ```bash
-zabbix_get -s 192.168.1.236 -k agent.version
+zabbix_get -s IP_PKI -k agent.version
 ```
 
 Cette commande permet de confirmer la version de Zabbix Agent 2 installée sur le serveur PKI.
 
 ![Test de l'agent Zabbix depuis le serveur Zabbix avec zabbix_get](Images/Test_Agent_Zabbox_depuis_Server_Zabbix_avec_zabbix_get.png)
 
-Ces tests valident directement la communication entre le serveur Zabbix `192.168.1.230` et l'agent Zabbix Agent 2 installé sur le serveur PKI `192.168.1.236` via le port TCP `10050`.
+Ces tests valident directement la communication entre le serveur Zabbix `IP_ZABBIX` et l'agent Zabbix Agent 2 installé sur le serveur PKI `IP_PKI` via le port TCP `10050`.
 
 La communication entre le serveur Zabbix et l'agent étant validée, l'étape suivante consiste à préparer l'automatisation de la création des hôtes dans Zabbix via son API.
 
@@ -1517,7 +1512,7 @@ Le playbook réalise automatiquement :
 
 Le résultat de l'exécution confirme que le déploiement s'est déroulé correctement.
 
-![Création automatique de l'hôte srv\_veeam dans Zabbix](Images/creation_automatisee_hote_depuis_ansible_sur_zabbix_server.png)
+![Création automatique de l'hôte srv_veeam dans Zabbix](Images/creation_automatisee_hote_depuis_ansible_sur_zabbix_server.png)
 
 La création automatique de l'hôte dans Zabbix est ensuite vérifiée depuis l'interface Web.
 
@@ -1848,21 +1843,21 @@ Le déploiement sur les contrôleurs de domaine a nécessité une configuration 
 Dans le fonctionnement général du projet, le compte de service :
 
 ```text
-CELDUC\ansible
+COMPTE_ANSIBLE
 ```
 
 est utilisé pour administrer les machines Windows à distance avec Ansible.
 
 Les contrôleurs de domaine constituent toutefois un cas particulier, car leur fonctionnement et leur modèle de gestion des droits diffèrent de ceux des serveurs membres.
 
-Lors des premiers tests, le compte `CELDUC\ansible` ne disposait pas des droits nécessaires pour permettre correctement l'administration distante des contrôleurs de domaine.
+Lors des premiers tests, le compte `COMPTE_ANSIBLE` ne disposait pas des droits nécessaires pour permettre correctement l'administration distante des contrôleurs de domaine.
 
 Afin de permettre le déploiement automatisé de Zabbix Agent 2, le compte est temporairement ajouté au groupe disposant des droits d'administration nécessaires :
 
 ```powershell
 Add-ADGroupMember `
 -Identity "Administrateurs" `
--Members "CELDUC\ansible"
+-Members "COMPTE_ANSIBLE"
 ```
 
 La présence du compte dans le groupe est ensuite vérifiée avec :
@@ -1871,9 +1866,9 @@ La présence du compte dans le groupe est ensuite vérifiée avec :
 Get-ADGroupMember -Identity "Administrateurs"
 ```
 
-Le compte `CELDUC\ansible` doit alors apparaître dans la liste des membres du groupe.
+Le compte `COMPTE_ANSIBLE` doit alors apparaître dans la liste des membres du groupe.
 
-![Ajout du compte CELDUC\ansible aux administrateurs du domaine](Images/ajout_celduc_ansible_aux_admin_domaine_pour_DC.png)
+![Ajout du compte COMPTE_ANSIBLE aux administrateurs du domaine](Images/ajout_celduc_ansible_aux_admin_domaine_pour_DC.png)
 
 Une fois les droits nécessaires accordés, la communication avec les contrôleurs de domaine est vérifiée depuis le contrôleur Ansible avec le module `win_ping`.
 
@@ -1917,7 +1912,7 @@ Les deux serveurs apparaissent correctement dans la supervision et leurs agents 
 
 ![Vérification de la remontée des contrôleurs de domaine dans Zabbix](Images/Verification_depuis_GUIçzabbix_remontee_DC_&_DC2_OK.png)
 
-Une fois le déploiement et la supervision des deux contrôleurs de domaine validés, les droits d'administration accordés temporairement au compte `CELDUC\ansible` sont retirés.
+Une fois le déploiement et la supervision des deux contrôleurs de domaine validés, les droits d'administration accordés temporairement au compte `COMPTE_ANSIBLE` sont retirés.
 
 Cette étape permet d'appliquer le principe du moindre privilège : le compte utilisé pour l'automatisation ne conserve pas de droits d'administration élevés au-delà de la phase nécessaire au déploiement.
 
@@ -1926,7 +1921,7 @@ Le compte est retiré du groupe avec :
 ```powershell
 Remove-ADGroupMember `
 -Identity "Administrateurs" `
--Members "CELDUC\ansible" `
+-Members "COMPTE_ANSIBLE" `
 -Confirm:$false
 ```
 
@@ -1936,7 +1931,7 @@ La présence du compte dans le groupe est ensuite vérifiée avec :
 Get-ADGroupMember -Identity "Administrateurs"
 ```
 
-Le compte `CELDUC\ansible` ne doit alors plus apparaître dans la liste des membres.
+Le compte `COMPTE_ANSIBLE` ne doit alors plus apparaître dans la liste des membres.
 
 ![Retrait du compte ansible du groupe Administrateurs](Images/remove_compte_ansible_groupe_Admin.PNG)
 
@@ -1977,25 +1972,25 @@ Afin de superviser également cette machine avec Zabbix, l'agent Zabbix Agent 2 
 Le contrôleur Ansible possède l'adresse IP suivante :
 
 ```text
-192.168.1.246
+IP_ANSIBLE
 ```
 
 Le serveur Zabbix possède l'adresse IP suivante :
 
 ```text
-192.168.1.230
+IP_ZABBIX
 ```
 
 La première étape consiste à vérifier la connectivité réseau entre le contrôleur Ansible et le serveur Zabbix :
 
 ```bash
-ping -c 4 192.168.1.230
+ping -c 4 IP_ZABBIX
 ```
 
 La communication réseau étant fonctionnelle, l'accessibilité du port utilisé par le serveur Zabbix est ensuite vérifiée :
 
 ```bash
-nc -zv 192.168.1.230 10051
+nc -zv IP_ZABBIX 10051
 ```
 
 Le port TCP `10051` correspond au port d'écoute du serveur Zabbix.
@@ -2025,14 +2020,14 @@ Cette vérification confirme que l'agent Zabbix Agent 2 est correctement démarr
 La communication entre les deux machines est donc la suivante :
 
 ```text
-ControllerNodeAnsible
-192.168.1.246
+HOST_ANSIBLE
+IP_ANSIBLE
         │
         │ Zabbix Agent 2
         │ TCP 10050
         ▼
 Serveur Zabbix
-192.168.1.230
+IP_ZABBIX
 ```
 
 Le serveur Zabbix peut ainsi interroger l'agent installé sur le contrôleur Ansible et récupérer les informations de supervision du système Linux.
@@ -2066,15 +2061,15 @@ SNMP permet à un serveur de supervision d'interroger un équipement réseau afi
 Dans cette architecture, le serveur Zabbix interroge directement le FortiGate via SNMPv3 :
 
 ```text
-ZABBIX-SRV
-192.168.1.230
+HOST_ZABBIX
+IP_ZABBIX
         │
         │ SNMPv3
         │ UDP 161
         ▼
 FortiGate-80E
-celducfw
-192.168.1.106
+HOST_FORTIGATE
+IP_FORTIGATE
 ```
 
 ### Vérification de la connectivité réseau
@@ -2084,19 +2079,19 @@ Avant de configurer SNMP, la connectivité entre le contrôleur Ansible et le Fo
 Le FortiGate possède l'adresse IP :
 
 ```text
-192.168.1.106
+IP_FORTIGATE
 ```
 
 La connectivité réseau est testée avec :
 
 ```bash
-ping -c 4 192.168.1.106
+ping -c 4 IP_FORTIGATE
 ```
 
 Le port UDP utilisé par SNMP est ensuite testé :
 
 ```bash
-nc -zvu 192.168.1.106 161
+nc -zvu IP_FORTIGATE 161
 ```
 
 Le port `161` correspond au port utilisé par le service SNMP pour recevoir les requêtes de supervision.
@@ -2190,7 +2185,7 @@ L'Engine ID SNMP du FortiGate est également personnalisé afin d'identifier cla
 La configuration utilisée est :
 
 ```text
-set engine-id "celducfw-snmp"
+set engine-id "host_fortigate-snmp"
 ```
 
 L'Engine ID permet d'identifier de manière unique le moteur SNMP utilisé par l'équipement.
@@ -2199,8 +2194,8 @@ La configuration permet donc d'identifier clairement le FortiGate dans l'environ
 
 ```text
 FortiGate
-Hostname : celducfw
-Engine ID : celducfw-snmp
+Hostname : HOST_FORTIGATE
+Engine ID : host_fortigate-snmp
 ```
 
 ![Modification de l'Engine ID du FortiGate](Images/Modification_engine_ID_fortigate.png)
@@ -2231,7 +2226,7 @@ snmpget \
 -x AES-256 \
 -X "MOT_DE_PASSE_CHIFFREMENT" \
 -t 10 \
-192.168.1.106 \
+IP_FORTIGATE \
 1.3.6.1.2.1.1.1.0
 ```
 
@@ -2288,13 +2283,13 @@ Délai d'attente de 10 secondes.
 Le test est ensuite effectué sur l'adresse IP du FortiGate :
 
 ```text
-192.168.1.106
+IP_FORTIGATE
 ```
 
 Le premier test retourne le nom :
 
 ```text
-celducfw.celduc.lan
+HOST_FORTIGATE.DOMAIN
 ```
 
 ![Test SNMPv3 réussi depuis le serveur Zabbix](Images/Test_SNMPv3_OK.png)
@@ -2314,8 +2309,8 @@ Ce résultat confirme que le serveur Zabbix est capable d'interroger le FortiGat
 La communication entre les deux équipements est donc validée :
 
 ```text
-ZABBIX-SRV
-192.168.1.230
+HOST_ZABBIX
+IP_ZABBIX
         │
         │ SNMPv3
         │ SHA-256
@@ -2323,7 +2318,7 @@ ZABBIX-SRV
         │ UDP 161
         ▼
 FortiGate-80E
-192.168.1.106
+IP_FORTIGATE
 ```
 
 ### Création manuelle du FortiGate dans Zabbix
@@ -2333,8 +2328,8 @@ Une fois la communication SNMPv3 validée depuis la ligne de commande, le FortiG
 L'hôte est créé avec les paramètres correspondant à l'équipement :
 
 ```text
-Nom de l'hôte : celducfw
-Adresse IP     : 192.168.1.106
+Nom de l'hôte : HOST_FORTIGATE
+Adresse IP     : IP_FORTIGATE
 Interface      : SNMP
 Port           : 161
 Version        : SNMPv3
