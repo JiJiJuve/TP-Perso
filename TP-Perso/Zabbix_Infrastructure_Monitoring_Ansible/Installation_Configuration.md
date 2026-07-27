@@ -697,7 +697,7 @@ Les services contrôlés sont :
 
 La vérification est réalisée avec les commandes `systemctl status` correspondantes.
 
-![Vérification des services de l'infrastructure](Images/verification_3services_running_apache2_mariadb_php_fpm.png)
+![Vérification des services de l'infrastructure](Images/verification_3services_running_glpi_apache2_mariadb_php_fpm.png)
 
 Les trois services sont actifs et fonctionnels.
 
