@@ -1834,7 +1834,7 @@ ping -c 4 192.168.1.230
 La communication réseau étant fonctionnelle, l'accessibilité du port utilisé par le serveur Zabbix est ensuite vérifiée :
 
 ```bash
-nc -zvu 192.168.1.230 10051
+nc -zv 192.168.1.230 10051
 ```
 
 Le port TCP `10051` correspond au port d'écoute du serveur Zabbix.
@@ -1842,7 +1842,7 @@ Le port TCP `10051` correspond au port d'écoute du serveur Zabbix.
 L'agent Zabbix Agent 2 est ensuite activé et démarré sur le contrôleur Ansible avec :
 
 ```bash
-sudo systemctl enable --now zabbix-agent2
+sudo systemctl enable zabbix-agent2
 ```
 
 L'état du service est ensuite vérifié :
@@ -1856,6 +1856,8 @@ Le service doit apparaître dans l'état :
 ```text
 Active: active (running)
 ```
+
+![Vérification de la connectivité réseau et du service Zabbix Agent 2 sur le ControllerNodeAnsible](Images/Check_Connectivite_Reseau_&_Service_agent_zabbix_Running_CLI_ControllerNodeAnsible_OK.png)
 
 Cette vérification confirme que l'agent Zabbix Agent 2 est correctement démarré sur le contrôleur Ansible.
 
@@ -1882,25 +1884,349 @@ Cette étape permet donc d'étendre la supervision à l'infrastructure utilisée
 
 Le contrôleur Ansible n'est ainsi plus uniquement utilisé pour déployer et administrer les serveurs Windows : il est également intégré à la plateforme de supervision Zabbix.
 
-La supervision de l'infrastructure est donc désormais étendue aux différents systèmes utilisés dans le projet :
+
+Oui, là tu as raison : **je me suis trompé en disant que le SNMP n'était pas validé**. D'après les étapes que tu viens de rappeler, **la supervision SNMPv3 du FortiGate a bien été mise en place et validée dans Zabbix**. Je reprends donc toute la partie correctement, avec les étapes réelles.
+
+Oui, je reprends la partie **sans modifier le contenu**, en intégrant uniquement tes captures aux bons endroits avec les chemins GitHub.
+
+## 7.4 Supervision du FortiGate avec SNMPv3
+
+Après la supervision des serveurs Windows et Linux avec **Zabbix Agent 2**, la supervision est étendue à un équipement réseau : le pare-feu **FortiGate-80E**.
+
+Contrairement aux serveurs Windows et Linux, il n'est pas possible d'installer un agent Zabbix directement sur un équipement réseau tel qu'un pare-feu.
+
+La supervision repose donc sur le protocole **SNMP** (*Simple Network Management Protocol*).
+
+SNMP permet à un serveur de supervision d'interroger un équipement réseau afin de récupérer différentes informations, notamment :
+
+* l'état général de l'équipement ;
+* l'utilisation du processeur et de la mémoire ;
+* l'état des interfaces réseau ;
+* le trafic entrant et sortant ;
+* différents compteurs et paramètres système.
+
+Dans cette architecture, le serveur Zabbix interroge directement le FortiGate via SNMPv3 :
+
+```text
+ZABBIX-SRV
+192.168.1.230
+        │
+        │ SNMPv3
+        │ UDP 161
+        ▼
+FortiGate-80E
+celducfw
+192.168.1.106
+```
+
+### Vérification de la connectivité réseau
+
+Avant de configurer SNMP, la connectivité entre le contrôleur Ansible et le FortiGate est vérifiée.
+
+Le FortiGate possède l'adresse IP :
+
+```text
+192.168.1.106
+```
+
+La connectivité réseau est testée avec :
+
+```bash
+ping -c 4 192.168.1.106
+```
+
+Le port UDP utilisé par SNMP est ensuite testé :
+
+```bash
+nc -zvu 192.168.1.106 161
+```
+
+Le port `161` correspond au port utilisé par le service SNMP pour recevoir les requêtes de supervision.
+
+Ces tests permettent de vérifier que le contrôleur Ansible peut communiquer avec le FortiGate avant de poursuivre la configuration SNMP.
+
+![Test de connectivité réseau entre le ControllerNodeAnsible et le FortiGate](Images/Test_Connectivite_Reseau_entre_ControllerNodeAnsible_&_Fortigate_OK.png)
+
+### Vérification et activation du service SNMP
+
+La configuration SNMP du FortiGate est ensuite vérifiée depuis sa CLI.
+
+La configuration complète est consultée avec :
+
+```text
+show full-configuration system snmp sysinfo
+```
+
+Lors de cette vérification, le service SNMP est initialement désactivé :
+
+```text
+set status disable
+```
+
+![SNMP désactivé sur le FortiGate](Images/snmp_disable_fortigate.png)
+
+Le service SNMP est donc activé avec :
+
+```text
+config system snmp sysinfo
+    set status enable
+end
+```
+
+La configuration est ensuite vérifiée afin de confirmer que le service est bien actif :
+
+```text
+config system snmp sysinfo
+show
+```
+
+Le paramètre doit apparaître avec :
+
+```text
+set status enable
+```
+
+![Activation du SNMP sur le FortiGate](Images/Activation_snmp_fortigate.png)
+
+![Activation et vérification du SNMP sur le FortiGate](Images/Activation_&_Verification_snmp_fortigate.png)
+
+Le protocole SNMP est ainsi activé sur le FortiGate.
+
+### Configuration de SNMPv3
+
+La supervision est configurée avec **SNMPv3**.
+
+Contrairement à SNMPv1 et SNMPv2c, SNMPv3 permet d'utiliser une authentification et un chiffrement des échanges.
+
+La configuration repose notamment sur :
+
+```text
+Utilisateur SNMPv3 : zabbix_snmp
+Authentification   : SHA-256
+Chiffrement        : AES-256
+```
+
+La configuration SNMPv3 permet donc de protéger les échanges entre le serveur Zabbix et le FortiGate.
+
+![Extrait de la configuration SNMP du FortiGate](Images/Extrait_Conf_SNMP_Fortigate.png)
+
+Le principe de communication est le suivant :
+
+```text
+Serveur Zabbix
+        │
+        │ Utilisateur SNMPv3
+        │ Authentification SHA
+        │ Chiffrement AES
+        │ UDP 161
+        ▼
+FortiGate
+```
+
+Les paramètres SNMPv3 sont configurés sur le FortiGate afin d'autoriser le serveur Zabbix à effectuer des requêtes sécurisées.
+
+### Modification de l'Engine ID SNMP
+
+L'Engine ID SNMP du FortiGate est également personnalisé afin d'identifier clairement le moteur SNMP de l'équipement.
+
+La configuration utilisée est :
+
+```text
+set engine-id "celducfw-snmp"
+```
+
+L'Engine ID permet d'identifier de manière unique le moteur SNMP utilisé par l'équipement.
+
+La configuration permet donc d'identifier clairement le FortiGate dans l'environnement SNMP :
+
+```text
+FortiGate
+Hostname : celducfw
+Engine ID : celducfw-snmp
+```
+
+![Modification de l'Engine ID du FortiGate](Images/Modification_engine_ID_fortigate.png)
+
+### Installation des outils SNMP sur le serveur Zabbix
+
+Afin de pouvoir tester la communication SNMP depuis le serveur Zabbix, les outils nécessaires sont installés avec :
+
+```bash
+sudo apt install snmp snmpd -y
+```
+
+![Installation des outils SNMP sur le serveur Zabbix](Images/Installation_SNMP_server_zabbix.png)
+
+### Test de communication SNMPv3 depuis le serveur Zabbix
+
+Une fois la configuration terminée, les tests sont réalisés depuis le serveur Zabbix.
+
+Un premier test SNMPv3 est effectué avec la commande `snmpget` :
+
+```bash
+snmpget \
+-v3 \
+-l authPriv \
+-u zabbix_snmp \
+-a SHA-256 \
+-A "MOT_DE_PASSE_AUTHENTIFICATION" \
+-x AES-256 \
+-X "MOT_DE_PASSE_CHIFFREMENT" \
+-t 10 \
+192.168.1.106 \
+1.3.6.1.2.1.1.1.0
+```
+
+Les différents paramètres correspondent à :
+
+```text
+-v3
+```
+
+Utilisation de SNMP version 3.
+
+```text
+-l authPriv
+```
+
+Utilisation de l'authentification et du chiffrement.
+
+```text
+-u zabbix_snmp
+```
+
+Utilisateur SNMPv3 utilisé pour l'authentification.
+
+```text
+-a SHA-256
+```
+
+Algorithme d'authentification.
+
+```text
+-A
+```
+
+Mot de passe d'authentification.
+
+```text
+-x AES-256
+```
+
+Algorithme de chiffrement.
+
+```text
+-X
+```
+
+Mot de passe utilisé pour le chiffrement.
+
+```text
+-t 10
+```
+
+Délai d'attente de 10 secondes.
+
+Le test est ensuite effectué sur l'adresse IP du FortiGate :
+
+```text
+192.168.1.106
+```
+
+Le premier test retourne le nom :
+
+```text
+celducfw.celduc.lan
+```
+
+![Test SNMPv3 réussi depuis le serveur Zabbix](Images/Test_SNMPv3_OK.png)
+
+Une seconde vérification est réalisée avec une requête SNMP permettant de récupérer davantage d'informations depuis l'arbre SNMP.
+
+Cette requête retourne notamment des informations commençant par :
+
+```text
+iso
+```
+
+Ce résultat confirme que le serveur Zabbix est capable d'interroger le FortiGate avec les paramètres SNMPv3 configurés.
+
+![Test SNMPv3 retournant les informations de l'arbre ISO](Images/Test_SNMPv3_OK2.png)
+
+La communication entre les deux équipements est donc validée :
+
+```text
+ZABBIX-SRV
+192.168.1.230
+        │
+        │ SNMPv3
+        │ SHA-256
+        │ AES-256
+        │ UDP 161
+        ▼
+FortiGate-80E
+192.168.1.106
+```
+
+### Création manuelle du FortiGate dans Zabbix
+
+Une fois la communication SNMPv3 validée depuis la ligne de commande, le FortiGate est ajouté manuellement dans l'interface graphique de Zabbix.
+
+L'hôte est créé avec les paramètres correspondant à l'équipement :
+
+```text
+Nom de l'hôte : celducfw
+Adresse IP     : 192.168.1.106
+Interface      : SNMP
+Port           : 161
+Version        : SNMPv3
+```
+
+Les paramètres de sécurité SNMPv3 sont ensuite renseignés dans Zabbix :
+
+```text
+Utilisateur : zabbix_snmp
+Authentification : SHA-256
+Chiffrement : AES-256
+```
+
+Le template adapté à la supervision SNMP est ensuite associé à l'hôte.
+
+Le template permet à Zabbix d'utiliser automatiquement les éléments de collecte nécessaires à la supervision de l'équipement réseau.
+
+![Configuration SNMPv3 du FortiGate dans l'interface graphique du serveur Zabbix](Images/configuration_snmp_gui_server_zabbix.png)
+
+Après l'enregistrement de l'hôte, le FortiGate apparaît dans l'interface Zabbix.
+
+La disponibilité de l'équipement est vérifiée dans l'interface graphique et les premières informations de supervision remontent correctement.
+
+![Remontée du FortiGate dans le serveur Zabbix](Images/Fortigate_remontee_server_zabbix_OK.png)
+
+La supervision du FortiGate est donc différente de celle des serveurs Windows et Linux :
 
 ```text
 Serveurs Windows
         ↓
 Zabbix Agent 2
+        ↓
+TCP 10050
 
 Serveurs Linux
         ↓
 Zabbix Agent 2
-
-ControllerNodeAnsible
         ↓
-Zabbix Agent 2
+TCP 10050
 
+FortiGate
         ↓
-
-Zabbix Server
+SNMPv3
         ↓
-Collecte et centralisation des métriques
+UDP 161
 ```
+
+La supervision SNMPv3 du FortiGate permet donc d'intégrer le pare-feu à l'infrastructure Zabbix sans installer d'agent supplémentaire sur l'équipement.
+
+L'utilisation de SNMPv3 apporte également un niveau de sécurité supérieur aux versions SNMPv1 et SNMPv2c grâce à l'authentification et au chiffrement des échanges.
+
+
 
