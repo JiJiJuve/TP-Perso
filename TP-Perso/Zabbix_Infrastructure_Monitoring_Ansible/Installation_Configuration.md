@@ -1355,9 +1355,11 @@ Le playbook réalise automatiquement :
 
 Le résultat de l'exécution confirme que le déploiement s'est déroulé correctement.
 
+![Création automatique de l'hôte srv\_veeam dans Zabbix](Images/creation_automatisee_hote_depuis_ansible_sur_zabbix_server.png)
+
 La création automatique de l'hôte dans Zabbix est ensuite vérifiée depuis l'interface Web.
 
-![Création automatique de l'hôte srv\_veeam dans Zabbix](Images/creation_automatisee_hote_depuis_ansible_sur_zabbix_server.png)
+![Vérification de la création automatique de srv_veeam dans Zabbix](Images/Verification_creation_automatique_SRV_Veeam_dans_Zabbix_OK.png)
 
 Cette validation confirme que le processus complet est désormais automatisé :
 
@@ -1381,207 +1383,106 @@ Le test réalisé sur `srv_veeam` étant concluant, l'automatisation peut désor
 
 ---
 
-## 6.9 Validation de la supervision de PKI dans l'interface Zabbix
+## 6.10 Validation de la détection des problèmes
 
-Après la création de l'hôte, la disponibilité de l'agent est vérifiée dans l'interface Zabbix.
+Après la création automatique de l'hôte `srv_veeam` et la remontée de ses premières métriques, Zabbix est capable de surveiller automatiquement l'état du serveur et de détecter les situations anormales.
 
-L'indicateur `ZBX` apparaît en vert.
+Cette détection est réalisée grâce aux **triggers** associés au template de supervision.
 
-Cette validation confirme que :
+Un trigger permet de définir une condition considérée comme anormale, par exemple :
 
-* l'agent est installé ;
-* le service est démarré ;
-* le port TCP 10050 est accessible ;
-* le serveur Zabbix peut communiquer avec l'agent ;
-* le nom d'hôte est correctement configuré ;
-* le template Windows est correctement associé.
+* une utilisation importante du processeur ;
+* un espace disque insuffisant ;
+* un service arrêté ;
+* une indisponibilité de l'agent ;
+* une anomalie détectée sur le système.
 
-![Validation de la disponibilité du serveur PKI dans Zabbix](Images/Test_Validation_remontee_server_dans_zabbix_gui.png)
+Lorsqu'une condition définie par un trigger est remplie, Zabbix crée automatiquement un problème dans l'interface de supervision.
 
-Le premier déploiement automatisé de Zabbix Agent 2 sur un serveur Windows est donc validé.
+Dans le cadre du test réalisé sur `srv_veeam`, Zabbix a détecté un problème lié à l'espace disque :
+
+```text
+Space is low (used > 80%, total 109.4 GB)
+```
+
+Le problème est apparu dans :
+
+```text
+Surveillance → Problèmes
+```
+
+![Exemple de remontée d'un problème sur la VM srv_veeam](Images/exemple_remontee_probleme_vm_veeam.png)
+
+L'analyse du serveur a montré qu'une partition d'environ `109 Go` atteignait le seuil d'alerte, tandis qu'une seconde partition d'environ `100 Go` était inutilisée.
+
+La partition inutilisée a donc été supprimée afin de récupérer l'espace disponible et d'étendre la partition utilisée.
+
+Après cette modification, l'espace disponible a augmenté et l'utilisation du disque est repassée sous le seuil défini par le trigger.
+
+Le problème a alors été résolu dans Zabbix.
+
+Cet exemple montre concrètement le fonctionnement de la supervision :
+
+```text
+Collecte des métriques
+        ↓
+Dépassement d'un seuil
+        ↓
+Création automatique d'un problème
+        ↓
+Analyse de la cause
+        ↓
+Action corrective
+        ↓
+Résolution du problème
+```
+
+Cette étape permet de vérifier que la solution ne se limite pas à la collecte de métriques. Zabbix est également capable de détecter automatiquement une anomalie et de signaler un problème nécessitant une intervention.
 
 ---
 
-## 6.10 Création du token API Zabbix
+## 6.11 Déploiement automatisé sur plusieurs serveurs Windows
 
-Afin d'automatiser également la création des hôtes dans Zabbix, l'API Zabbix est utilisée.
+Après avoir validé le fonctionnement de l'automatisation sur les serveurs `PKI` et `srv_veeam`, le déploiement de Zabbix Agent 2 est étendu à plusieurs serveurs Windows de l'infrastructure.
 
-Un token API est créé dans l'interface Zabbix.
+L'objectif est désormais de pouvoir déployer et configurer automatiquement l'agent sur plusieurs machines depuis le contrôleur Ansible.
 
-Ce token permet à Ansible de communiquer avec le serveur Zabbix et de créer ou mettre à jour automatiquement les hôtes.
+Le playbook réalise automatiquement les opérations suivantes :
 
-![Création du token API Zabbix](Images/creation_token_API_server_zabbix.png)
+* vérification de la présence de Zabbix Agent 2 ;
+* création du répertoire temporaire ;
+* copie du fichier d'installation MSI ;
+* installation de Zabbix Agent 2 ;
+* configuration de l'agent ;
+* démarrage du service ;
+* configuration du démarrage automatique ;
+* création de la règle de pare-feu TCP `10050` ;
+* création ou mise à jour automatique de l'hôte dans Zabbix via l'API ;
+* association du template de supervision ;
+* suppression du fichier d'installation temporaire.
 
-Le token est ensuite utilisé par Ansible pour les opérations réalisées via l'API.
+Le déploiement est lancé depuis le contrôleur Ansible sur les serveurs sélectionnés.
 
-Pour des raisons de sécurité, le token n'est pas stocké directement en clair dans le playbook.
-
-Il est stocké dans Ansible Vault avec les autres informations sensibles :
-
-```text
-zabbix_api_token
-```
-
----
-
-## 6.11 Test de communication entre Ansible et l'API Zabbix
-
-Avant d'ajouter la création automatique des hôtes au playbook principal, un test spécifique est réalisé.
-
-L'objectif est de vérifier séparément la communication entre :
+Les résultats obtenus confirment le bon déroulement des opérations :
 
 ```text
-Contrôleur Ansible
-        │
-        │ API Zabbix
-        ▼
-Serveur Zabbix
-192.168.1.230
+cao_relais    : ok=8 changed=7 failed=0
+cao_transfo   : ok=8 changed=7 failed=0
+data1_2014    : ok=8 changed=6 failed=0
+pki           : ok=4 changed=2 failed=0
+sage          : ok=8 changed=7 failed=0
 ```
 
-Un playbook de test est utilisé afin de valider :
+Aucune erreur n'est signalée sur les serveurs validés.
 
-* l'accès au serveur Zabbix ;
-* l'utilisation du token API ;
-* l'authentification auprès de l'API ;
-* la communication entre Ansible et Zabbix.
+![Lancement du playbook sur cinq serveurs avec succès](Images/lancement_playbook_5_server_OK.png)
 
-Le résultat du test est validé avec succès.
+Après le déploiement, la communication entre le serveur Zabbix et les agents installés sur les différents serveurs Windows est vérifiée avec l'outil `zabbix_get`.
 
-![Test de communication entre Ansible et l'API Zabbix](Images/PLayboo_Test_communication_server_ansible_api_zabbix_OK.png)
-
-Cette validation permet d'éviter de modifier directement le playbook de déploiement avant d'avoir confirmé que la communication avec l'API fonctionne correctement.
-
----
-
-## 6.12 Automatisation de la création de l'hôte dans Zabbix
-
-Une fois la communication avec l'API validée, le playbook est amélioré.
-
-Une nouvelle tâche est ajoutée afin de créer ou mettre à jour automatiquement l'hôte dans Zabbix.
-
-Le module utilisé est :
-
-```text
-community.zabbix.zabbix_host
-```
-
-Cette tâche permet notamment de configurer automatiquement :
-
-* le nom de l'hôte ;
-* le groupe Zabbix ;
-* le template ;
-* l'interface agent ;
-* l'adresse IP ;
-* le port TCP 10050.
-
-La chaîne de déploiement devient alors :
-
-```text
-Ansible
-    ↓
-WinRM
-    ↓
-Installation de Zabbix Agent 2
-    ↓
-Configuration du service
-    ↓
-Pare-feu TCP 10050
-    ↓
-API Zabbix
-    ↓
-Création automatique de l'hôte
-```
-
-![Ajout de la tâche de création automatique de l'hôte](Images/Playbook_avec_New_Tache.png)
-
-Le playbook permet désormais d'automatiser à la fois le déploiement de l'agent et l'intégration du serveur dans Zabbix.
-
----
-
-## 6.13 Première création automatisée d'un hôte dans Zabbix
-
-Le playbook est ensuite exécuté avec la nouvelle tâche d'intégration API.
-
-L'hôte est créé automatiquement dans Zabbix depuis le contrôleur Ansible.
-
-Cette opération permet de supprimer l'étape de création manuelle de l'hôte.
-
-La nouvelle chaîne est donc :
-
-```text
-Serveur Windows
-        ↓
-Ansible
-        ↓
-Installation de l'agent
-        ↓
-Configuration Windows
-        ↓
-Pare-feu
-        ↓
-API Zabbix
-        ↓
-Création automatique de l'hôte
-        ↓
-Supervision
-```
-
-![Création automatique d'un hôte depuis Ansible dans Zabbix](Images/creation_automatisee_hote_depuis_ansible_sur_zabbix_server.png)
-
-La création automatique de l'hôte est ainsi validée.
-
----
-
-## 6.14 Déploiement automatisé sur plusieurs serveurs
-
-Après validation du fonctionnement sur le serveur PKI, le déploiement est étendu à plusieurs serveurs Windows.
-
-Le playbook permet de déployer automatiquement Zabbix Agent 2 et de créer les hôtes correspondants dans Zabbix.
-
-Le lancement du déploiement est réalisé depuis le contrôleur Ansible.
-
-Plusieurs serveurs sont déployés avec succès.
-
-![Déploiement automatisé sur plusieurs serveurs Windows](Images/lancement_playbook_5_server_OK.png)
-
-Les machines intégrées comprennent notamment :
-
-```text
-PKI
-SRV-VEEAM
-CAO-RELAIS
-CAO-TRANSFO
-DATA1-2014
-SAGE
-```
-
-Chaque serveur est automatiquement :
-
-* préparé ;
-* équipé de Zabbix Agent 2 ;
-* configuré ;
-* associé à une règle de pare-feu ;
-* intégré dans Zabbix via l'API.
-
----
-
-## 6.15 Vérification après déploiement
-
-Après le déploiement, les serveurs sont vérifiés directement sur leur système d'exploitation.
-
-L'état du service Zabbix Agent 2 doit être :
-
-```text
-Running
-```
-
-Le port TCP 10050 doit également être accessible.
-
-Des validations complémentaires sont réalisées depuis le serveur Zabbix avec :
+Le test utilise la clé :
 
 ```bash
-zabbix_get -s <IP> -k agent.ping
+zabbix_get -s IP_DU_SERVEUR -k agent.ping
 ```
 
 Le résultat attendu est :
@@ -1590,40 +1491,161 @@ Le résultat attendu est :
 1
 ```
 
-Ces tests permettent de vérifier que les agents déployés automatiquement fonctionnent correctement.
+Ce test est réalisé sur les cinq serveurs déployés.
+
+Cette vérification confirme que le serveur Zabbix peut communiquer directement avec les agents Zabbix Agent 2 installés sur les serveurs Windows.
+
+![Test de validation de la communication entre le serveur Zabbix et les agents Zabbix](Images/Test_Validation_communication_entre_server_zabbix_&_agent_zabbix.png)
+
+La dernière vérification est réalisée depuis l'interface Web de Zabbix.
+
+Les cinq serveurs apparaissent dans la liste des hôtes supervisés et leurs interfaces Agent sont disponibles.
+
+Cette vérification permet de confirmer que les serveurs sont correctement intégrés à la supervision centralisée.
+
+![Test de validation de la remontée des serveurs dans l'interface Zabbix](Images/Test_Validation_remontee_server_dans_zabbix_gui.png)
+
+Le processus complet est désormais automatisé :
+
+```text
+Contrôleur Ansible
+        │
+        ▼
+Déploiement de Zabbix Agent 2
+        │
+        ▼
+Configuration automatique
+        │
+        ▼
+Ouverture du port TCP 10050
+        │
+        ▼
+Création automatique de l'hôte via l'API Zabbix
+        │
+        ▼
+Test avec zabbix_get
+        │
+        ▼
+Supervision visible dans l'interface Zabbix
+```
+
+L'automatisation permet ainsi de réduire les interventions manuelles et d'assurer une configuration homogène des serveurs supervisés.
+
+Cette étape marque le passage d'une supervision configurée serveur par serveur à une véritable gestion automatisée du déploiement et de l'intégration des serveurs dans Zabbix.
 
 ---
 
-## 6.16 Validation finale dans l'interface Zabbix
+# 7. Cas particuliers et résolution des problèmes
 
-La dernière étape consiste à vérifier la disponibilité des serveurs dans l'interface Zabbix.
+Le déploiement automatisé a permis de superviser plusieurs serveurs Windows avec succès. Cependant, certains environnements ont nécessité des traitements spécifiques.
 
-Les hôtes apparaissent comme disponibles avec l'indicateur `ZBX` en vert.
+Ces difficultés sont liées aux différences de versions de Windows Server, aux droits nécessaires pour l'administration distante et aux règles de sécurité appliquées sur certains serveurs.
 
-Cette validation confirme que la chaîne complète fonctionne :
+Les principaux cas rencontrés sont présentés dans cette partie :
 
 ```text
-Active Directory / GPO
-        ↓
-WinRM
-        ↓
-Ansible
-        ↓
-Installation de Zabbix Agent 2
-        ↓
-Configuration Windows
-        ↓
-Pare-feu TCP 10050
-        ↓
-API Zabbix
-        ↓
-Création automatique de l'hôte
-        ↓
-Supervision opérationnelle
+Problème de compatibilité PowerShell
+              ↓
+Droits spécifiques sur les contrôleurs de domaine
+              ↓
+Problèmes d'authentification NTLM
+              ↓
+Problèmes de communication WinRM
+              ↓
+Problèmes de pare-feu et de port TCP 10050
 ```
 
-L'automatisation du déploiement et de l'intégration des serveurs Windows dans Zabbix est désormais fonctionnelle.
+L'objectif de cette partie est de présenter les difficultés réellement rencontrées lors du déploiement et les solutions mises en œuvre pour les résoudre.
 
-La procédure initialement réalisée sur un seul serveur de test peut donc être reproduite sur plusieurs serveurs de l'infrastructure.
 
-La prochaine étape consiste à valider le déploiement complet sur un premier serveur, puis à l'étendre progressivement aux autres serveurs de l'infrastructure.
+## 7.1 Problème lié à une version trop ancienne de PowerShell
+
+Lors des premiers tests de déploiement sur deux serveurs Windows anciens, le playbook Ansible ne fonctionnait pas correctement.
+
+Le problème ne venait pas de la communication réseau ni de WinRM, mais de la version de PowerShell installée sur ces serveurs.
+
+La version présente était :
+
+```text
+PowerShell 3.0
+```
+
+Or, les modules Windows utilisés par Ansible nécessitent une version minimale de :
+
+```text
+PowerShell 5.1
+```
+
+La version de PowerShell est vérifiée avec :
+
+```powershell
+$PSVersionTable.PSVersion
+```
+
+Les deux serveurs concernés étaient :
+
+```text
+SQL1-2014
+KELIO
+```
+
+Pour résoudre le problème, le fichier d'installation de PowerShell 5.1 est d'abord téléchargé depuis le poste d'administration Windows.
+
+Un dossier temporaire est ensuite créé sur les serveurs concernés :
+
+```powershell
+New-Item -ItemType Directory -Path "\\SQL1-2014\C$\Temp" -Force
+New-Item -ItemType Directory -Path "\\KELIO\C$\Temp" -Force
+```
+
+Le fichier d'installation est ensuite copié via le partage administratif `C$` :
+
+```powershell
+Copy-Item "C:\Temp\PowerShell-5.1-Windows6.1-KB3191566-x64.msu" `
+"\\SQL1-2014\C$\Temp\" -Force
+
+Copy-Item "C:\Temp\PowerShell-5.1-Windows6.1-KB3191566-x64.msu" `
+"\\KELIO\C$\Temp\" -Force
+```
+
+L'installation de PowerShell 5.1 est ensuite réalisée sur les deux serveurs.
+
+Après l'installation, les serveurs sont redémarrés afin que la mise à niveau soit correctement prise en compte.
+
+La version de PowerShell est ensuite vérifiée à nouveau afin de confirmer que la version compatible est bien installée :
+
+```powershell
+$PSVersionTable.PSVersion
+```
+
+Une fois cette vérification effectuée, le déploiement est relancé depuis le contrôleur Ansible.
+
+Le playbook fonctionne alors correctement et permet de déployer Zabbix Agent 2 sur les deux serveurs.
+
+Le déroulement est donc le suivant :
+
+```text
+Windows Server 2012
+        ↓
+PowerShell 3.0
+        ↓
+Incompatibilité avec les modules Ansible
+        ↓
+Téléchargement du MSI PowerShell 5.1
+        ↓
+Copie via le partage administratif C$
+        ↓
+Installation sur les deux serveurs
+        ↓
+Redémarrage des serveurs
+        ↓
+Vérification de la version PowerShell
+        ↓
+Relance du playbook Ansible
+        ↓
+Déploiement réussi
+```
+
+Ce cas montre l'importance de vérifier les prérequis techniques avant d'automatiser le déploiement sur un parc Windows hétérogène.
+
+Après la mise à niveau de PowerShell, les deux serveurs ont pu être intégrés au processus de déploiement automatisé de Zabbix Agent 2 avec Ansible.
