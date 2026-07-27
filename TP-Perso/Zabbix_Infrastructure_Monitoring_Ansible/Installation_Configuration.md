@@ -1677,3 +1677,128 @@ Validation de la supervision dans Zabbix
 Ce cas montre l'importance de vérifier les prérequis techniques avant d'automatiser le déploiement sur un parc Windows hétérogène.
 
 Après la mise à niveau de PowerShell, les deux serveurs ont pu être intégrés au processus de déploiement automatisé de Zabbix Agent 2 avec Ansible.
+
+
+
+## 7.2 Cas particulier des contrôleurs de domaine
+
+Le déploiement sur les contrôleurs de domaine a nécessité une configuration spécifique des droits du compte utilisé par Ansible.
+
+Dans le fonctionnement général du projet, le compte de service :
+
+```text
+CELDUC\ansible
+```
+
+est utilisé pour administrer les machines Windows à distance avec Ansible.
+
+Les contrôleurs de domaine constituent toutefois un cas particulier, car leur fonctionnement et leur modèle de gestion des droits diffèrent de ceux des serveurs membres.
+
+Lors des premiers tests, le compte `CELDUC\ansible` ne disposait pas des droits nécessaires pour permettre correctement l'administration distante des contrôleurs de domaine.
+
+Afin de permettre le déploiement automatisé de Zabbix Agent 2, le compte est temporairement ajouté au groupe disposant des droits d'administration nécessaires :
+
+```powershell
+Add-ADGroupMember `
+-Identity "Administrateurs" `
+-Members "CELDUC\ansible"
+```
+
+La présence du compte dans le groupe est ensuite vérifiée avec :
+
+```powershell
+Get-ADGroupMember -Identity "Administrateurs"
+```
+
+Le compte `CELDUC\ansible` doit alors apparaître dans la liste des membres du groupe.
+
+![Ajout du compte CELDUC\ansible aux administrateurs du domaine](Images/ajout_celduc_ansible_aux_admin_domaine_pour_DC.png)
+
+Une fois les droits nécessaires accordés, la communication avec les contrôleurs de domaine est vérifiée depuis le contrôleur Ansible avec le module `win_ping`.
+
+Le résultat attendu est :
+
+```text
+SUCCESS
+"ping": "pong"
+```
+
+![Test Ping Pong avec les contrôleurs de domaine](Images/test_Ping_Pong_DC_&_DC2_OK.png)
+
+La communication entre le contrôleur Ansible et les contrôleurs de domaine étant validée, le playbook de déploiement de Zabbix Agent 2 est lancé sur les deux serveurs.
+
+![Lancement du playbook sur les contrôleurs de domaine](Images/Lancement_playbook_sur_DC_&_DC2_OK.png)
+
+Après le déploiement, le service **Zabbix Agent 2** est vérifié sur les contrôleurs de domaine afin de confirmer qu'il est correctement installé et démarré.
+
+![Vérification du service Zabbix Agent 2 après déploiement](Images/Verification_apres_deploiement_DC_&_DC2_service_zabbix_Started.png)
+
+L'état du service est également vérifié depuis le contrôleur Ansible avec :
+
+```bash
+ansible <nom_du_DC> \
+-i inventory/zabbix_agent.yml \
+-m ansible.windows.win_shell \
+-a "Get-Service 'Zabbix Agent 2'"
+```
+
+Le service doit apparaître dans l'état :
+
+```text
+Status : Running
+```
+
+![Vérification de l'état du service Zabbix Agent depuis le contrôleur](Images/Verification_etat_service_agent_zabbix_depuis_DC_Running.png)
+
+Les contrôleurs de domaine sont ensuite vérifiés dans l'interface graphique de Zabbix.
+
+Les deux serveurs apparaissent correctement dans la supervision et leurs agents sont disponibles.
+
+![Vérification de la remontée des contrôleurs de domaine dans Zabbix](Images/Verification_depuis_GUIçzabbix_remontee_DC_&_DC2_OK.png)
+
+Une fois le déploiement et la supervision des deux contrôleurs de domaine validés, les droits d'administration accordés temporairement au compte `CELDUC\ansible` sont retirés.
+
+Cette étape permet d'appliquer le principe du moindre privilège : le compte utilisé pour l'automatisation ne conserve pas de droits d'administration élevés au-delà de la phase nécessaire au déploiement.
+
+Le compte est retiré du groupe avec :
+
+```powershell
+Remove-ADGroupMember `
+-Identity "Administrateurs" `
+-Members "CELDUC\ansible" `
+-Confirm:$false
+```
+
+La présence du compte dans le groupe est ensuite vérifiée avec :
+
+```powershell
+Get-ADGroupMember -Identity "Administrateurs"
+```
+
+Le compte `CELDUC\ansible` ne doit alors plus apparaître dans la liste des membres.
+
+La démarche suivie est donc :
+
+```text
+Ajout temporaire des droits nécessaires
+        ↓
+Vérification de la présence du compte
+        ↓
+Test de communication Ansible
+        ↓
+Déploiement de Zabbix Agent 2
+        ↓
+Vérification du service
+        ↓
+Validation de la supervision dans Zabbix
+        ↓
+Retrait des droits d'administration
+        ↓
+Vérification finale des droits
+```
+
+Ce cas montre que l'automatisation d'un parc Windows ne dépend pas uniquement du playbook Ansible. La configuration préalable de l'Active Directory, des stratégies de groupe et des droits du compte de service est également essentielle.
+
+Les contrôleurs de domaine nécessitent une attention particulière, car leur niveau de sécurité et leur modèle de gestion des droits peuvent différer de ceux des serveurs membres.
+
+Le fait de retirer les droits d'administration après le déploiement permet également de limiter les privilèges du compte de service et d'améliorer la sécurité de l'environnement.
