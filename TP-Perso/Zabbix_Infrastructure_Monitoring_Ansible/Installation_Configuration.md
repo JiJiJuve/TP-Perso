@@ -1804,3 +1804,103 @@ Ce cas montre que l'automatisation d'un parc Windows ne dépend pas uniquement d
 Les contrôleurs de domaine nécessitent une attention particulière, car leur niveau de sécurité et leur modèle de gestion des droits peuvent différer de ceux des serveurs membres.
 
 Le fait de retirer les droits d'administration après le déploiement permet également de limiter les privilèges du compte de service et d'améliorer la sécurité de l'environnement.
+
+
+
+## 7.3 Supervision du contrôleur Ansible Linux
+
+Le contrôleur Ansible utilisé pour administrer les serveurs Windows est lui-même un serveur Debian Linux.
+
+Afin de superviser également cette machine avec Zabbix, l'agent Zabbix Agent 2 est installé et configuré directement depuis la ligne de commande.
+
+Le contrôleur Ansible possède l'adresse IP suivante :
+
+```text
+192.168.1.246
+```
+
+Le serveur Zabbix possède l'adresse IP suivante :
+
+```text
+192.168.1.230
+```
+
+La première étape consiste à vérifier la connectivité réseau entre le contrôleur Ansible et le serveur Zabbix :
+
+```bash
+ping -c 4 192.168.1.230
+```
+
+La communication réseau étant fonctionnelle, l'accessibilité du port utilisé par le serveur Zabbix est ensuite vérifiée :
+
+```bash
+nc -zvu 192.168.1.230 10051
+```
+
+Le port TCP `10051` correspond au port d'écoute du serveur Zabbix.
+
+L'agent Zabbix Agent 2 est ensuite activé et démarré sur le contrôleur Ansible avec :
+
+```bash
+sudo systemctl enable --now zabbix-agent2
+```
+
+L'état du service est ensuite vérifié :
+
+```bash
+sudo systemctl status zabbix-agent2
+```
+
+Le service doit apparaître dans l'état :
+
+```text
+Active: active (running)
+```
+
+Cette vérification confirme que l'agent Zabbix Agent 2 est correctement démarré sur le contrôleur Ansible.
+
+La communication entre les deux machines est donc la suivante :
+
+```text
+ControllerNodeAnsible
+192.168.1.246
+        │
+        │ Zabbix Agent 2
+        │ TCP 10050
+        ▼
+Serveur Zabbix
+192.168.1.230
+```
+
+Le serveur Zabbix peut ainsi interroger l'agent installé sur le contrôleur Ansible et récupérer les informations de supervision du système Linux.
+
+L'hôte correspondant au contrôleur Ansible est ensuite vérifié dans l'interface graphique de Zabbix.
+
+La disponibilité de l'agent ainsi que la remontée des métriques système sont contrôlées afin de confirmer que le serveur est correctement supervisé.
+
+Cette étape permet donc d'étendre la supervision à l'infrastructure utilisée pour l'automatisation elle-même.
+
+Le contrôleur Ansible n'est ainsi plus uniquement utilisé pour déployer et administrer les serveurs Windows : il est également intégré à la plateforme de supervision Zabbix.
+
+La supervision de l'infrastructure est donc désormais étendue aux différents systèmes utilisés dans le projet :
+
+```text
+Serveurs Windows
+        ↓
+Zabbix Agent 2
+
+Serveurs Linux
+        ↓
+Zabbix Agent 2
+
+ControllerNodeAnsible
+        ↓
+Zabbix Agent 2
+
+        ↓
+
+Zabbix Server
+        ↓
+Collecte et centralisation des métriques
+```
+
