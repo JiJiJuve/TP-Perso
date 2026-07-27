@@ -1220,6 +1220,8 @@ Un fichier Vault est créé dans le projet :
 ansible-vault create group_vars/windows/vault.yml
 ```
 
+![Création du fichier Vault pour Zabbix](Images/Creation_fichier_vault_zabbix.png)
+
 Le mot de passe du Vault est ensuite défini afin de protéger le contenu du fichier.
 
 Le token API Zabbix est ensuite stocké dans une variable chiffrée :
@@ -1240,48 +1242,142 @@ Sans le mot de passe du Vault, le contenu du fichier n'est pas lisible directeme
 
 Le fichier chiffré apparaît sous forme de données protégées :
 
-
+![Vérification du fichier Vault chiffré](Images/check_Fichier_Vault_chiffre.png)
 
 
 Le token API est ainsi séparé de la logique des playbooks et protégé contre une lecture directe.
 
-La prochaine étape consiste à vérifier que le contrôleur Ansible peut effectivement communiquer avec l'API Zabbix en utilisant ce token.
+---
 
-## 6.8 Première intégration de PKI dans Zabbix
+## 6.8 Test de communication entre Ansible et l'API Zabbix
 
-Après avoir validé le fonctionnement de l'agent, le serveur PKI est ajouté dans l'interface Zabbix.
+Avant d'automatiser la création des hôtes dans Zabbix, la communication entre le contrôleur Ansible et l'API Zabbix est vérifiée.
 
-Cette première intégration est réalisée manuellement afin de valider le fonctionnement complet de la supervision avant d'automatiser la création des hôtes.
+Cette étape permet de valider séparément la communication avec l'API avant d'intégrer cette fonction au playbook complet de déploiement de Zabbix Agent 2.
 
-L'hôte est configuré avec :
+Le contrôleur Ansible doit pouvoir :
 
-```text
-Nom de l'hôte : pki
-Adresse IP    : 192.168.1.236
-Port          : 10050
+* contacter le serveur Zabbix ;
+* atteindre l'API Zabbix ;
+* s'authentifier avec le token API ;
+* utiliser le token stocké dans le fichier chiffré avec Ansible Vault ;
+* communiquer avec le module `community.zabbix.zabbix_host`.
+
+Un playbook de test est utilisé afin de vérifier cette communication.
+
+Le playbook utilise notamment le module :
+
+```yaml
+community.zabbix.zabbix_host
 ```
 
-Le modèle utilisé est :
+Ce module permet à Ansible de gérer les hôtes Zabbix via l'API. Il permet notamment de créer, modifier ou supprimer automatiquement des hôtes dans Zabbix.
 
-```text
-Windows by Zabbix agent
+Le test est exécuté avec :
+
+```bash
+ansible-playbook \
+-i inventory/zabbix_agent.yml \
+playbooks/test_zabbix_api.yml \
+--ask-vault-pass
 ```
 
-![Création manuelle du serveur PKI dans Zabbix](Images/Creation_Manuellement_server_pki_gui_server_zabbix.png)
+Le résultat obtenu confirme que le contrôleur Ansible peut communiquer avec l'API Zabbix et utiliser le module `community.zabbix.zabbix_host`.
 
-Cette étape permet de séparer les deux problématiques :
+![Test de communication entre le contrôleur Ansible et l'API Zabbix](Images/Test_communication_server_ansible_api_zabbix_OK.png)
+
+Cette validation confirme que les éléments nécessaires à l'automatisation sont fonctionnels :
 
 ```text
-Déploiement de l'agent
-        ↓
-Validation de l'agent
-        ↓
-Création de l'hôte dans Zabbix
-        ↓
-Validation de la supervision
+Contrôleur Ansible
+        │
+        │ Token API
+        │ Ansible Vault
+        ▼
+API Zabbix
+        │
+        ▼
+Gestion des hôtes Zabbix
 ```
 
-Le déploiement de l'agent étant déjà automatisé avec Ansible, la création de l'hôte dans Zabbix constitue alors la prochaine étape à automatiser.
+La communication entre Ansible et l'API Zabbix étant validée, la création des hôtes peut désormais être intégrée au playbook de déploiement de Zabbix Agent 2.
+
+
+## 6.9 Validation de l'automatisation sur le serveur `srv_veeam`
+
+Après avoir validé la communication entre Ansible et l'API Zabbix, l'automatisation complète est testée sur un second serveur Windows : `srv_veeam`.
+
+Cette étape permet de vérifier que le playbook peut désormais réaliser automatiquement l'ensemble du processus :
+
+```text
+Contrôleur Ansible
+        │
+        ├── Déploiement de Zabbix Agent 2
+        │
+        ├── Configuration de l'agent
+        │
+        ├── Démarrage du service
+        │
+        ├── Ouverture du port TCP 10050
+        │
+        └── Création automatique de l'hôte dans Zabbix
+```
+
+Le déploiement est exécuté en ciblant uniquement le serveur `srv_veeam` afin de valider la nouvelle automatisation avant de l'étendre à plusieurs serveurs.
+
+Le lancement ciblé est réalisé avec :
+
+```bash
+ansible-playbook \
+-i inventory/zabbix_agent.yml \
+playbooks/install_zabbix_agent.yml \
+--limit srv_veeam \
+--ask-vault-pass
+```
+
+Le paramètre :
+
+```text
+--limit srv_veeam
+```
+
+permet de limiter l'exécution du playbook à ce seul serveur.
+
+Cette méthode permet de tester l'évolution du playbook sur une machine ciblée sans modifier les autres serveurs de l'infrastructure.
+
+Le playbook réalise automatiquement :
+
+* l'installation de Zabbix Agent 2 ;
+* la configuration de l'agent ;
+* le démarrage du service ;
+* l'ouverture du port TCP 10050 ;
+* la création ou la mise à jour de l'hôte `srv_veeam` dans Zabbix via l'API.
+
+Le résultat de l'exécution confirme que le déploiement s'est déroulé correctement.
+
+La création automatique de l'hôte dans Zabbix est ensuite vérifiée depuis l'interface Web.
+
+![Création automatique de l'hôte srv\_veeam dans Zabbix](Images/creation_automatisee_hote_depuis_ansible_sur_zabbix_server.png)
+
+Cette validation confirme que le processus complet est désormais automatisé :
+
+```text
+Ansible
+   ↓
+Installation de l'agent
+   ↓
+Configuration du serveur Windows
+   ↓
+Ouverture du port TCP 10050
+   ↓
+API Zabbix
+   ↓
+Création automatique de l'hôte
+   ↓
+Supervision active
+```
+
+Le test réalisé sur `srv_veeam` étant concluant, l'automatisation peut désormais être étendue à plusieurs serveurs Windows.
 
 ---
 
