@@ -98,7 +98,6 @@ ip a
 ip route
 ```
 
-![IP fixe](Images/Modif_fichier_Conf_IP_VM_acces_GUI.png)
 
 ## Installation de GVM / OpenVAS
 
@@ -135,7 +134,7 @@ Les services attendus sont généralement :
 - `gsad` : `active (running)`
 - `postgresql` : disponible pour `gvmd`
 
-![Vérification de l’installation](Images/Check_installation_%26_Configuration.png)
+
 
 ## Synchronisation des feeds
 
@@ -164,9 +163,6 @@ top
 sudo journalctl -u gvmd -f
 ```
 
-![Progression feeds](Images/Check_Feed_GUI_Update_Progress.png)
-
-![Feeds à jour](Images/feeds_%C3%A0_jour.png)
 
 ## Accès à l’interface web
 
@@ -230,6 +226,8 @@ systemctl restart greenbone-security-assistant
 systemctl status greenbone-security-assistant
 ```
 
+![Modification GSAD](Images/Recharge_systemd_redemarrage_service_verif_etat.png)
+
 ### Test LAN
 
 Depuis une autre machine du réseau local :
@@ -238,15 +236,12 @@ Depuis une autre machine du réseau local :
 https://192.168.1.129:9392
 ```
 
-![Modification GSAD](Images/Recharge_systemd_redemarrage_service_verif_etat.png)
-
 ![Connexion LAN OK](Images/Connexion_OK_depuis_PC_LAN.png)
 
 ## Premier scan
 
 Une fois l’interface disponible, il est possible de créer une cible, lancer un scan et analyser les premiers résultats.
 
-![Dashboard initial](Images/dashboard_initial_OpenVas.png)
 
 ![Premier scan](Images/1ie_scan_test_vm_openvas.png)
 
