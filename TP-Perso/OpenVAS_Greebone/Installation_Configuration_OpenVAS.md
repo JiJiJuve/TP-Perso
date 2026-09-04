@@ -2,6 +2,7 @@
 
 ## Sommaire
 - [Introduction](#introduction)
+- [Schéma de principe](#schéma-de-principe)
 - [Préparation de la VM](#préparation-de-la-vm)
 - [Installation et activation de SSH](#installation-et-activation-de-ssh)
 - [Connexion SSH et changement de VM](#connexion-ssh-et-changement-de-vm)
@@ -10,25 +11,29 @@
 - [Vérification des services](#vérification-des-services)
 - [Synchronisation des feeds](#synchronisation-des-feeds)
 - [Accès à l’interface web](#accès-à-linterface-web)
-- [Accès LAN à l’interface Greenbone](#accès-lan-à-linterface-greenbone)
 - [Premier scan](#premier-scan)
 - [Exploitation des résultats](#exploitation-des-résultats)
 - [CVE et CVSS](#cve-et-cvss)
 - [Plan de remédiation](#plan-de-remédiation)
+- [Accès LAN à l’interface Greenbone](#accès-lan-à-linterface-greenbone)
 - [Transfert des rapports](#transfert-des-rapports)
-- [Schéma de principe](#schéma-de-principe)
 - [Conclusion](#conclusion)
 
 ## Introduction
 
 Ce document présente l’installation et la configuration de **Greenbone Vulnerability Management (GVM) / OpenVAS** sur une machine Kali Linux. L’objectif est de mettre en place un environnement de scan de vulnérabilités, de vérifier son fonctionnement, d’interpréter les résultats obtenus et de préparer un plan de correction adapté.
 
-OpenVAS est le moteur de scan de l’écosystème Greenbone. Il s’appuie sur des feeds de vulnérabilités pour détecter des failles connues sur des machines du réseau .
+OpenVAS est le moteur de scan de l’écosystème Greenbone. Il s’appuie sur des feeds de vulnérabilités pour détecter des failles connues sur des machines du réseau.
+
+## Schéma de principe
+
+Le schéma ci-dessous présente le fonctionnement général d’OpenVAS / Greenbone :
+
+![Schéma de principe OpenVAS](Images/schema_principe_OpenVAS.png)
 
 ## Préparation de la VM
 
 Avant de commencer, il est important de s’assurer que la VM est correctement préparée, avec un utilisateur administrateur, un accès réseau fonctionnel et une structure de travail claire.
-
 
 ### Vérification des droits administrateur
 
@@ -41,6 +46,8 @@ sudo passwd root
 ```
 
 Si la commande `sudo whoami` répond `root`, les droits sont corrects. Sur Kali récent, l’usage recommandé reste celui d’un utilisateur standard avec `sudo`.
+
+![Vérification des droits root](Images/Verif_droits_root_vm_kali.png)
 
 ### Installation et activation de SSH
 
@@ -55,19 +62,19 @@ sudo systemctl status ssh
 
 Le service doit apparaître en `active (running)` et `enabled`.
 
-Pour se connecter depuis un autre poste :
-
 ```bash
 ssh ton_user@IP_DE_LA_VM
 ```
+
+![Statut SSH en cours d’exécution](Images/Verif_statut_ssh_running.png)
 
 ## Connexion SSH et changement de VM
 
 Si une VM est recréée avec la même adresse IP, le client SSH peut détecter une différence de clé d’hôte. Dans ce cas, il faut supprimer l’ancienne entrée connue pour cette IP.
 
 ```bash
-ssh-keygen -R 192.168.1.129
-ssh celduc@192.168.1.129
+ssh-keygen -R 192.168.1.XXX
+ssh celduc@192.168.1.XXX
 ```
 
 Une autre méthode consiste à supprimer manuellement la ligne correspondante dans le fichier `known_hosts` du poste client.
@@ -88,8 +95,8 @@ Pour une VM, il est pratique d’utiliser une IP fixe afin de retrouver facileme
 
 ```bash
 nmcli con show
-nmcli con mod "NOM_DE_LA_CONNEXION" ipv4.addresses 192.168.1.50/24
-nmcli con mod "NOM_DE_LA_CONNEXION" ipv4.gateway 192.168.1.1
+nmcli con mod "NOM_DE_LA_CONNEXION" ipv4.addresses 192.168.1.XXX/24
+nmcli con mod "NOM_DE_LA_CONNEXION" ipv4.gateway 192.168.1.XXX
 nmcli con mod "NOM_DE_LA_CONNEXION" ipv4.dns "1.1.1.1 8.8.8.8"
 nmcli con mod "NOM_DE_LA_CONNEXION" ipv4.method manual
 nmcli con down "NOM_DE_LA_CONNEXION"
@@ -97,7 +104,6 @@ nmcli con up "NOM_DE_LA_CONNEXION"
 ip a
 ip route
 ```
-
 
 ## Installation de GVM / OpenVAS
 
@@ -134,8 +140,6 @@ Les services attendus sont généralement :
 - `gsad` : `active (running)`
 - `postgresql` : disponible pour `gvmd`
 
-
-
 ## Synchronisation des feeds
 
 Lors du premier lancement, il faut laisser le temps au téléchargement et à l’import des feeds de vulnérabilités.
@@ -163,7 +167,6 @@ top
 sudo journalctl -u gvmd -f
 ```
 
-
 ## Accès à l’interface web
 
 Une fois l’installation validée et les services lancés, l’interface web est accessible dans la VM à :
@@ -178,6 +181,62 @@ Lors de la connexion :
 - Mot de passe : celui généré pendant `gvm-setup`
 
 ![Connexion première fois](Images/Connexion_prmeiere_fois_openvas_gui.png)
+
+## Premier scan
+
+Une fois l’interface disponible, il est possible de créer une cible, lancer un scan et analyser les premiers résultats.
+
+![Premier scan](Images/1ie_scan_test_vm_openvas.png)
+
+![Résultats du scan](Images/resultats_1ier_scan_test_vm_openvas.png)
+
+## Exploitation des résultats
+
+Le rapport de scan peut être exporté en PDF ou CSV. Le fichier CSV est particulièrement utile pour trier les vulnérabilités, filtrer les niveaux de gravité et préparer un plan de remédiation.
+
+```bash
+scp "celduc@192.168.1.XXX:/home/celduc/rapport_openvas.csv" "$HOME\Downloads\"
+```
+
+![Export CSV](Images/Etrait_Tableau_CSV_resulats_Scan_OpenVAS2.png)
+
+![Transfert du rapport](Images/Importation_resultats_scan_depuis_vm_vers_local.png)
+
+## CVE et CVSS
+
+Une **CVE** est un identifiant standard attribué à une vulnérabilité connue.  
+Le **CVSS** mesure sa gravité technique sur une échelle de 0 à 10.
+
+Exemple :
+
+```text
+CVE-2024-12345 — CVSS 9,8 — Critique
+```
+
+Une vulnérabilité ne doit pas être priorisée uniquement sur son score. Il faut aussi prendre en compte l’exposition du service, l’existence d’un exploit connu et le nombre d’hôtes touchés.
+
+![Référence OpenCVE](Images/_Depuis_Reference_OpenCVE.png)
+
+![Résultat OpenCVE](Images/OpenCVE_Resultat_%26_Description_CVE.png)
+
+## Plan de remédiation
+
+À partir des résultats du scan, un plan de remédiation peut être construit dans Excel avec des colonnes du type :
+
+- CVE
+- Hôte
+- Service
+- Port
+- CVSS
+- Priorité
+- Exploit connu
+- Correctif
+- Action
+- Responsable
+- Échéance
+- État
+
+Ce tableau permet de suivre les vulnérabilités détectées et leur correction dans le temps.
 
 ## Accès LAN à l’interface Greenbone
 
@@ -226,87 +285,24 @@ systemctl restart greenbone-security-assistant
 systemctl status greenbone-security-assistant
 ```
 
-![Modification GSAD](Images/Recharge_systemd_redemarrage_service_verif_etat.png)
-
 ### Test LAN
 
 Depuis une autre machine du réseau local :
 
 ```text
-https://192.168.1.129:9392
+https://192.168.1.XXX:9392
 ```
+
+![Modification GSAD](Images/Recharge_systemd_redemarrage_service_verif_etat.png)
 
 ![Connexion LAN OK](Images/Connexion_OK_depuis_PC_LAN.png)
-
-## Premier scan
-
-Une fois l’interface disponible, il est possible de créer une cible, lancer un scan et analyser les premiers résultats.
-
-
-![Premier scan](Images/1ie_scan_test_vm_openvas.png)
-
-![Résultats du scan](Images/resultats_1ier_scan_test_vm_openvas.png)
-
-## Exploitation des résultats
-
-Le rapport de scan peut être exporté en PDF ou CSV. Le fichier CSV est particulièrement utile pour trier les vulnérabilités, filtrer les niveaux de gravité et préparer un plan de remédiation.
-
-```bash
-scp "celduc@192.168.1.129:/home/celduc/rapport_openvas.csv" "$HOME\Downloads\"
-```
-
-![Export CSV](Images/Etrait_Tableau_CSV_resulats_Scan_OpenVAS2.png)
-
-![Transfert du rapport](Images/Importation_resultats_scan_depuis_vm_vers_local.png)
-
-## CVE et CVSS
-
-Une **CVE** est un identifiant standard attribué à une vulnérabilité connue.  
-Le **CVSS** mesure sa gravité technique sur une échelle de 0 à 10.
-
-Exemple :
-
-```text
-CVE-2024-12345 — CVSS 9,8 — Critique
-```
-
-Une vulnérabilité ne doit pas être priorisée uniquement sur son score. Il faut aussi prendre en compte l’exposition du service, l’existence d’un exploit connu et le nombre d’hôtes touchés.
-
-![Référence OpenCVE](Images/_Depuis_Reference_OpenCVE.png)
-
-![Résultat OpenCVE](Images/OpenCVE_Resultat_%26_Description_CVE.png)
-
-## Plan de remédiation
-
-À partir des résultats du scan, un plan de remédiation peut être construit dans Excel avec des colonnes du type :
-
-- CVE
-- Hôte
-- Service
-- Port
-- CVSS
-- Priorité
-- Exploit connu
-- Correctif
-- Action
-- Responsable
-- Échéance
-- État
-
-Ce tableau permet de suivre les vulnérabilités détectées et leur correction dans le temps.
-
-## Schéma de principe
-
-Le schéma ci-dessous présente le fonctionnement général d’OpenVAS / Greenbone :
-
-![Schéma de principe OpenVAS](Images/schema_principe_OpenVAS.png)
 
 ## Transfert des rapports
 
 Les rapports générés par GVM/OpenVAS peuvent être récupérés depuis la VM vers le poste local à l’aide de `scp`.
 
 ```bash
-scp "celduc@192.168.1.129:/home/celduc/rapport_openvas.pdf" "$HOME\Downloads\"
+scp "celduc@192.168.1.XXX:/home/celduc/rapport_openvas.pdf" "$HOME\Downloads\"
 ```
 
 Il est aussi possible de transférer un CSV de la même manière.
