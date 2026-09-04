@@ -14,9 +14,8 @@
 - [Premier scan](#premier-scan)
 - [Exploitation des résultats](#exploitation-des-résultats)
 - [CVE et CVSS](#cve-et-cvss)
-- [Plan de remédiation](#plan-de-remédiation)
+- [Filtrer les vulnérabilités prioritaires](#filtrer-les-vulnérabilités-prioritaires)
 - [Accès LAN à l’interface Greenbone](#accès-lan-à-linterface-greenbone)
-- [Transfert des rapports](#transfert-des-rapports)
 - [Conclusion](#conclusion)
 
 ## Introduction
