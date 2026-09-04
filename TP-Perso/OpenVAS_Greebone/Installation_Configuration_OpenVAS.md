@@ -121,6 +121,8 @@ Ces commandes installent GVM/OpenVAS, initialisent l’environnement, vérifient
 
 ![Initialisation GVM](Images/initialise_GVM_cr%C3%A9ation_configuration_de_base_%26_t%C3%A9l%C3%A9charge_feeds.png)
 
+![Extrait gvm-start](Images/Extrait_gmv_start.png)
+
 ## Vérification des services
 
 Après l’installation, il faut vérifier que les services essentiels sont bien démarrés :
@@ -141,9 +143,11 @@ Les services attendus sont généralement :
 - `gsad` : `active (running)`
 - `postgresql` : disponible pour `gvmd`
 
+![Extrait Status Redis](Images/Extrait_Status_redis.png)
+
 ## Synchronisation des feeds
 
-Lors du premier lancement, il faut laisser le temps au téléchargement et à l’import des feeds de vulnérabilités.
+Lors du premier lancement, les feeds de vulnérabilités sont normalement téléchargés et importés automatiquement pendant l’initialisation de GVM. Dans mon cas, la synchronisation est restée bloquée, j’ai donc dû relancer manuellement la mise à jour des feeds pour finaliser l’installation.
 
 ```bash
 greenbone-nvt-sync
@@ -181,6 +185,8 @@ Lors de la connexion :
 - Identifiant : `admin`
 - Mot de passe : celui généré pendant `gvm-setup`
 
+![Creation_User_Password_Openvas](Images/Creation_User_Password_Openvas.png)
+
 ![Connexion première fois](Images/Connexion_prmeiere_fois_openvas_gui.png)
 
 ## Premier scan
@@ -195,53 +201,88 @@ Une fois l’interface disponible, il est possible de créer une cible, lancer u
 
 Le rapport de scan peut être exporté en PDF ou CSV. Le fichier CSV est particulièrement utile pour trier les vulnérabilités, filtrer les niveaux de gravité et préparer un plan de remédiation.
 
-```bash
-scp "celduc@192.168.1.XXX:/home/celduc/rapport_openvas.csv" "$HOME\Downloads\"
+### 1. Vérifier l’emplacement du rapport
+
+Dans Kali, rechercher le rapport téléchargé :
+
+```
+find "/home/celduc/Téléchargements" -type f -iname "*openvas*"
 ```
 
-![Export CSV](Images/Etrait_Tableau_CSV_resulats_Scan_OpenVAS2.png)
+Vérifier ensuite ses droits et son nom exact :
+
+```
+ls -lh "/home/celduc/Téléchargements/rapport_openvas_02_09_26.pdf"
+```
+
+### 2. Copier le rapport dans le dossier personnel (facultatif)
+
+Pour simplifier le transfert, copier le fichier directement dans `/home/celduc/` :
+
+```
+cp "/home/celduc/Téléchargements/rapport_openvas_02_09_26.pdf" "/home/celduc/"
+```
+
+Cette étape évite les problèmes liés aux caractères accentués du dossier `Téléchargements`.
+
+### 3. Transférer le fichier vers Windows
+
+Depuis **PowerShell sur le PC local**, et non depuis la session SSH déjà ouverte, exécuter :
+
+```
+scp "celduc@192.168.1.129:/home/celduc/rapport_openvas_02_09_26.pdf" "$HOME\Downloads\"
+```
+
+Le mot de passe demandé est celui de l’utilisateur Kali `celduc`.
+
+Le fichier sera copié dans le dossier **Téléchargements** de Windows. La commande `scp` utilise la connexion SSH pour transférer un fichier entre la VM et l’ordinateur local.
+
 
 ![Transfert du rapport](Images/Importation_resultats_scan_depuis_vm_vers_local.png)
 
 ## CVE et CVSS
 
-Une **CVE** est un identifiant standard attribué à une vulnérabilité connue.  
-Le **CVSS** mesure sa gravité technique sur une échelle de 0 à 10.
+Une **CVE** (*Common Vulnerabilities and Exposures*) est un identifiant standard attribué à une vulnérabilité connue.  
+Le **CVSS** (*Common Vulnerability Scoring System*) mesure sa gravité technique sur une échelle de 0 à 10.
 
-Exemple :
+### Exemple
 
-```text
-CVE-2024-12345 — CVSS 9,8 — Critique
+```
+CVE-2024-12345 — CVSS : 9,8 — Critique
 ```
 
-Une vulnérabilité ne doit pas être priorisée uniquement sur son score. Il faut aussi prendre en compte l’exposition du service, l’existence d’un exploit connu et le nombre d’hôtes touchés.
+Cela signifie :
 
-![Référence OpenCVE](Images/_Depuis_Reference_OpenCVE.png)
+- `CVE-2024-12345` : identifiant de la vulnérabilité ;
+- `9,8` : score de gravité très élevé ;
+- `Critique` : vulnérabilité à examiner et à traiter en priorité.
+
+Le score CVSS ne doit toutefois pas être utilisé seul pour décider de l’ordre des corrections. Il faut aussi prendre en compte l’exposition du service, la présence d’un exploit connu, le nombre de machines concernées et l’importance de l’équipement.
 
 ![Résultat OpenCVE](Images/OpenCVE_Resultat_%26_Description_CVE.png)
 
-## Plan de remédiation
+![Référence OpenCVE](Images/_Depuis_Reference_OpenCVE.png)
 
-À partir des résultats du scan, un plan de remédiation peut être construit dans Excel avec des colonnes du type :
 
-- CVE
-- Hôte
-- Service
-- Port
-- CVSS
-- Priorité
-- Exploit connu
-- Correctif
-- Action
-- Responsable
-- Échéance
-- État
+## Filtrer les vulnérabilités prioritaires
 
-Ce tableau permet de suivre les vulnérabilités détectées et leur correction dans le temps.
+Dans la colonne **Severity** :
+
+1.  Cliquer sur la flèche du filtre.
+    
+2.  Désélectionner **Tout sélectionner**.
+    
+3.  Sélectionner :
+    
+    - **Critical** ;
+    - puis **High**.
+  
+![Extrait tableau CSV résultats scan OpenVAS](Images/Etrait_Tableau_CSV_resulats_Scan_OpenVAS2.png)
 
 ## Accès LAN à l’interface Greenbone
 
 Par défaut, `gsad` écoute en local sur `127.0.0.1`. Pour rendre l’interface accessible depuis le LAN, il faut modifier le service.
+
 
 ### Procédure
 
@@ -297,16 +338,6 @@ https://192.168.1.XXX:9392
 ![Modification GSAD](Images/Recharge_systemd_redemarrage_service_verif_etat.png)
 
 ![Connexion LAN OK](Images/Connexion_OK_depuis_PC_LAN.png)
-
-## Transfert des rapports
-
-Les rapports générés par GVM/OpenVAS peuvent être récupérés depuis la VM vers le poste local à l’aide de `scp`.
-
-```bash
-scp "celduc@192.168.1.XXX:/home/celduc/rapport_openvas.pdf" "$HOME\Downloads\"
-```
-
-Il est aussi possible de transférer un CSV de la même manière.
 
 ## Conclusion
 
