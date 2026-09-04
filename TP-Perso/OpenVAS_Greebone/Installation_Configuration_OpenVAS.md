@@ -114,9 +114,10 @@ sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y
 sudo apt install gvm -y
 sudo gvm-setup
 sudo gvm-check-setup
+sudo gvm-start
 ```
 
-Ces commandes installent GVM/OpenVAS, initialisent l’environnement, puis vérifient que tout est correctement configuré.
+Ces commandes installent GVM/OpenVAS, initialisent l’environnement, vérifient que tout est correctement configuré, puis démarrent les services nécessaires à l’utilisation de l’interface web et du scanner.
 
 ![Initialisation GVM](Images/initialise_GVM_cr%C3%A9ation_configuration_de_base_%26_t%C3%A9l%C3%A9charge_feeds.png)
 
