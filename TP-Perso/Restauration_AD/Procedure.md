@@ -256,16 +256,6 @@ Après validation de la sauvegarde, une OU contenant des utilisateurs est suppri
 
 ![Test de suppression d’une OU avant restauration](Images/Test_Suppression_OU_avant_Restauration.PNG)
 
-### Commandes clés et explications
-
-Suppression faite via l’outil graphique (ADUC) ou en PowerShell, par exemple :
-
-```powershell
-Remove-ADOrganizationalUnit -Identity "OU=LAB-Techniques,OU=LAB-Utilisateurs,DC=lab,DC=test" -Recursive -Confirm:$false
-```
-- Supprime une OU et tous ses objets (utilisateurs, groupes, etc.).  
-  Dans le labo, c’est surtout pour valider que la restauration ramènera ces objets.
-
 ---
 
 ## Passage en mode DSRM
