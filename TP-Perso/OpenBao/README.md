@@ -36,7 +36,7 @@ Cette fiche détaille :
 - l’activation du moteur KV v2,
 - le stockage, la lecture et la suppression des secrets.
 
-[Fiche 1 — Coffre et gestion des secrets](TP-Perso/OpenBao/Fiche1/fiche1_OpenBao_côté_coffre_&_gestion_des_secrets.pdf)
+[Fiche 1 — Coffre et gestion des secrets](Fiche1/Fiche1_OpenBao_côté_coffre_&_gestion_des_secrets.pdf)
 
 ## Fiche 2 — TLS et déploiement
 Cette fiche détaille :
@@ -47,5 +47,5 @@ Cette fiche détaille :
 - la configuration du service OpenBao,
 - les tests d’accès au coffre.
 
-[Fiche 2 — TLS et identité du serveur](TP-Perso/OpenBao/Fiche2/Fiche2_OpenBao_TLS_identité_du_serveur_accès_sécurisé.pdf)
+[Fiche 2 — TLS et identité du serveur](Fiche2/Fiche2_OpenBao_TLS_identité_du_serveur_accès_sécurisé.pdf)
 
