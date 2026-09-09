@@ -1,1 +1,51 @@
+# OpenBao
+
+Ce projet présente la mise en place d’un serveur OpenBao sur une VM Debian, avec TLS, ouverture du coffre, authentification root et stockage de secrets dans un moteur KV v2.
+
+## Sommaire
+- [Présentation](#présentation)
+- [Arborescence](#arborescence)
+- [Fiche 1 — Coffre et secrets](#fiche-1--coffre-et-secrets)
+- [Fiche 2 — TLS et déploiement](#fiche-2--tls-et-déploiement)
+
+## Présentation
+L’objectif du projet est de centraliser et sécuriser des fichiers liés à plusieurs équipements réseau dans un coffre OpenBao.
+
+Le projet est découpé en deux parties :
+- la fiche 1 pour la gestion du coffre et des secrets ;
+- la fiche 2 pour la configuration TLS et l’accès sécurisé au serveur.
+
+## Arborescence
+```text
+OpenBao/
+├── README.md
+├── fiche1/
+│   ├── README.md
+│   └── Images/
+└── fiche2/
+    ├── README.md
+    └── Images/
+```
+
+## Fiche 1 — Coffre et secrets
+Cette fiche détaille :
+- l’installation d’OpenBao,
+- l’initialisation du coffre,
+- l’unseal,
+- l’authentification avec le root token,
+- l’activation du moteur KV v2,
+- le stockage, la lecture et la suppression des secrets.
+
+[Accéder à la fiche 1](fiche1/README.md)
+
+## Fiche 2 — TLS et déploiement
+Cette fiche détaille :
+- la génération du certificat TLS,
+- la création de la CSR,
+- la signature par la PKI,
+- l’installation du certificat sur la VM,
+- la configuration du service OpenBao,
+- les tests d’accès au coffre.
+
+[Accéder à la fiche 2](fiche2/README.md)
 
