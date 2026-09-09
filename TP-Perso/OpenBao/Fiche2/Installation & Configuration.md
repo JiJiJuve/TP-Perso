@@ -41,12 +41,12 @@ distinguished_name = dn
 req_extensions     = req_ext
 
 [ dn ]
-CN = openbao.celduc.lan
-O  = Celduc
-OU = IT
-L  = Sorbiers
-S  = Auvergne-Rhône-Alpes
-C  = FR
+commonName = openbao.celduc.lan
+organizationName = Celduc
+organizationalUnitName = IT
+localityName = Sorbiers
+stateOrProvinceName = Auvergne-Rhône-Alpes
+countryName = FR
 
 [ req_ext ]
 subjectAltName = @alt_names
