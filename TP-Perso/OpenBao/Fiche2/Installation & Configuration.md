@@ -158,43 +158,4 @@ bao status
 
 Si tout est bon, `bao status` doit répondre sans erreur TLS.
 
-## Captures
-![Extrait du fichier de configuration OpenSSL](Images/Extrait_fichier_conf_openssl.png)
 
-![Récupération de la dernière version OpenBao via GitHub](Images/Interrogation_API_github_recuperer_derniere_version_openbao.png)
-
-![Organisation du dossier TLS](Images/Check_Organisation_dossier_TLS.png)
-
-![Ouverture du fichier de configuration OpenBao](Images/acceder_fichier_conf_openbao_hcl.png)
-
-![Configuration de `tls_cert_file` et `tls_key_file`](Images/extrait_fichier_conf_openbao_hcl_avec_modif_tls_cert_file_%26_tsl_key_file.png)
-
-![CSR envoyée à la PKI interne](Images/csr_aupres_PKI_interne.PNG)
-
-![Certificat délivré par la PKI interne](Images/certif_delivre_par_pki_interne.PNG)
-
-![Conversion du fichier CER en CRT](Images/Convertion_fichier_cer_en_crt.png)
-
-![Conversion du certificat CA en PEM](Images/Convertion_certif_cA_en_pem.png)
-
-![Vérification du certificat](Images/Check_certificat.png)
-
-![Vérification du fichier PEM](Images/Check_fichier_pem.png)
-
-![Copie du certificat CA sur la VM](Images/Copie_certif_CA_racine_in_srv_openbao_avec_scp_depuis_pc_hote.png)
-
-![Déplacement des fichiers TLS et droits appliqués](Images/Deplace_fichiers_depuis_tmp_vers_tls_srv_openbao_%26_conf_droits_fichiers_key_cert.png)
-
-![Copie du certificat CA dans `ca.crt` et droits `644`](Images/copie_certif_ca_in_tls_ca_crt_%26_droit_chmod_644.png)
-
-![Test en échec avec mauvais format de certificat CA](Images/Test_KO_mauvais_format_certif_cA.png)
-
-![Vérification du nouveau format PEM](Images/Verification_new_format_certif_CA_pem_OK.png)
-
-![Test DNS et ping après enregistrement](Images/Test_Nslookup_%26_ping_apres_enregistrement_A_in_DNS_SRV_Openbao.PNG)
-
-![Test d’accès au serveur OpenBao et état du coffre](Images/Test_acces_srv_openbao_%26_etat_coffre_Sealed_OK.png)
-
-![Ouverture du coffre avec 3 clés](Images/Ouverture_coffre_avec_3keys.png)
-
-![Déverrouillage réussi avec 3 clés](Images/Unseal_3_key_deverouillages_OK.png)
