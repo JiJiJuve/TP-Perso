@@ -297,6 +297,8 @@ La CLI `bao` et OpenSSL attendent un certificat de CA au format **PEM**, de la f
 -----END CERTIFICATE-----
 ```
 
+![Vérification du nouveau format PEM du certificat de la CA (OK)](../Images/Verification_new_format_certif_CA_pem_OK)
+
 Pour convertir le certificat de la CA en PEM, sur le PC hôte (ou sur la VM si le fichier y est déjà), utilise OpenSSL :
 
 ```bash
@@ -306,6 +308,8 @@ openssl x509 -inform der -in ca.crt -out ca.pem
 Si le fichier `.crt` est déjà en PEM, tu peux aussi simplement le renommer, mais la conversion garantit un format compatible.
 
 Ensuite, copie le fichier converti sur la VM (si ce n’est pas déjà fait) :
+
+![Conversion du certificat de la CA en format PEM](../Images/Convertion_certif_cA_en_pem)
 
 ```powershell
 scp .\ca.pem celduc@192.168.1.44:/tmp
@@ -332,6 +336,8 @@ cd /etc/openbao/tls
 sudo chown root:openbao ca.pem
 sudo chmod 644 ca.pem
 ```
+
+![Copie du certificat de la CA dans /etc/openbao/tls/ca.crt et configuration des droits (chmod 644)](../Images/copie_certif_ca_in_tls_ca_crt_&_droit_chmod_644.png)
 
 Vérifie sa présence :
 
