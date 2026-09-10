@@ -99,11 +99,15 @@ openssl req -new -key openbao.key -out openbao.csr -config openbao-openssl.cnf
 La CSR sera envoyée à la PKI interne.  
 La clé privée, elle, ne doit jamais être transmise.
 
+![CSR envoyée à la PKI interne](../Images/csr_aupres_PKI_interne.png)
+
 ## Faire signer la CSR
 On envoie uniquement `openbao.csr` à la PKI interne.  
 La PKI renvoie ensuite un certificat signé, par exemple :
 - `openbao.crt`
 - ou `openbao.cer`
+
+![Certificat délivré par la PKI interne](../Images/certif_delivre_par_pki_interne.png)
 
 ## Vérifier le certificat
 Avant de l’installer, il est important de vérifier le contenu du certificat.
@@ -118,7 +122,7 @@ Si la PKI fournit un fichier `.cer` au format DER, on peut le vérifier avec :
 openssl x509 -inform der -in openbao.cer -text -noout
 ```
 
-On doit retrouver dans le certificat le DNS attendu, et si besoin l’IP de la VM.
+![Vérification du certificat](../Images/Check_certificat.png)
 
 ## Installer le certificat
 Sur la VM OpenBao, on crée le dossier TLS puis on copie le certificat et la clé privée.
