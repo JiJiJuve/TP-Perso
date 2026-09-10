@@ -81,6 +81,8 @@ On termine avec :
 bao version
 ```
 
+![Version OpenBao](../Images/Version_Openbao.png)
+
 ## Démarrer OpenBao
 On lance le service OpenBao puis on vérifie qu’il démarre correctement.
 
@@ -89,6 +91,8 @@ sudo systemctl start openbao
 sudo systemctl enable openbao
 sudo systemctl status openbao
 ```
+
+![Démarrage et vérification du statut OpenBao](../Images/start_openbao_&_check_status.png)
 
 Pour tester la communication locale :
 
