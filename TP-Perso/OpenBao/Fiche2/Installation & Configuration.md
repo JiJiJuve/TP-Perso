@@ -276,8 +276,6 @@ On l’édite avec `nano` (ou un autre éditeur) :
 sudo nano /etc/openbao/openbao.hcl
 ```
 
-![Accès au fichier de configuration openbao.hcl](../Images/acceder_fichier_conf_openbao_hcl)
-
 Voici un exemple de configuration cohérent :
 
 ```hcl
