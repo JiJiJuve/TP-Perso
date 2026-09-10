@@ -131,7 +131,7 @@ openssl x509 -inform der -in openbao.cer -text -noout
 
 ## Installer le certificat
 
-Les fichiers générés sur le PC hôte (clé privée, CSR, certificat, fichier `.cnf`, CA, etc.) sont stockés dans un dossier dédié, par exemple un dossier TFTP.
+Les fichiers générés sur le PC hôte (clé privée, CSR, certificat, fichier `.cnf`, CA, etc.) sont stockés dans un dossier dédié, par exemple le dossier TFTP dans mon cas.
 
 On va d’abord les copier sur la VM OpenBao, puis les placer dans le bon répertoire et sécuriser les droits.
 
