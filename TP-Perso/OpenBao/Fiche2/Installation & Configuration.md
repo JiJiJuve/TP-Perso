@@ -265,6 +265,81 @@ sudo chmod 644 ca.pem
 
 On peut maintenant passer à la configuration du listener TLS dans `openbao.hcl`.
 
+## Importer le certificat de la CA racine
+
+Pour que les clients (CLI `bao` et navigateurs) fassent confiance au certificat TLS du serveur OpenBao, il faut installer le certificat de la CA racine interne sur la VM.
+
+### 1. Copier le certificat de la CA depuis le PC hôte
+
+Depuis le PC hôte, dans le dossier où tu as stocké les fichiers de la PKI (par exemple le dossier TFTP), copie le certificat de la CA racine vers la VM :
+
+```powershell
+scp .\ca.pem celduc@192.168.1.44:/tmp
+```
+
+Remplace :
+
+- `ca.pem` par le nom réel de ton fichier de CA,
+- `celduc` par ton utilisateur sur la VM,
+- `192.168.1.44` par l’IP de ta VM OpenBao.
+
+### 2. Placer le certificat de la CA dans `/etc/openbao/tls`
+
+Sur la VM, connecte-toi en SSH :
+
+```bash
+ssh celduc@192.168.1.44
+```
+
+Déplace le certificat de la CA depuis `/tmp` vers le dossier TLS :
+
+```bash
+sudo mv /tmp/ca.pem /etc/openbao/tls/ca.pem
+```
+
+Vérifie sa présence :
+
+```bash
+cd /etc/openbao/tls
+ls
+```
+
+Tu dois voir au moins :
+
+- `openbao.cer` (certificat serveur)
+- `openbao.key` (clé privée serveur)
+- `ca.pem` (certificat de la CA racine)
+
+### 3. Utiliser la CA racine côté client
+
+#### a) Avec la CLI `bao`
+
+Pour que `bao` fasse confiance au certificat du serveur, on définit la variable d’environnement `BAO_CACERT` :
+
+```bash
+export BAO_ADDR="[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
+export BAO_CACERT="/etc/openbao/tls/ca.pem"
+```
+
+Ensuite, toutes les commandes comme `bao status`, `bao kv put`, `bao kv get`, etc., utiliseront ce certificat de CA pour valider le TLS.
+
+#### b) Dans le navigateur (interface web)
+
+Quand tu ouvres :
+
+```text
+[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
+```
+
+le navigateur vérifie le certificat du serveur par rapport aux CA qu’il connaît.
+
+- Si la CA racine interne est déjà installée dans le magasin de confiance de ton poste, le cadenas sera vert (ou sans avertissement).
+- Sinon, tu auras un avertissement de type « certificat non approuvé » que tu devras accepter manuellement.
+
+L’important est que le fichier `ca.pem` soit bien présent sur la VM pour la CLI, et que les postes clients aient la CA racine installée pour éviter les avertissements dans le navigateur.
+
+![Certificat bien reconnu en HTTPS](../Images/Certificat_bien_reconnu_https.png)
+
 ## Configurer OpenBao
 
 Une fois le certificat et la clé privée en place dans `/etc/openbao/tls`, on configure OpenBao pour qu’il utilise TLS.
