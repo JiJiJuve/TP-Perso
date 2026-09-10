@@ -15,7 +15,7 @@ Cette fiche explique comment installer OpenBao, initialiser le coffre, l’ouvri
 - [Stocker les fichiers](#stocker-les-fichiers)
 - [Relire et supprimer](#relire-et-supprimer)
 - [Sauvegarde complémentaire](#sauvegarde-complémentaire)
-- [Procédure de connexion standard à OpenBao (avec TLS)](#Procedure-de-connexion-standard-a-OpenBao-avec-TLS)
+- [Procédure de connexion standard à OpenBao (avec TLS)](#procedure-de-connexion-standard-a-openbao-avec-tls)
 
 ## Préparer la VM
 La première étape consiste à installer une VM Debian qui servira de serveur OpenBao.
@@ -307,7 +307,7 @@ Le coffre doit être :
 - `Initialized: true`
 - `Sealed: false`
 
-![Connexion OpenBao réussie avec TLS et root token](../Images/Log_OK.png)
+![Connexion OpenBao réussie avec TLS et root token](../Images/Log_OK.png
 
 Ensuite, tu peux utiliser les commandes `bao kv ...`, par exemple :
 
