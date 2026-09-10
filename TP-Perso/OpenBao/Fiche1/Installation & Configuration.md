@@ -283,6 +283,34 @@ bao kv delete secret/pki/switch/Netgear/Switch-Methodes
 
 ![Exemple de suppression d’une entrée KV](../Images/exemple_suppression_entree_kv.png)
 
+## Procédure de connexion standard à OpenBao (avec TLS)
+
+À chaque nouvelle session SSH sur la VM OpenBao, utiliser cette séquence pour se connecter correctement au coffre avec TLS :
+
+```bash
+export BAO_ADDR=[https://127.0.0.1:8200](https://127.0.0.1:8200)
+export BAO_CACERT=/etc/openbao/tls/ca.pem
+export BAO_TOKEN="ton_root_token"
+```
+
+Puis vérifier :
+
+```bash
+bao status
+```
+
+Le coffre doit être :
+- `Initialized: true`
+- `Sealed: false`
+
+Ensuite, tu peux utiliser les commandes `bao kv ...`, par exemple :
+
+```bash
+bao kv list secret/pki/switch/Netgear/
+```
+
+Cette procédure est à refaire à chaque nouvelle connexion SSH, car les variables d’environnement ne sont pas persistantes.
+
 ## Sauvegarde complémentaire
 En plus d’OpenBao, il est possible de garder une copie de sauvegarde sur une clé USB chiffrée avec VeraCrypt.
 
