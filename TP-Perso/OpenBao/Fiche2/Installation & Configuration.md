@@ -259,10 +259,20 @@ sudo chmod 644 ca.pem
 On peut maintenant passer à la configuration du listener TLS dans `openbao.hcl`.
 
 ## Configurer OpenBao
-Dans `/etc/openbao/openbao.hcl`, on configure le listener TLS :
+
+Une fois le certificat et la clé privée en place dans `/etc/openbao/tls`, on configure OpenBao pour qu’il utilise TLS.
+
+Le fichier de configuration principal est `/etc/openbao/openbao.hcl`.  
+On l’édite avec `nano` (ou un autre éditeur) :
+
+```bash
+sudo nano /etc/openbao/openbao.hcl
+```
+
+Voici un exemple de configuration cohérent :
 
 ```hcl
-ui = true
+ui = true #Active l’interface web d’OpenBao (accessible via un navigateur)
 
 storage "file" {
   path = "/opt/openbao/data"
@@ -270,14 +280,19 @@ storage "file" {
 
 listener "tcp" {
   address       = "0.0.0.0:8200"
-  tls_cert_file = "/etc/openbao/tls/openbao.crt"
-  tls_key_file  = "/etc/openbao/tls/openbao.key"
+  tls_cert_file = "/etc/openbao/tls/openbao.crt" #chemin vers le certificat serveur (celui qu’on a copié dans `/etc/openbao/tls`)
+  tls_key_file  = "/etc/openbao/tls/openbao.key" #chemin vers la clé privée associée
 }
 
-api_addr = "[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
+api_addr = "[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)" #adresse que les clients vont utiliser pour parler à OpenBao
 ```
 
 Si on veut tester aussi avec `127.0.0.1`, il faut que cette adresse figure dans les SAN.
+Si tu as inclus l’adresse IP `192.168.1.44` dans les SAN du certificat, tu peux aussi utiliser directement l’IP dans `api_addr`, par exemple :
+
+```hcl
+api_addr = "https://192.168.1.44:8200"
+```
 
 ## Redémarrer le service
 Après modification de la configuration, on redémarre OpenBao.
@@ -306,4 +321,48 @@ bao status
 
 Si tout est bon, `bao status` doit répondre sans erreur TLS.
 
+## Accéder à l’interface web et vérifier les secrets
+
+Grâce à la configuration du fichier `openbao.hcl`, et en particulier à la ligne :
+
+```hcl
+api_addr = "[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
+```
+
+OpenBao est accessible via un navigateur, en HTTPS, avec le nom DNS de la VM.
+
+### 1. Ouvrir l’interface web
+
+Dans un navigateur, ouvre :
+
+```text
+[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
+```
+
+Si ton certificat est bien configuré et que le nom DNS est valide, tu ne dois pas avoir d’erreur TLS (ou seulement un avertissement lié à la CA interne, que tu peux accepter).
+
+### 2. Se connecter avec un token
+
+Sur l’écran de connexion :
+
+- **Method** : `token`
+- **Token** : colle un token valide (par exemple le token root ou un token que tu as créé en CLI)
+- **Namespace** : laisse vide (si tu n’utilises pas de namespaces)
+
+Valide pour entrer dans l’interface.
+
+### 3. Vérifier les secrets créés en CLI
+
+Une fois connecté :
+
+- Navigue dans l’arborescence des secrets (par exemple `secret/` si tu utilises le moteur KV par défaut).
+- Tu dois y retrouver les secrets que tu as créés précédemment en ligne de commande avec `bao kv put ...`.
+
+Cela confirme que :
+
+- la configuration TLS est correcte,
+- l’`api_addr` pointe vers la bonne URL,
+- et que l’interface web utilise bien le même backend de stockage que la CLI.
+
+Tu peux désormais gérer tes secrets soit en CLI, soit via l’interface graphique, selon ce qui est le plus pratique.
 
