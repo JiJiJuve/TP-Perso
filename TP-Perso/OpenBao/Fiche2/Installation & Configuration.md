@@ -317,7 +317,7 @@ Tu dois voir au moins :
 Pour que `bao` fasse confiance au certificat du serveur, on définit la variable d’environnement `BAO_CACERT` :
 
 ```bash
-export BAO_ADDR="[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
+export BAO_ADDR="[https://openbao.celduc.lan:8200]"
 export BAO_CACERT="/etc/openbao/tls/ca.pem"
 ```
 
@@ -434,7 +434,6 @@ Dans un navigateur, ouvre :
 
 Si ton certificat est bien configuré et que le nom DNS est valide, tu ne dois pas avoir d’erreur TLS (ou seulement un avertissement lié à la CA interne, que tu peux accepter).
 
-![Certificat bien reconnu en HTTPS](../Images/Certificat_bien_reconnu_https.png)
 
 ### 2. Se connecter avec un token
 
