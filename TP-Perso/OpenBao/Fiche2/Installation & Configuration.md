@@ -148,7 +148,7 @@ scp .\openbao.cer celduc@192.168.1.44:/tmp
 scp .\openbao.key celduc@192.168.1.44:/tmp
 ```
 
-![Copie des fichiers depuis le PC local vers le serveur OpenBao avec SCP](../Images/copie_fichiers_depuis_pc_local_vers_srv_openbao_avec_scp.PNG)
+![Copie des fichiers depuis le PC local vers le serveur OpenBao avec SCP](../Images/copie_fichiers_depuis_pc_local_vers_srv_openbao_avec_scp.png)
 
 Remplace :
 
