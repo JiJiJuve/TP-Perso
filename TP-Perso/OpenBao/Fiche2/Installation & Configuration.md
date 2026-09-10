@@ -79,6 +79,9 @@ DNS.1 = openbao.celduc.lan
 IP.1  = 127.0.0.1
 IP.2  = 192.168.1.44
 ```
+Enregistrer ce fichier dans le même dossier que la clé privée et la CSR.
+
+![Extrait du fichier de configuration OpenSSL](../Images/Extrait_fichier_conf_openssl.png)
 
 ## Générer la clé privée
 Sur le PC hôte, on génère la clé privée du serveur TLS.
@@ -88,41 +91,6 @@ openssl genrsa -out openbao.key 4096
 ```
 
 Cette clé privée doit rester secrète.
-
-## Créer le fichier de configuration OpenSSL
-
-Avant de générer la CSR, on crée un fichier de configuration OpenSSL qui contient les informations du certificat et les SAN.
-
-Sur le PC hôte, dans le Bloc-notes (ou un éditeur de texte), créer un fichier `openbao-openssl.cnf` avec le contenu suivant :
-
-```ini
-[ req ]
-default_bits       = 4096
-prompt             = no
-default_md         = sha256
-distinguished_name = dn
-req_extensions     = req_ext
-
-[ dn ]
-commonName = openbao.celduc.lan
-organizationName = Celduc
-organizationalUnitName = IT
-localityName = Sorbiers
-stateOrProvinceName = Auvergne-Rhône-Alpes
-countryName = FR
-
-[ req_ext ]
-subjectAltName = @alt_names
-
-[ alt_names ]
-DNS.1 = openbao.celduc.lan
-IP.1  = 127.0.0.1
-IP.2  = 192.168.1.44
-```
-
-Enregistrer ce fichier dans le même dossier que la clé privée et la CSR.
-
-![Extrait du fichier de configuration OpenSSL](../Images/Extrait_fichier_conf_openssl.png)
 
 ## Générer la CSR
 
