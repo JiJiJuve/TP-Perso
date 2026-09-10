@@ -14,6 +14,7 @@ Cette fiche explique comment générer un certificat TLS pour OpenBao, faire sig
 - [Configurer OpenBao](#configurer-openbao)
 - [Redémarrer le service](#redémarrer-le-service)
 - [Tester le TLS](#tester-le-tls)
+- [Accéder à l’interface web et vérifier les secrets](#accéder-à-linterface-web-et-vérifier-les-secrets)
 
 
 ## Choisir le nom d’hôte
