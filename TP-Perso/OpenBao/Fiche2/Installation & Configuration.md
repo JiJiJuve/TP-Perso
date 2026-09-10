@@ -263,7 +263,7 @@ sudo chmod 644 ca.pem
 - la clé privée est protégée,
 - le certificat et la CA sont lisibles par le service OpenBao.
 
-On peut maintenant passer à la configuration du listener TLS dans `openbao.hcl`.
+
 
 ## Importer le certificat de la CA racine
 
