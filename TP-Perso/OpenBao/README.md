@@ -22,8 +22,8 @@ Le projet est découpé en deux parties :
 OpenBao/
 ├── README.md
 ├── fiche1/
-│   ├── README.md
-│   
+│   ├── Installation_&_Configuration.md
+│   ├── Fiche1_OpenBao_côté_coffre_&_gestion_des_secrets.md
 └── fiche2/
     ├── README.md
     
