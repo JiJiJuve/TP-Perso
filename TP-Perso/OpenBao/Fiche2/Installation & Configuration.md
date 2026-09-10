@@ -10,10 +10,11 @@ Cette fiche explique comment générer un certificat TLS pour OpenBao, faire sig
 - [Faire signer la CSR](#faire-signer-la-csr)
 - [Vérifier le certificat](#vérifier-le-certificat)
 - [Installer le certificat](#installer-le-certificat)
+- [Importer le certificat de la CA racine](#Importer-le-certificat-de-la-CA-racine)
 - [Configurer OpenBao](#configurer-openbao)
 - [Redémarrer le service](#redémarrer-le-service)
 - [Tester le TLS](#tester-le-tls)
-- [Captures](#captures)
+
 
 ## Choisir le nom d’hôte
 
@@ -274,16 +275,43 @@ Pour que les clients (CLI `bao` et navigateurs) fassent confiance au certificat 
 Depuis le PC hôte, dans le dossier où tu as stocké les fichiers de la PKI (par exemple le dossier TFTP), copie le certificat de la CA racine vers la VM :
 
 ```powershell
-scp .\ca.pem celduc@192.168.1.44:/tmp
+scp .\ca.crt celduc@192.168.1.44:/tmp
 ```
 
 Remplace :
 
-- `ca.pem` par le nom réel de ton fichier de CA,
+- `ca.crt` par le nom réel de ton fichier de CA,
 - `celduc` par ton utilisateur sur la VM,
 - `192.168.1.44` par l’IP de ta VM OpenBao.
 
-### 2. Placer le certificat de la CA dans `/etc/openbao/tls`
+![Copie du certificat de la CA racine sur le serveur OpenBao avec SCP depuis le PC hôte](../Images/Copie_certif_CA_racine_in_srv_openbao_avec_scp_depuis_pc_hote.png)
+
+### 2. Convertir le certificat de la CA au format PEM
+
+Le fichier `.crt` peut être au format DER (binaire) ou PEM (texte Base64).  
+La CLI `bao` et OpenSSL attendent un certificat de CA au format **PEM**, de la forme :
+
+```text
+-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----
+```
+
+Pour convertir le certificat de la CA en PEM, sur le PC hôte (ou sur la VM si le fichier y est déjà), utilise OpenSSL :
+
+```bash
+openssl x509 -inform der -in ca.crt -out ca.pem
+```
+
+Si le fichier `.crt` est déjà en PEM, tu peux aussi simplement le renommer, mais la conversion garantit un format compatible.
+
+Ensuite, copie le fichier converti sur la VM (si ce n’est pas déjà fait) :
+
+```powershell
+scp .\ca.pem celduc@192.168.1.44:/tmp
+```
+
+### 3. Placer le certificat de la CA dans `/etc/openbao/tls`
 
 Sur la VM, connecte-toi en SSH :
 
@@ -297,10 +325,17 @@ Déplace le certificat de la CA depuis `/tmp` vers le dossier TLS :
 sudo mv /tmp/ca.pem /etc/openbao/tls/ca.pem
 ```
 
-Vérifie sa présence :
+Puis sécurise les droits (le certificat est public, donc lisible par tous) :
 
 ```bash
 cd /etc/openbao/tls
+sudo chown root:openbao ca.pem
+sudo chmod 644 ca.pem
+```
+
+Vérifie sa présence :
+
+```bash
 ls
 ```
 
@@ -310,14 +345,16 @@ Tu dois voir au moins :
 - `openbao.key` (clé privée serveur)
 - `ca.pem` (certificat de la CA racine)
 
-### 3. Utiliser la CA racine côté client
+![Copie du certificat de la CA dans /etc/openbao/tls/ca.pem et configuration des droits (chmod 644)](../Images/copie_certif_ca_in_tls_ca_crt_&_droit_chmod_644.png)
+
+### 4. Utiliser la CA racine côté client
 
 #### a) Avec la CLI `bao`
 
 Pour que `bao` fasse confiance au certificat du serveur, on définit la variable d’environnement `BAO_CACERT` :
 
 ```bash
-export BAO_ADDR="[https://openbao.celduc.lan:8200]"
+export BAO_ADDR="[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
 export BAO_CACERT="/etc/openbao/tls/ca.pem"
 ```
 
