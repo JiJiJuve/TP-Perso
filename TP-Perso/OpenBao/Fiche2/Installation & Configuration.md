@@ -357,7 +357,7 @@ Tu dois voir au moins :
 Pour que `bao` fasse confiance au certificat du serveur, on définit la variable d’environnement `BAO_CACERT` :
 
 ```bash
-export BAO_ADDR="[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
+export BAO_ADDR="[https://openbao.celduc.lan:8200]"
 export BAO_CACERT="/etc/openbao/tls/ca.pem"
 ```
 
@@ -368,7 +368,7 @@ Ensuite, toutes les commandes comme `bao status`, `bao kv put`, `bao kv get`, et
 Quand tu ouvres :
 
 ```text
-[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
+[https://openbao.celduc.lan:8200]
 ```
 
 le navigateur vérifie le certificat du serveur par rapport aux CA qu’il connaît.
