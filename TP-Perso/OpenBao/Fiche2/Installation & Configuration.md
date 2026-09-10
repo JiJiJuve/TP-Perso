@@ -130,17 +130,133 @@ openssl x509 -inform der -in openbao.cer -text -noout
 ![Vérification du certificat](../Images/Check_certificat.png)
 
 ## Installer le certificat
-Sur la VM OpenBao, on crée le dossier TLS puis on copie le certificat et la clé privée.
+
+Les fichiers générés sur le PC hôte (clé privée, CSR, certificat, fichier `.cnf`, CA, etc.) sont stockés dans un dossier dédié, par exemple un dossier TFTP.
+
+On va d’abord les copier sur la VM OpenBao, puis les placer dans le bon répertoire et sécuriser les droits.
+
+### 1. Copier les fichiers du PC hôte vers la VM (SCP)
+
+Depuis le PC hôte, dans le dossier où se trouvent tes fichiers de certificat (par exemple le dossier TFTP), on utilise `scp` pour envoyer le certificat et la clé privée sur la VM.
+
+Exemple :
+
+```powershell
+scp .\openbao.cer celduc@192.168.1.44:/tmp
+scp .\openbao.key celduc@192.168.1.44:/tmp
+```
+
+Remplace :
+
+- `openbao.cer` / `openbao.key` par les noms réels de tes fichiers,
+- `celduc` par ton utilisateur sur la VM,
+- `192.168.1.44` par l’IP de ta VM OpenBao.
+
+À la première connexion, SCP peut te demander de confirmer l’empreinte de la machine et de saisir le mot de passe de l’utilisateur `celduc`.
+
+À ce stade, les fichiers sont présents sur la VM dans `/tmp`.
+
+### 2. Se connecter à la VM et vérifier les fichiers
+
+On se connecte en SSH à la VM :
+
+```bash
+ssh celduc@192.168.1.44
+```
+
+Puis on vérifie que les fichiers sont bien dans `/tmp` :
+
+```bash
+ls /tmp
+```
+
+Tu dois voir apparaître `openbao.cer`, `openbao.key` (et éventuellement d’autres fichiers si tu en as copié d’autres).
+
+### 3. Créer le dossier TLS et déplacer les fichiers
+
+On crée le dossier qui contiendra les fichiers TLS pour OpenBao :
 
 ```bash
 sudo mkdir -p /etc/openbao/tls
-sudo cp openbao.crt /etc/openbao/tls/openbao.crt
-sudo cp openbao.key /etc/openbao/tls/openbao.key
-sudo chown root:openbao /etc/openbao/tls/openbao.key
-sudo chmod 640 /etc/openbao/tls/openbao.key
 ```
 
-Le certificat public peut être plus permissif, mais la clé privée doit être protégée.
+Ensuite, on déplace le certificat et la clé privée depuis `/tmp` vers ce dossier :
+
+```bash
+sudo mv /tmp/openbao.cer /etc/openbao/tls/openbao.cer
+sudo mv /tmp/openbao.key /etc/openbao/tls/openbao.key
+```
+
+Si tu as aussi copié la CA (par exemple `ca.pem`), tu peux la mettre au même endroit :
+
+```bash
+sudo mv /tmp/ca.pem /etc/openbao/tls/ca.pem
+```
+
+### 4. Vérifier la présence des fichiers dans `/etc/openbao/tls`
+
+On se place dans le dossier TLS :
+
+```bash
+cd /etc/openbao/tls
+```
+
+Et on liste son contenu :
+
+```bash
+ls
+```
+
+Tu dois voir au moins :
+
+- `openbao.cer` (certificat serveur)
+- `openbao.key` (clé privée serveur)
+- `ca.pem` (certificat de la CA interne, si copié)
+
+Cela permet de s’assurer que les fichiers sont bien au bon endroit avant de régler les permissions.
+
+### 5. Sécuriser les droits sur la clé privée et le certificat
+
+La clé privée doit être protégée : seul `root` (et le service OpenBao) doit pouvoir la lire.
+
+On change le propriétaire de la clé pour que ce soit `root:openbao` :
+
+```bash
+sudo chown root:openbao openbao.key
+```
+
+Puis on restreint ses permissions :
+
+```bash
+sudo chmod 640 openbao.key
+```
+
+Cela donne :
+
+- `root` : lecture + écriture
+- groupe `openbao` : lecture seule
+- les autres : aucun accès
+
+Le certificat serveur (`openbao.cer`) est public, on peut le laisser en lecture pour tous :
+
+```bash
+sudo chmod 644 openbao.cer
+```
+
+Si tu as aussi un fichier `ca.pem`, tu peux appliquer la même logique :
+
+```bash
+sudo chown root:openbao ca.pem
+sudo chmod 644 ca.pem
+```
+
+À ce stade :
+
+- les fichiers sont au bon endroit (`/etc/openbao/tls`),
+- la clé privée est protégée,
+- le certificat et la CA sont lisibles par le service OpenBao.
+
+On peut maintenant passer à la configuration du listener TLS dans `openbao.hcl`.
 
 ## Configurer OpenBao
 Dans `/etc/openbao/openbao.hcl`, on configure le listener TLS :
