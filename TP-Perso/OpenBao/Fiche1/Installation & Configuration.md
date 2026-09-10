@@ -59,7 +59,7 @@ Puis on télécharge le fichier :
 curl -LO "$URL"
 ```
 
-![Interrogation API GitHub pour récupérer la dernière version d'OpenBao](Images/Interrogation_API_github_recuperer_derniere_version_openbao.png)
+![Interrogation API GitHub pour récupérer la dernière version d'OpenBao](../Images/Interrogation_API_github_recuperer_derniere_version_openbao.png)
 
 Si c’est un `.deb` :
 
