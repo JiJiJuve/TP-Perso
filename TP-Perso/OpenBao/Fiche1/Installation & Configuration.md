@@ -255,6 +255,8 @@ Pour afficher les entrées stockées :
 bao kv list secret/pki/switch/Netgear/
 ```
 
+![Liste des entrées dans le moteur secret](../Images/Lister_entrees_in_secret.png)
+
 Pour relire une entrée précise :
 
 ```bash
@@ -293,6 +295,8 @@ export BAO_CACERT=/etc/openbao/tls/ca.pem
 export BAO_TOKEN="ton_root_token"
 ```
 
+![Définition des variables BAO_ADDR, BAO_CACERT et BAO_TOKEN pour TLS](../Images/Definir_bonnes_variables_pour_certif_tls.png)
+
 Puis vérifier :
 
 ```bash
@@ -302,6 +306,8 @@ bao status
 Le coffre doit être :
 - `Initialized: true`
 - `Sealed: false`
+
+![Connexion OpenBao réussie avec TLS et root token](../Images/Log_OK.png)
 
 Ensuite, tu peux utiliser les commandes `bao kv ...`, par exemple :
 
