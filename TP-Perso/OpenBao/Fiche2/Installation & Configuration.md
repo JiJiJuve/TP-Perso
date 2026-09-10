@@ -16,6 +16,7 @@ Cette fiche explique comment générer un certificat TLS pour OpenBao, faire sig
 - [Captures](#captures)
 
 ## Choisir le nom d’hôte
+
 On commence par choisir le nom DNS de la VM OpenBao.
 
 Exemple :
@@ -25,6 +26,28 @@ openbao.celduc.lan
 ```
 
 Ce nom doit être présent dans le DNS interne, sinon le certificat TLS ne correspondra pas au serveur.
+
+Une fois l’enregistrement A créé dans le DNS, on vérifie que le nom résout bien vers la bonne IP.
+
+Depuis un poste client (ou la VM elle-même) :
+
+```bash
+nslookup openbao.celduc.lan
+```
+
+On doit voir l’IP de la VM OpenBao dans la réponse.
+
+Puis on teste la connectivité :
+
+```bash
+ping openbao.celduc.lan
+```
+
+Si le ping passe, c’est que :
+- le nom est bien enregistré dans le DNS,
+- et qu’il pointe vers la bonne machine.
+
+![Test DNS et ping après enregistrement A](../Images/Test_Nslookup_%26_ping_apres_enregistrement_A_in_DNS_SRV_Openbao.PNG)
 
 ## Préparer OpenSSL
 On crée un fichier de configuration OpenSSL avec les SAN nécessaires.  
