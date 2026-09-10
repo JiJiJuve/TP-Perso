@@ -2,6 +2,8 @@
 
 Ce projet présente la mise en place d’un serveur OpenBao sur une VM Debian, avec TLS, ouverture du coffre, authentification root et stockage de secrets dans un moteur KV v2.
 
+![Scema e principe OpenBao](Images/Copilot_20260908_161440.png)
+
 ## Sommaire
 - [Présentation](#présentation)
 - [Arborescence](#arborescence)
@@ -21,10 +23,10 @@ OpenBao/
 ├── README.md
 ├── fiche1/
 │   ├── README.md
-│   └── Images/
+│   
 └── fiche2/
     ├── README.md
-    └── Images/
+    
 ```
 
 ## Fiche 1 — Coffre et secrets
