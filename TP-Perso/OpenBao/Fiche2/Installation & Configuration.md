@@ -147,7 +147,7 @@ scp .\openbao.cer celduc@192.168.1.44:/tmp
 scp .\openbao.key celduc@192.168.1.44:/tmp
 ```
 
-![Copie des fichiers depuis le PC local vers le serveur OpenBao avec SCP](../Images/copie_fichiers_depuis_pc_local_vers_srv_openbao_avec_scp.png)
+![Copie des fichiers depuis le PC local vers le serveur OpenBao avec SCP](../Images/copie_fichiers_depuis_pc_local_vers_srv_openbao_avec_scp.PNG)
 
 Remplace :
 
@@ -297,7 +297,7 @@ La CLI `bao` et OpenSSL attendent un certificat de CA au format **PEM**, de la f
 -----END CERTIFICATE-----
 ```
 
-![Vérification du nouveau format PEM du certificat de la CA (OK)](../Images/Verification_new_format_certif_CA_pem_OK)
+![Vérification du nouveau format PEM du certificat de la CA (OK)](../Images/Verification_new_format_certif_CA_pem_OK.png)
 
 Pour convertir le certificat de la CA en PEM, sur le PC hôte (ou sur la VM si le fichier y est déjà), utilise OpenSSL :
 
@@ -309,7 +309,7 @@ Si le fichier `.crt` est déjà en PEM, tu peux aussi simplement le renommer, ma
 
 Ensuite, copie le fichier converti sur la VM (si ce n’est pas déjà fait) :
 
-![Conversion du certificat de la CA en format PEM](../Images/Convertion_certif_cA_en_pem)
+![Conversion du certificat de la CA en format PEM](../Images/Convertion_certif_cA_en_pem.png)
 
 ```powershell
 scp .\ca.pem celduc@192.168.1.44:/tmp
@@ -337,8 +337,6 @@ sudo chown root:openbao ca.pem
 sudo chmod 644 ca.pem
 ```
 
-![Copie du certificat de la CA dans /etc/openbao/tls/ca.crt et configuration des droits (chmod 644)](../Images/copie_certif_ca_in_tls_ca_crt_&_droit_chmod_644.png)
-
 Vérifie sa présence :
 
 ```bash
@@ -351,7 +349,6 @@ Tu dois voir au moins :
 - `openbao.key` (clé privée serveur)
 - `ca.pem` (certificat de la CA racine)
 
-![Copie du certificat de la CA dans /etc/openbao/tls/ca.pem et configuration des droits (chmod 644)](../Images/copie_certif_ca_in_tls_ca_crt_&_droit_chmod_644.png)
 
 ### 4. Utiliser la CA racine côté client
 
