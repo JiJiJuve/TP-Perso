@@ -220,6 +220,8 @@ Tu dois voir au moins :
 
 Cela permet de s’assurer que les fichiers sont bien au bon endroit avant de régler les permissions.
 
+![Organisation du dossier TLS](../Images/Check_Organisation_dossier_TLS.png)
+
 ### 5. Sécuriser les droits sur la clé privée et le certificat
 
 La clé privée doit être protégée : seul `root` (et le service OpenBao) doit pouvoir la lire.
