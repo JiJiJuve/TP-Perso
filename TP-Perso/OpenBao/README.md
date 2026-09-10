@@ -23,10 +23,10 @@ OpenBao/
 ├── README.md
 ├── fiche1/
 │   ├── Installation_&_Configuration.md
-│   ├── Fiche1_OpenBao_côté_coffre_&_gestion_des_secrets.md
+│   ├── Fiche1_OpenBao_côté_coffre_&_gestion_des_secrets.pdf
 └── fiche2/
-    ├── README.md
-    
+    ├── Installation_&_Configuration.md
+    ├── Fiche2_OpenBao_TLS_identité_du_serveur_accès_sécurisé.pdf
 ```
 
 ## Fiche 1 — Coffre et secrets
