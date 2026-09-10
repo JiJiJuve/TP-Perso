@@ -14,6 +14,7 @@ Cette fiche explique comment générer un certificat TLS pour OpenBao, faire sig
 - [Configurer OpenBao](#configurer-openbao)
 - [Redémarrer le service](#redémarrer-le-service)
 - [Tester le TLS](#tester-le-tls)
+- [Accéder à l’interface web et vérifier les secrets](#accéder-à-linterface-web-et-vérifier-les-secrets)
 
 
 ## Choisir le nom d’hôte
@@ -297,23 +298,23 @@ La CLI `bao` et OpenSSL attendent un certificat de CA au format **PEM**, de la f
 -----END CERTIFICATE-----
 ```
 
-![Vérification du nouveau format PEM du certificat de la CA (OK)](../Images/Verification_new_format_certif_CA_pem_OK.png)
-
 Pour convertir le certificat de la CA en PEM, sur le PC hôte (ou sur la VM si le fichier y est déjà), utilise OpenSSL :
 
 ```bash
 openssl x509 -inform der -in ca.crt -out ca.pem
 ```
 
+![Conversion du certificat de la CA en format PEM](../Images/Convertion_certif_cA_en_pem.png)
+
 Si le fichier `.crt` est déjà en PEM, tu peux aussi simplement le renommer, mais la conversion garantit un format compatible.
 
 Ensuite, copie le fichier converti sur la VM (si ce n’est pas déjà fait) :
 
-![Conversion du certificat de la CA en format PEM](../Images/Convertion_certif_cA_en_pem.png)
-
 ```powershell
 scp .\ca.pem celduc@192.168.1.44:/tmp
 ```
+
+![Vérification du nouveau format PEM du certificat de la CA (OK)](../Images/Verification_new_format_certif_CA_pem_OK.png)
 
 ### 3. Placer le certificat de la CA dans `/etc/openbao/tls`
 
@@ -357,7 +358,7 @@ Tu dois voir au moins :
 Pour que `bao` fasse confiance au certificat du serveur, on définit la variable d’environnement `BAO_CACERT` :
 
 ```bash
-export BAO_ADDR="[https://openbao.celduc.lan:8200]"
+export BAO_ADDR="[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
 export BAO_CACERT="/etc/openbao/tls/ca.pem"
 ```
 
@@ -368,7 +369,7 @@ Ensuite, toutes les commandes comme `bao status`, `bao kv put`, `bao kv get`, et
 Quand tu ouvres :
 
 ```text
-[https://openbao.celduc.lan:8200]
+[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
 ```
 
 le navigateur vérifie le certificat du serveur par rapport aux CA qu’il connaît.
@@ -394,7 +395,7 @@ sudo nano /etc/openbao/openbao.hcl
 Voici un exemple de configuration cohérent :
 
 ```hcl
-ui = true #Active l’interface web d’OpenBao (accessible via un navigateur)
+ui = true # Active l’interface web d’OpenBao (accessible via un navigateur)
 
 storage "file" {
   path = "/opt/openbao/data"
@@ -402,18 +403,18 @@ storage "file" {
 
 listener "tcp" {
   address       = "0.0.0.0:8200"
-  tls_cert_file = "/etc/openbao/tls/openbao.crt" #chemin vers le certificat serveur (celui qu’on a copié dans `/etc/openbao/tls`)
-  tls_key_file  = "/etc/openbao/tls/openbao.key" #chemin vers la clé privée associée
+  tls_cert_file = "/etc/openbao/tls/openbao.cer" # chemin vers le certificat serveur (celui qu’on a copié dans `/etc/openbao/tls`)
+  tls_key_file  = "/etc/openbao/tls/openbao.key" # chemin vers la clé privée associée
 }
 
-api_addr = "[https://openbao.celduc.lan:8200]" #adresse que les clients vont utiliser pour parler à OpenBao
+api_addr = "[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)" # adresse que les clients vont utiliser pour parler à OpenBao
 ```
 
-Si on veut tester aussi avec `127.0.0.1`, il faut que cette adresse figure dans les SAN.
+Si on veut tester aussi avec `127.0.0.1`, il faut que cette adresse figure dans les SAN.  
 Si tu as inclus l’adresse IP `192.168.1.44` dans les SAN du certificat, tu peux aussi utiliser directement l’IP dans `api_addr`, par exemple :
 
 ```hcl
-api_addr = "https://192.168.1.44:8200"
+api_addr = "[https://192.168.1.44:8200](https://192.168.1.44:8200)"
 ```
 
 ![Extrait du fichier openbao.hcl avec modification de tls_cert_file et tls_key_file](../Images/extrait_fichier_conf_openbao_hcl_avec_modif_tls_cert_file_&_tsl_key_file.png)
@@ -430,16 +431,16 @@ sudo systemctl status openbao.service -l --no-pager
 Depuis la VM, on définit l’adresse du serveur et la CA à utiliser :
 
 ```bash
-export BAO_ADDR=[https://openbao.celduc.lan:8200]
-export BAO_CACERT=/etc/openbao/tls/ca.pem
+export BAO_ADDR="[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
+export BAO_CACERT="/etc/openbao/tls/ca.pem"
 bao status
 ```
 
 Ou en local :
 
 ```bash
-export BAO_ADDR=[https://127.0.0.1:8200]
-export BAO_CACERT=/etc/openbao/tls/ca.pem
+export BAO_ADDR="[https://127.0.0.1:8200](https://127.0.0.1:8200)"
+export BAO_CACERT="/etc/openbao/tls/ca.pem"
 bao status
 ```
 
@@ -457,7 +458,7 @@ Il faut le déverrouiller avec les clés de chiffrement générées lors de l’
 Grâce à la configuration du fichier `openbao.hcl`, et en particulier à la ligne :
 
 ```hcl
-api_addr = "[https://openbao.celduc.lan:8200]"
+api_addr = "[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
 ```
 
 OpenBao est accessible via un navigateur, en HTTPS, avec le nom DNS de la VM.
@@ -467,7 +468,7 @@ OpenBao est accessible via un navigateur, en HTTPS, avec le nom DNS de la VM.
 Dans un navigateur, ouvre :
 
 ```text
-[https://openbao.celduc.lan:8200]
+[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
 ```
 
 ![Interface graphique OpenBao](../Images/interface_GUI_OpenBao.png)
