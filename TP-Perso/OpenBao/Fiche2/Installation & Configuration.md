@@ -146,6 +146,8 @@ scp .\openbao.cer celduc@192.168.1.44:/tmp
 scp .\openbao.key celduc@192.168.1.44:/tmp
 ```
 
+![Copie des fichiers depuis le PC local vers le serveur OpenBao avec SCP](../Images/copie_fichiers_depuis_pc_local_vers_srv_openbao_avec_scp.png)
+
 Remplace :
 
 - `openbao.cer` / `openbao.key` par les noms réels de tes fichiers,
@@ -192,6 +194,9 @@ Si tu as aussi copié la CA (par exemple `ca.pem`), tu peux la mettre au même e
 ```bash
 sudo mv /tmp/ca.pem /etc/openbao/tls/ca.pem
 ```
+
+![Déplacement des fichiers depuis /tmp vers /etc/openbao/tls et configuration des droits sur la clé et le certificat](../Images/Deplace_fichiers_depuis_tmp_vers_tls_srv_openbao_&_conf_droits_fichiers_key_cert.png)
+
 
 ### 4. Vérifier la présence des fichiers dans `/etc/openbao/tls`
 
@@ -269,6 +274,8 @@ On l’édite avec `nano` (ou un autre éditeur) :
 sudo nano /etc/openbao/openbao.hcl
 ```
 
+![Accès au fichier de configuration openbao.hcl](../Images/acceder_fichier_conf_openbao_hcl)
+
 Voici un exemple de configuration cohérent :
 
 ```hcl
@@ -293,6 +300,8 @@ Si tu as inclus l’adresse IP `192.168.1.44` dans les SAN du certificat, tu peu
 ```hcl
 api_addr = "https://192.168.1.44:8200"
 ```
+
+![Extrait du fichier openbao.hcl avec modification de tls_cert_file et tls_key_file](../Images/extrait_fichier_conf_openbao_hcl_avec_modif_tls_cert_file_&_tsl_key_file.png)
 
 ## Redémarrer le service
 Après modification de la configuration, on redémarre OpenBao.
@@ -321,6 +330,8 @@ bao status
 
 Si tout est bon, `bao status` doit répondre sans erreur TLS.
 
+![Test d’accès au serveur OpenBao et état du coffre (Sealed) OK](../Images/Test_acces_srv_openbao_&_etat_coffre_Sealed_OK.png)
+
 ## Accéder à l’interface web et vérifier les secrets
 
 Grâce à la configuration du fichier `openbao.hcl`, et en particulier à la ligne :
@@ -339,7 +350,11 @@ Dans un navigateur, ouvre :
 [https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
 ```
 
+![Interface graphique OpenBao](../Images/interface_GUI_OpenBao.png)
+
 Si ton certificat est bien configuré et que le nom DNS est valide, tu ne dois pas avoir d’erreur TLS (ou seulement un avertissement lié à la CA interne, que tu peux accepter).
+
+![Certificat bien reconnu en HTTPS](../Images/Certificat_bien_reconnu_https.png)
 
 ### 2. Se connecter avec un token
 
@@ -350,6 +365,8 @@ Sur l’écran de connexion :
 - **Namespace** : laisse vide (si tu n’utilises pas de namespaces)
 
 Valide pour entrer dans l’interface.
+
+![Dashboard de l’interface graphique OpenBao](../Images/Dashboard_GUI_OpenBoa.png)
 
 ### 3. Vérifier les secrets créés en CLI
 
@@ -366,3 +383,4 @@ Cela confirme que :
 
 Tu peux désormais gérer tes secrets soit en CLI, soit via l’interface graphique, selon ce qui est le plus pratique.
 
+![Liste des entrées dans le secret via l’interface graphique](../Images/Lister_entrees_in_secret_version_GUI.png)
