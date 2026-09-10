@@ -103,7 +103,7 @@ openssl req -new -key openbao.key -out openbao.csr -config openbao-openssl.cnf
 La CSR sera envoyée à la PKI interne.  
 La clé privée, elle, ne doit jamais être transmise.
 
-![CSR envoyée à la PKI interne](../Images/csr_aupres_PKI_interne.png)
+![CSR envoyée à la PKI interne](../Images/csr_aupres_PKI_interne.PNG)
 
 
 ## Faire signer la CSR
@@ -112,7 +112,7 @@ La PKI renvoie ensuite un certificat signé, par exemple :
 - `openbao.crt`
 - ou `openbao.cer`
 
-![Certificat délivré par la PKI interne](../Images/certif_delivre_par_pki_interne.png)
+![Certificat délivré par la PKI interne](../Images/certif_delivre_par_pki_interne.PNG)
 
 ## Vérifier le certificat
 Avant de l’installer, il est important de vérifier le contenu du certificat.
