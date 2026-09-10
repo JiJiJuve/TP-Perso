@@ -20,7 +20,7 @@ Le projet est découpé en deux parties :
 ## Arborescence
 ```text
 OpenBao/
-├── README.md
+├── Presentation_Projet.md
 ├── fiche1/
 │   ├── Installation_&_Configuration.md
 │   ├── Fiche1_OpenBao_côté_coffre_&_gestion_des_secrets.pdf
