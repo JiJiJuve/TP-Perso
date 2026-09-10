@@ -162,7 +162,7 @@ Ce moteur permettra de stocker :
 
 `secret` n’est pas un dossier Linux classique, mais le nom du point de montage du moteur de secrets.
 
-![Activation du moteur KV v2](../Images/Activation_Moteur_KVv2.png~RF172530a.png)
+![Activation du moteur KV v2](../Images/Activation_Moteur_KVv2.png)
 
 ## Créer les dossiers
 On crée un dossier de travail sur la VM pour regrouper les fichiers à importer dans OpenBao.
@@ -198,6 +198,8 @@ Ou avec plusieurs fichiers :
 ```bash
 scp Switch-Info2.cer Switch-Info2.csr switch_info2_distribution.key Switch-Info2.pem celduc@192.168.1.44:~/Certs/
 ```
+
+![Exemple de transfert de fichiers depuis l’hôte vers la VM OpenBao avec SCP](../Images/exemple_transfert_fichiers_depuis_hote_vers_vm_Bao_avec_SCP.png)
 
 Une fois la copie terminée, les fichiers sont disponibles dans `~/Certs`.
 
@@ -244,6 +246,8 @@ bao kv put secret/pki/switch/Netgear/switch_info2_distribution \
 
 Chaque équipement a son propre chemin pour éviter d’écraser les données des autres.
 
+![Création d’une entrée KV pour stocker les fichiers Switch Methodes](../Images/Exemple_Creation_entree_bao_stockage_fichiers_switch_Methodes.png)
+
 ## Relire et supprimer
 Pour afficher les entrées stockées :
 
@@ -257,6 +261,8 @@ Pour relire une entrée précise :
 bao kv get secret/pki/switch/Netgear/Switch-Methodes
 ```
 
+
+
 Pour lire un champ particulier :
 
 ```bash
@@ -267,11 +273,15 @@ bao kv get -field=chain secret/pki/switch/Netgear/Switch-Methodes
 bao kv get -field=info secret/pki/switch/Netgear/Switch-Methodes
 ```
 
+![Lecture d’un fichier stocké dans OpenBao](../Images/Exemple_lecture_fichier_stocké_Bao.png)
+
 Pour supprimer une entrée :
 
 ```bash
 bao kv delete secret/pki/switch/Netgear/Switch-Methodes
 ```
+
+![Exemple de suppression d’une entrée KV](../Images/exemple_suppression_entree_kv.png)
 
 ## Sauvegarde complémentaire
 En plus d’OpenBao, il est possible de garder une copie de sauvegarde sur une clé USB chiffrée avec VeraCrypt.
@@ -282,19 +292,4 @@ Le plus propre est :
 - garder le mot de passe en lieu sûr,
 - démonter le volume après usage.
 
-## Captures
-![Première ouverture d’OpenBao avec coffre encore verrouillé](Images/Preparation_1iere_fois_openbao_OK_mais_toujours_verrouille_5_key_deverouillage_1password_root_token.png)
 
-![Coffre déverrouillé et login root réussi](Images/apres_coffre_deverouille_log_avec_root_token_OK.png)
-
-![Activation du moteur KV v2](Images/Activation_Moteur_KVv2.png)
-
-![Copie des fichiers depuis le PC local vers la VM](Images/copie_fichiers_depuis_pc_local_vers_srv_openbao_avec_scp.png)
-
-![Exemple de transfert de fichiers vers la VM OpenBao](Images/exemple_transfert_fichiers_depuis_hote_vers_vm_Bao_avec_SCP.png)
-
-![Création d’une entrée KV pour stocker les fichiers Switch Methodes](Images/Exemple_Creation_entree_bao_stockage_fichiers_switch_Methodes.png)
-
-![Lecture d’un fichier stocké dans OpenBao](Images/Exemple_lecture_fichier_stocké_Bao.png)
-
-![Exemple de suppression d’une entrée KV](Images/exemple_suppression_entree_kv.png)
