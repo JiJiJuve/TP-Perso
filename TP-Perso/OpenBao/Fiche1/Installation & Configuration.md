@@ -105,6 +105,8 @@ bao status
 `BAO_ADDR` indique au client l’adresse d’OpenBao.  
 `BAO_SKIP_VERIFY=true` désactive la vérification TLS temporairement pendant les premiers tests.
 
+![Test de communication locale](../Images/Test_communication_locale.png)
+
 ## Initialiser le coffre
 Une fois OpenBao lancé, on initialise le coffre.
 
@@ -119,6 +121,8 @@ Cette commande crée :
 Ces informations doivent être sauvegardées immédiatement.  
 Après cette étape, le coffre reste verrouillé.
 
+![Première ouverture d’OpenBao avec coffre encore verrouillé](../Images/Preparation_1iere_fois_openbao_OK_mais_toujours_verrouille_5_key_deverouillage_1password_root_token.png)
+
 ## Déverrouiller le coffre
 Pour ouvrir le coffre, il faut utiliser 3 clés d’unseal différentes.
 
@@ -128,6 +132,8 @@ bao operator unseal
 
 Il faut répéter la commande 3 fois avec 3 clés valides.  
 Quand c’est terminé, `bao status` doit indiquer que le coffre n’est plus scellé.
+
+![Ouverture du coffre avec 3 clés](../Images/Ouverture_coffre_avec_3keys.png)
 
 ## Authentifier le client
 Après l’unseal, il faut s’authentifier pour pouvoir administrer OpenBao.
@@ -155,6 +161,8 @@ Ce moteur permettra de stocker :
 - informations d’équipement.
 
 `secret` n’est pas un dossier Linux classique, mais le nom du point de montage du moteur de secrets.
+
+![Activation du moteur KV v2](../Images/Activation_Moteur_KVv2.png~RF172530a.png)
 
 ## Créer les dossiers
 On crée un dossier de travail sur la VM pour regrouper les fichiers à importer dans OpenBao.
