@@ -291,7 +291,7 @@ listener "tcp" {
   tls_key_file  = "/etc/openbao/tls/openbao.key" #chemin vers la clé privée associée
 }
 
-api_addr = "[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)" #adresse que les clients vont utiliser pour parler à OpenBao
+api_addr = "[https://openbao.celduc.lan:8200]" #adresse que les clients vont utiliser pour parler à OpenBao
 ```
 
 Si on veut tester aussi avec `127.0.0.1`, il faut que cette adresse figure dans les SAN.
@@ -315,7 +315,7 @@ sudo systemctl status openbao.service -l --no-pager
 Depuis la VM, on définit l’adresse du serveur et la CA à utiliser :
 
 ```bash
-export BAO_ADDR=[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
+export BAO_ADDR=[https://openbao.celduc.lan:8200]
 export BAO_CACERT=/etc/openbao/tls/ca.pem
 bao status
 ```
@@ -323,7 +323,7 @@ bao status
 Ou en local :
 
 ```bash
-export BAO_ADDR=[https://127.0.0.1:8200](https://127.0.0.1:8200)
+export BAO_ADDR=[https://127.0.0.1:8200]
 export BAO_CACERT=/etc/openbao/tls/ca.pem
 bao status
 ```
@@ -332,12 +332,17 @@ Si tout est bon, `bao status` doit répondre sans erreur TLS.
 
 ![Test d’accès au serveur OpenBao et état du coffre (Sealed) OK](../Images/Test_acces_srv_openbao_&_etat_coffre_Sealed_OK.png)
 
+Après ce test, le service OpenBao est lancé mais le coffre est encore **scellé** (sealed).  
+Il faut le déverrouiller avec les clés de chiffrement générées lors de l’initialisation.
+
+![Déverrouillage du coffre avec les 3 clés (Unseal) OK](../Images/Unseal_3_key_deverouillages_OK.png)
+
 ## Accéder à l’interface web et vérifier les secrets
 
 Grâce à la configuration du fichier `openbao.hcl`, et en particulier à la ligne :
 
 ```hcl
-api_addr = "[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)"
+api_addr = "[https://openbao.celduc.lan:8200]"
 ```
 
 OpenBao est accessible via un navigateur, en HTTPS, avec le nom DNS de la VM.
@@ -347,7 +352,7 @@ OpenBao est accessible via un navigateur, en HTTPS, avec le nom DNS de la VM.
 Dans un navigateur, ouvre :
 
 ```text
-[https://openbao.celduc.lan:8200](https://openbao.celduc.lan:8200)
+[https://openbao.celduc.lan:8200]
 ```
 
 ![Interface graphique OpenBao](../Images/interface_GUI_OpenBao.png)
